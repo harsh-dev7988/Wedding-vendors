@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wedding Vendor Marketplace
 
-## Getting Started
+A wedding-services discovery and lead-generation marketplace for India, covering
+venues, photographers, makeup artists, planners, decorators, and caterers across
+major metros.
 
-First, run the development server:
+## Technology
+
+- Next.js 16 App Router with React 19 and strict TypeScript
+- Tailwind CSS 4
+- Supabase — PostgreSQL, Auth, Row Level Security, and Storage
+- Resend for transactional email
+- Razorpay for vendor subscriptions
+- Vercel as the deployment target
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local   # then fill in your own values
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open <http://localhost:3000>.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`NEXT_PUBLIC_SITE_URL` is required for production builds. The remaining
+variables are optional in development: without them, authentication controls are
+disabled, email sending becomes a no-op, and payment buttons are inactive, so
+the application still runs.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run typecheck` | Route type generation and `tsc --noEmit` |
+| `npm run lint` | ESLint |
+| `npm run test` | Unit tests (Vitest) |
+| `npm run format` | Prettier |
+| `npm run verify` | typecheck, lint, test and build together |
 
-To learn more about Next.js, take a look at the following resources:
+## Database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Migrations live in `supabase/migrations` and are applied in filename order.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npx supabase start   # requires Docker
+npm run db:reset
+npm run db:test      # pgTAP suite
+```
 
-## Deploy on Vercel
+`npm run db:bundle` concatenates the migrations into a single file for
+environments where the CLI is not linked.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+src/
+  app/          routes, server actions and route handlers
+  components/   shared UI
+  config/       site and taxonomy configuration
+  data/         data-access layer
+  domain/       shared types
+  lib/          utilities, email, payments, Supabase clients
+supabase/
+  migrations/   schema, policies and functions
+  tests/        database tests
+```
+
+## License
+
+Proprietary. All rights reserved.

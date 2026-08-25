@@ -1,0 +1,94 @@
+export type Metro = {
+  readonly name: string;
+  readonly slug: string;
+  readonly region: string;
+  readonly shortLabel: string;
+};
+
+export type PriceUnit =
+  | "per plate"
+  | "per event"
+  | "per function"
+  | "per day"
+  | "package"
+  | "on request";
+
+export type VendorMedia = {
+  readonly url: string;
+  readonly alt: string;
+};
+
+export type PublicReview = {
+  readonly id: string;
+  readonly rating: number;
+  readonly body: string;
+  readonly createdAt: string;
+  readonly vendorReply: string | null;
+};
+
+/**
+ * The public shape of a listing.
+ *
+ * This type deliberately has no phone, email or WhatsApp field. Contact
+ * details are released only by `submit_enquiry_and_reveal` /
+ * `get_revealed_contact` and are never carried on a public DTO, so the
+ * mistake is unrepresentable rather than merely avoided.
+ */
+export type PublicVendor = {
+  readonly listingId?: string;
+  readonly slug: string;
+  readonly name: string;
+  readonly categorySlug: string;
+  readonly citySlug: string;
+  readonly locality: string;
+  readonly summary: string;
+  readonly description: string;
+  readonly image: string;
+  readonly imageAlt: string;
+  readonly media: readonly VendorMedia[];
+  readonly rating: number | null;
+  readonly reviewCount: number;
+  readonly verified: boolean;
+  readonly startingPrice: number | null;
+  readonly priceUnit: PriceUnit;
+  readonly tags: readonly string[];
+  readonly yearsInBusiness: number;
+  readonly responseTime: string | null;
+  readonly vendorId?: string;
+  /** Only set when the search supplied a pincode origin. */
+  readonly distanceKm?: number | null;
+};
+
+/** Preview fixtures never carry a listing id, so they can never transact. */
+export function isPreviewVendor(vendor: PublicVendor) {
+  return !vendor.listingId;
+}
+
+export type VendorSort =
+  | "recent"
+  | "price_asc"
+  | "price_desc"
+  | "rating"
+  | "experience"
+  | "response"
+  | "distance";
+
+export type VendorSearch = {
+  readonly city?: string;
+  readonly category?: string;
+  readonly query?: string;
+  readonly page?: number;
+  readonly pageSize?: number;
+  readonly minPrice?: number;
+  readonly maxPrice?: number;
+  readonly minRating?: number;
+  readonly verifiedOnly?: boolean;
+  readonly pincode?: string;
+  readonly radiusKm?: number;
+  readonly sort?: VendorSort;
+};
+
+export type VendorSearchResult = {
+  readonly vendors: readonly PublicVendor[];
+  readonly total: number;
+};
