@@ -13,7 +13,14 @@ import {
   type ActionState,
 } from "@/lib/action-result";
 import { requireViewer } from "@/lib/auth";
-import { MAX_IMAGE_BYTES, sniffImageType } from "@/lib/image";
+import {
+  MAX_IMAGE_BYTES,
+  STORED_IMAGE_EXTENSION,
+  allVariantPaths,
+  sniffImageType,
+  variantPath,
+} from "@/lib/image";
+import { processUpload } from "@/lib/image-pipeline";
 import { createSlug } from "@/lib/slug";
 import { createClient } from "@/lib/supabase/server";
 
@@ -369,20 +376,38 @@ export async function uploadListingImage(formData: FormData) {
   );
   if (!allowed) redirect("/vendor/dashboard?error=forbidden");
 
+  // Re-encoded before it is stored, which is what removes the EXIF GPS tags a
+  // phone camera writes. The bucket is public, so the uploaded bytes must
+  // never reach it unmodified. See lib/image-pipeline.ts.
+  const processed = await processUpload(bytes);
+  if (!processed) redirect("/vendor/dashboard?error=invalid-image");
+
   // Keyed on the vendor, not the uploader: the bucket policy checks vendor
   // membership, so it is no longer an open upload target for any signed-in
   // user, and a teammate can manage the file later.
-  const storagePath = `${listing.vendor_id}/${listing.id}/${randomUUID()}.${sniffed.extension}`;
+  const storagePath = `${listing.vendor_id}/${listing.id}/${randomUUID()}.${STORED_IMAGE_EXTENSION}`;
 
-  const { error: uploadError } = await supabase.storage
-    .from("vendor-media")
-    .upload(storagePath, bytes, {
-      cacheControl: "31536000",
-      contentType: sniffed.contentType,
-      upsert: false,
-    });
+  const written: string[] = [];
+  for (const rendition of processed.variants) {
+    const path = variantPath(storagePath, rendition.variant);
+    const { error: uploadError } = await supabase.storage
+      .from("vendor-media")
+      .upload(path, rendition.bytes, {
+        cacheControl: "31536000",
+        contentType: processed.contentType,
+        upsert: false,
+      });
 
-  if (uploadError) redirect("/vendor/dashboard?error=upload-failed");
+    if (uploadError) {
+      // Partial writes would leave a card-sized object with no full-size
+      // sibling, so unwind before bailing out.
+      if (written.length > 0) {
+        await supabase.storage.from("vendor-media").remove(written);
+      }
+      redirect("/vendor/dashboard?error=upload-failed");
+    }
+    written.push(path);
+  }
 
   const { count } = await supabase
     .from("listing_media")
@@ -398,7 +423,7 @@ export async function uploadListingImage(formData: FormData) {
 
   if (mediaError) {
     // Compensate so a failed row never leaves an orphaned object behind.
-    await supabase.storage.from("vendor-media").remove([storagePath]);
+    await supabase.storage.from("vendor-media").remove(written);
     redirect("/vendor/dashboard?error=upload-failed");
   }
 
@@ -441,7 +466,7 @@ export async function deleteListingImage(formData: FormData) {
   // object rather than a listing pointing at a deleted file.
   await supabase.storage
     .from("vendor-media")
-    .remove([media.storage_path as string]);
+    .remove(allVariantPaths(media.storage_path as string));
 
   revalidatePath("/vendor/dashboard");
   redirect("/vendor/dashboard?notice=image-deleted");

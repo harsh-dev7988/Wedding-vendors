@@ -6,7 +6,9 @@ import type { ListingFacets } from "@/data/live-marketplace";
 import { isPreviewVendor, type PublicVendor } from "@/domain/marketplace";
 
 import { DirectorySearch } from "./directory-search";
-import { FilterPanel, type ActiveFilters } from "./filter-panel";
+import type { ActiveFilters } from "@/lib/filters";
+
+import { FilterPanel } from "./filter-panel";
 import { VendorCard } from "./vendor-card";
 
 type VendorDirectoryProps = {
@@ -19,7 +21,6 @@ type VendorDirectoryProps = {
   readonly basePath: string;
   /** Set when a static landing page defers deeper pages to the search route. */
   readonly moreHref?: string;
-  readonly searchParams?: Record<string, string | undefined>;
   readonly city?: string;
   readonly category?: string;
   readonly query?: string;
@@ -36,7 +37,6 @@ export function VendorDirectory({
   pageSize,
   basePath,
   moreHref,
-  searchParams,
   city,
   category,
   query,
@@ -53,12 +53,10 @@ export function VendorDirectory({
     <main id="main-content">
       <section className="border-border bg-muted/60 border-b">
         <div className="mx-auto max-w-7xl px-5 py-12 md:px-8 md:py-16">
-          <p className="text-brand-text text-sm font-bold tracking-[0.16em] uppercase">
+          <p className="text-brand-text eyebrow">
             Wedding professionals across India
           </p>
-          <h1 className="mt-3 max-w-4xl text-4xl font-bold md:text-5xl">
-            {title}
-          </h1>
+          <h1 className="type-title mt-3 max-w-4xl md:text-5xl">{title}</h1>
           <p className="text-muted-foreground mt-4 max-w-3xl leading-7">
             {description}
           </p>
@@ -104,7 +102,7 @@ export function VendorDirectory({
                 ? ` · ${total} live, ${previewCount} preview`
                 : ""}
             </p>
-            <h2 className="mt-1 text-2xl font-bold">
+            <h2 className="type-heading mt-1">
               {query ? `Results for “${query}”` : "Available listings"}
             </h2>
           </div>
@@ -130,7 +128,7 @@ export function VendorDirectory({
           <div>
             {vendors.length > 0 ? (
               <>
-                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-2">
+                <div className="reveal-stagger grid gap-6 md:grid-cols-2 xl:grid-cols-2">
                   {vendors.map((vendor, index) => (
                     <VendorCard
                       key={vendor.slug}
@@ -157,14 +155,14 @@ export function VendorDirectory({
                     basePath={basePath}
                     page={page}
                     pageSize={pageSize}
-                    searchParams={searchParams}
+                    filters={activeFilters ?? {}}
                     total={total}
                   />
                 )}
               </>
             ) : (
               <div className="border-border bg-muted/45 mt-8 rounded-3xl border border-dashed px-6 py-16 text-center">
-                <h2 className="text-2xl font-bold">No matching listings yet</h2>
+                <h2 className="type-heading">No matching listings yet</h2>
                 <p className="text-muted-foreground mx-auto mt-3 max-w-lg leading-7">
                   Try another city, category, or keyword. Real vendor supply is
                   still being onboarded city by city.

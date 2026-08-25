@@ -81,7 +81,7 @@ export default async function VendorReviewsPage() {
     <main className="mx-auto max-w-4xl px-5 py-10 md:px-8" id="main-content">
       <div className="flex items-center gap-3">
         <MessageSquareText aria-hidden="true" className="text-brand-text" />
-        <h1 className="text-4xl font-bold">Reviews</h1>
+        <h1 className="type-title">Reviews</h1>
       </div>
       <p className="text-muted-foreground mt-3 text-sm leading-6">
         {published.length} published

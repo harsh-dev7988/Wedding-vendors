@@ -65,9 +65,7 @@ export default async function ShortlistPage({
         <span className="bg-brand-soft text-brand-text rounded-full p-4">
           <Heart aria-hidden="true" size={28} />
         </span>
-        <h1 className="mt-6 text-4xl font-bold">
-          Keep your wedding team together
-        </h1>
+        <h1 className="type-title mt-6">Keep your wedding team together</h1>
         <p className="text-muted-foreground mt-4 max-w-xl leading-7">
           Sign in to save approved live listings across devices. Preview
           profiles remain browse-only.
@@ -109,10 +107,8 @@ export default async function ShortlistPage({
       className="mx-auto min-h-[55vh] max-w-5xl px-5 py-14 md:px-8"
       id="main-content"
     >
-      <p className="text-brand-text text-sm font-bold tracking-[0.16em] uppercase">
-        Customer shortlist
-      </p>
-      <h1 className="mt-3 text-5xl font-bold">Your saved vendors</h1>
+      <p className="text-brand-text eyebrow">Customer shortlist</p>
+      <h1 className="type-display mt-3">Your saved vendors</h1>
 
       <div className="mt-6 space-y-3">
         {flag && MESSAGES[flag] && (
@@ -150,7 +146,7 @@ export default async function ShortlistPage({
                 <p className="text-muted-foreground text-sm">
                   {listing.locality}
                 </p>
-                <h2 className="mt-2 text-2xl font-bold">
+                <h2 className="type-heading mt-2">
                   <Link
                     className="hover:text-brand-text transition"
                     href={`/vendor/${listing.slug}`}
@@ -190,7 +186,7 @@ export default async function ShortlistPage({
       ) : (
         <div className="border-border mt-10 rounded-[2rem] border border-dashed p-10 text-center">
           <Heart aria-hidden="true" className="text-brand-text mx-auto" />
-          <h2 className="mt-4 text-2xl font-bold">Nothing saved yet</h2>
+          <h2 className="type-heading mt-4">Nothing saved yet</h2>
           <p className="text-muted-foreground mt-3">
             Only approved live listings can be saved.
           </p>

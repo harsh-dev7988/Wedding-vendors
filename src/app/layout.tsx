@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -9,10 +9,20 @@ import { organizationJsonLd } from "@/lib/seo/structured-data";
 
 import "./globals.css";
 
-const displayFont = Bricolage_Grotesque({
-  variable: "--font-display",
-  subsets: ["latin"],
+/**
+ * Fraunces carries the editorial weight the old grotesque could not: a high
+ * contrast serif reads as a magazine masthead rather than a SaaS dashboard,
+ * which is the register a wedding brand needs. The variable axes are set once
+ * here so headings never need a second file.
+ *
+ * SOFT rounds the terminals slightly (warmth without whimsy) and WONK enables
+ * the swashed forms that give the face its character at display sizes.
+ */
+const displayFont = Fraunces({
+  axes: ["SOFT", "WONK", "opsz"],
   display: "swap",
+  subsets: ["latin"],
+  variable: "--font-display",
 });
 
 const bodyFont = Plus_Jakarta_Sans({

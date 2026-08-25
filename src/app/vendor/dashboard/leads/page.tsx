@@ -97,7 +97,7 @@ export default async function VendorLeadsPage({
     <main className="mx-auto max-w-5xl px-5 py-10 md:px-8" id="main-content">
       <div className="flex items-center gap-3">
         <Inbox aria-hidden="true" className="text-brand-text" />
-        <h1 className="text-4xl font-bold">Lead inbox</h1>
+        <h1 className="type-title">Lead inbox</h1>
       </div>
       <p className="text-muted-foreground mt-3 text-sm">
         {leads.length} {leads.length === 1 ? "enquiry" : "enquiries"}

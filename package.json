@@ -18,7 +18,8 @@
     "db:bundle": "node scripts/bundle-migrations.mjs",
     "db:apply": "node scripts/db-apply.mjs",
     "db:verify": "node scripts/db-verify.mjs",
-    "db:make-admin": "node scripts/db-make-admin.mjs"
+    "db:make-admin": "node scripts/db-make-admin.mjs",
+    "media:backfill": "node scripts/media-backfill.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",
@@ -30,6 +31,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "resend": "^6.22.1",
+    "sharp": "^0.35.3",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"
   },
@@ -40,6 +42,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.2",
+    "pg": "^8.23.0",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",

@@ -36,6 +36,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(failure);
   }
 
+  // An OAuth provider reports refusal here rather than by omitting the code —
+  // declining the Google consent screen lands on this route with
+  // `error=access_denied`. Without this the visitor would see the generic
+  // "invalid or expired link" message for a choice they made deliberately.
+  const providerError = request.nextUrl.searchParams.get("error");
+  if (providerError) {
+    failure.searchParams.set(
+      "error",
+      providerError === "access_denied" ? "sign-in-cancelled" : "invalid-link",
+    );
+    return NextResponse.redirect(failure);
+  }
+
   const supabase = await createClient();
   const tokenHash = request.nextUrl.searchParams.get("token_hash");
   const type = parseOtpType(request.nextUrl.searchParams.get("type"));

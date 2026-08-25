@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { sniffImageType } from "./image";
+import { allVariantPaths, sniffImageType, variantPath } from "./image";
 
 const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0, 0, 0, 0, 0]);
 const png = new Uint8Array([
@@ -52,5 +52,47 @@ describe("sniffImageType", () => {
       ...[0x57, 0x41, 0x56, 0x45], // WAVE
     ]);
     expect(sniffImageType(wav)).toBeNull();
+  });
+});
+
+describe("variantPath", () => {
+  const stored = "vendor-id/listing-id/abc.webp";
+
+  it("leaves the full size at the stored path", () => {
+    expect(variantPath(stored, "full")).toBe(stored);
+  });
+
+  it("puts renditions beside the original", () => {
+    expect(variantPath(stored, "card")).toBe(
+      "vendor-id/listing-id/abc-card.webp",
+    );
+    expect(variantPath(stored, "thumb")).toBe(
+      "vendor-id/listing-id/abc-thumb.webp",
+    );
+  });
+
+  it("leaves pre-pipeline paths alone", () => {
+    // These were uploaded before renditions existed, so the sibling objects
+    // were never written and linking to them would 404.
+    expect(variantPath("v/l/abc.jpg", "card")).toBe("v/l/abc.jpg");
+    expect(variantPath("v/l/abc.png", "thumb")).toBe("v/l/abc.png");
+  });
+
+  it("does not treat the extension dot as a wildcard", () => {
+    expect(variantPath("v/l/abcxwebp", "card")).toBe("v/l/abcxwebp");
+  });
+});
+
+describe("allVariantPaths", () => {
+  it("lists every object a stored image occupies", () => {
+    expect(allVariantPaths("v/l/abc.webp").sort()).toEqual([
+      "v/l/abc-card.webp",
+      "v/l/abc-thumb.webp",
+      "v/l/abc.webp",
+    ]);
+  });
+
+  it("collapses to one entry for a pre-pipeline path", () => {
+    expect(allVariantPaths("v/l/abc.jpg")).toEqual(["v/l/abc.jpg"]);
   });
 });

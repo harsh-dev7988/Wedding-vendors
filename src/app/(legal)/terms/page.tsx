@@ -12,10 +12,8 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <article>
-      <p className="text-brand-text text-sm font-bold tracking-[0.16em] uppercase">
-        Policies
-      </p>
-      <h1 className="mt-2 text-4xl font-bold md:text-5xl">Terms of use</h1>
+      <p className="text-brand-text eyebrow">Policies</p>
+      <h1 className="type-title mt-2 md:text-5xl">Terms of use</h1>
       <p className="text-muted-foreground mt-3 text-sm">
         Last updated 25 August 2026.
       </p>

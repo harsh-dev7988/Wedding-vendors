@@ -2,7 +2,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
-    <main className="mx-auto max-w-5xl px-5 py-14 md:px-8" id="main-content">
+    // The resolved page owns #main-content; see ui/skeleton.tsx.
+    <main className="mx-auto max-w-5xl px-5 py-14 md:px-8">
       <p className="sr-only" role="status">
         Loading…
       </p>

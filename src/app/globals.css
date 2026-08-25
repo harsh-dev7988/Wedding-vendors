@@ -78,8 +78,58 @@ body {
 h1,
 h2,
 h3 {
-  font-family: var(--font-display), system-ui, sans-serif;
-  letter-spacing: -0.035em;
+  font-family: var(--font-display), Georgia, serif;
+  /* Fraunces is a high-contrast serif: the tight tracking that suited the old
+     grotesque closed its counters up and muddied it at display sizes. */
+  letter-spacing: -0.015em;
+  font-variation-settings:
+    "SOFT" 28,
+    "WONK" 1;
+  font-optical-sizing: auto;
+  text-wrap: balance;
+}
+
+/* Long-form paragraphs read better without a one-word last line. */
+p {
+  text-wrap: pretty;
+}
+
+/* One fluid step per level, so nothing needs a breakpoint to stay in
+   proportion between 320px and 1600px. */
+.type-display {
+  font-size: clamp(2.75rem, 1.6rem + 5.6vw, 6.5rem);
+  line-height: 0.94;
+  font-weight: 600;
+}
+
+.type-title {
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
+  line-height: 1.06;
+  font-weight: 600;
+}
+
+.type-heading {
+  font-size: clamp(1.5rem, 1.2rem + 1.1vw, 2rem);
+  line-height: 1.15;
+  font-weight: 600;
+}
+
+/* Small-caps eyebrow, used above every section title. */
+.eyebrow {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* An italic swash phrase inside a heading, for the one word worth stressing. */
+.type-accent {
+  font-style: italic;
+  font-variation-settings:
+    "SOFT" 60,
+    "WONK" 1;
+  color: var(--brand-text);
 }
 
 a,
@@ -126,6 +176,225 @@ footer :focus-visible {
 
 .skip-link:focus {
   transform: translateY(0);
+}
+
+/* Native selects render with the OS control on every platform, which clashed
+   badly with the rounded, cream surfaces everywhere else. `appearance: none`
+   plus an inline chevron gives one consistent field. The chevron is a data URI
+   so it needs no network request and survives the CSP. */
+.select-field {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23756542' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.25rem;
+  cursor: pointer;
+}
+
+.select-field:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Firefox keeps a focus ring inside the control without this. */
+.select-field:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 var(--foreground);
+}
+
+/* The dropdown list itself is OS-drawn; only its colours can be influenced. */
+.select-field option {
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+/* Bare selects sitting on a transparent parent still need the chevron. */
+.select-bare {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b83c00' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 0.9rem;
+  padding-right: 1.5rem;
+  cursor: pointer;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Motion
+   ---------------------------------------------------------------------------
+   Scroll reveals are done with CSS scroll-driven animations rather than a
+   motion library. A library would have turned every animated section into a
+   Client Component, and this application's whole performance story is that the
+   public pages are server-rendered and prerendered. This costs no JavaScript,
+   cannot cause a hydration mismatch, and where `animation-timeline` is not
+   supported the content is simply already visible — which is the correct
+   fallback, not a degraded one.
+   ------------------------------------------------------------------------ */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      /* Starts as the element enters and finishes a third of the way up, so it
+         has settled well before the reader reaches it. */
+      animation-range: entry 5% cover 28%;
+    }
+
+    .reveal-stagger > * {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 2% cover 26%;
+    }
+  }
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Cards lift on hover and settle on press. `will-change` is deliberately not
+   set: these are cheap transforms and promoting dozens of cards to their own
+   layer costs more than it saves. */
+.motion-lift {
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 200ms ease;
+}
+
+.motion-lift:hover {
+  transform: translateY(-4px);
+}
+
+.motion-lift:active {
+  transform: translateY(-1px);
+}
+
+/* Paired with `overflow-hidden` on the parent so the image grows inside its
+   frame instead of pushing the layout. */
+.motion-zoom {
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .motion-zoom {
+  transform: scale(1.045);
+}
+
+/* Underline that draws in from the left, for editorial text links. */
+.link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1.5px;
+  transition: background-size 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.link-underline:hover,
+.link-underline:focus-visible {
+  background-size: 100% 1.5px;
+}
+
+/* ---------------------------------------------------------------------------
+   Header
+   ---------------------------------------------------------------------------
+   Over the hero photograph the bar is transparent and its contents have to
+   invert. Doing it here rather than threading a `transparent` prop through
+   five components keeps the header markup a Server Component; only the
+   wrapper that reads scroll position is client-side.
+   ------------------------------------------------------------------------ */
+
+.header-link:hover,
+.header-link:focus-visible {
+  color: var(--brand-text);
+}
+
+.header-pill {
+  border-color: var(--border);
+}
+
+.header-pill:hover {
+  border-color: color-mix(in srgb, var(--brand-text) 40%, transparent);
+}
+
+header[data-transparent] .header-link:hover,
+header[data-transparent] .header-link:focus-visible,
+header[data-transparent] .header-accent {
+  color: var(--accent-gold);
+}
+
+header[data-transparent] .header-pill {
+  border-color: rgb(255 255 255 / 38%);
+  background: rgb(255 255 255 / 14%);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+
+header[data-transparent] .header-pill:hover {
+  border-color: rgb(255 255 255 / 70%);
+  background: rgb(255 255 255 / 22%);
+}
+
+/* ---------------------------------------------------------------------------
+   Full-bleed hero
+   ------------------------------------------------------------------------ */
+
+/* `100svh` rather than `100vh`: on mobile Safari the dynamic toolbar makes
+   `vh` taller than the visible viewport, which pushed the search field under
+   the browser chrome. Capped so the hero never dwarfs a short laptop screen. */
+.hero-full {
+  min-height: clamp(34rem, 100svh, 56rem);
+}
+
+/* Two stacked scrims. The vertical one anchors the headline; the radial one
+   keeps the centre of the photograph readable without flattening it to grey.
+   Together they hold white text above 7:1 over the darkest region of the
+   image and above 4.5:1 over the lightest. */
+.hero-scrim {
+  background:
+    linear-gradient(
+      180deg,
+      rgb(26 15 4 / 62%) 0%,
+      rgb(26 15 4 / 34%) 38%,
+      rgb(26 15 4 / 72%) 78%,
+      rgb(26 15 4 / 88%) 100%
+    ),
+    radial-gradient(
+      120% 80% at 50% 40%,
+      transparent 30%,
+      rgb(26 15 4 / 45%) 100%
+    );
+}
+
+/* Slow drift on the hero photograph. Pure decoration, so it is dropped
+   entirely under reduced motion by the block at the end of this file. */
+@keyframes hero-drift {
+  from {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.14) translate3d(0, -1.5%, 0);
+  }
+}
+
+.hero-drift {
+  animation: hero-drift 24s ease-in-out infinite alternate;
 }
 
 .hero-glow {
@@ -181,6 +450,20 @@ footer :focus-visible {
   .motion-lift:hover,
   .motion-zoom:hover,
   .group:hover .motion-zoom {
+    transform: none !important;
+  }
+
+  /* The hero photograph must not drift, and a reveal must never leave content
+     stuck at `opacity: 0` if its animation is cancelled. */
+  .hero-drift {
+    animation: none !important;
+    transform: scale(1.06);
+  }
+
+  .reveal,
+  .reveal-stagger > * {
+    animation: none !important;
+    opacity: 1 !important;
     transform: none !important;
   }
 }

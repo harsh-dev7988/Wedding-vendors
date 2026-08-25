@@ -18,26 +18,31 @@ import { cn } from "@/lib/utils";
 export function SubmitButton({
   children,
   className,
+  disabled = false,
   name,
   pendingLabel = "Working…",
   value,
 }: {
   children: ReactNode;
   className?: string;
+  /** Blocks submission for a reason of the caller's own, such as a file still
+   * being prepared. Combined with, not a replacement for, the pending state. */
+  disabled?: boolean;
   name?: string;
   pendingLabel?: string;
   value?: string;
 }) {
   const { pending } = useFormStatus();
+  const blocked = pending || disabled;
 
   return (
     <button
-      aria-disabled={pending}
+      aria-disabled={blocked}
       className={cn(
         "inline-flex items-center justify-center gap-2 font-bold transition disabled:cursor-progress disabled:opacity-70",
         className,
       )}
-      disabled={pending}
+      disabled={blocked}
       name={name}
       type="submit"
       value={value}

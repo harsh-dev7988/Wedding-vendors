@@ -49,11 +49,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
+  // City hubs are judged on the city's whole supply, not one category's, so a
+  // city with listings spread thinly across five categories can still be worth
+  // submitting even when no single category page is.
+  const cityTotals = new Map<string, number>();
+  for (const entry of supply) {
+    cityTotals.set(
+      entry.citySlug,
+      (cityTotals.get(entry.citySlug) ?? 0) + entry.total,
+    );
+  }
+  const cityHubs: MetadataRoute.Sitemap = [...cityTotals]
+    .filter(([, total]) => isIndexableDirectory(total))
+    .map(([citySlug]) => ({
+      url: `${siteConfig.url}/vendors/${citySlug}`,
+      lastModified: now,
+      priority: 0.75,
+    }));
+
   const vendors: MetadataRoute.Sitemap = listings.map((entry) => ({
     url: `${siteConfig.url}/vendor/${entry.slug}`,
     lastModified: new Date(entry.updatedAt),
     priority: 0.6,
   }));
 
-  return [...staticPages, ...directories, ...vendors];
+  return [...staticPages, ...cityHubs, ...directories, ...vendors];
 }

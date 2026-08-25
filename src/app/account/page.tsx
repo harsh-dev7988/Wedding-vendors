@@ -67,10 +67,8 @@ export default async function AccountPage({
     <main className="mx-auto max-w-5xl px-5 py-14 md:px-8" id="main-content">
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
-          <p className="text-brand-text text-sm font-bold tracking-[0.16em] uppercase">
-            Customer account
-          </p>
-          <h1 className="mt-2 text-5xl font-bold">Your wedding enquiries</h1>
+          <p className="text-brand-text eyebrow">Customer account</p>
+          <h1 className="type-display mt-2">Your wedding enquiries</h1>
           <p className="text-muted-foreground mt-3 text-sm">
             Signed in as {viewer.email ?? "verified customer"}
           </p>
@@ -124,7 +122,7 @@ export default async function AccountPage({
               aria-hidden="true"
               className="text-brand-text mx-auto"
             />
-            <h3 className="mt-4 text-2xl font-bold">No enquiries yet</h3>
+            <h3 className="type-heading mt-4">No enquiries yet</h3>
             <p className="text-muted-foreground mt-3">
               Contact an approved live vendor to start a private conversation.
             </p>
@@ -151,7 +149,7 @@ export default async function AccountPage({
                   <p className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
                     {STATUS_LABELS[lead.status] ?? lead.status}
                   </p>
-                  <h3 className="mt-2 text-2xl font-bold">
+                  <h3 className="type-heading mt-2">
                     {lead.listings ? (
                       <Link
                         className="hover:text-brand-text transition"

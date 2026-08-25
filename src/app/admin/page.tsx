@@ -130,10 +130,8 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
 
   return (
     <main className="mx-auto max-w-7xl px-5 py-12 md:px-8" id="main-content">
-      <p className="text-brand-text text-sm font-bold tracking-[0.16em] uppercase">
-        Operations
-      </p>
-      <h1 className="mt-2 text-5xl font-bold">Marketplace moderation</h1>
+      <p className="text-brand-text eyebrow">Operations</p>
+      <h1 className="type-display mt-2">Marketplace moderation</h1>
       <p className="text-muted-foreground mt-4 max-w-2xl leading-7">
         Approve identity-checked businesses, inspect complete listings, and
         publish only eligible reviews. Every control passes through a
@@ -170,7 +168,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       <section aria-labelledby="vendor-heading" className="mt-12">
         <div className="flex items-center gap-3">
           <ShieldCheck aria-hidden="true" className="text-brand-text" />
-          <h2 className="text-3xl font-bold" id="vendor-heading">
+          <h2 className="type-title" id="vendor-heading">
             Vendor verification
           </h2>
         </div>
@@ -189,7 +187,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                 <p className="text-muted-foreground text-xs font-bold uppercase">
                   {vendor.status.replaceAll("_", " ")}
                 </p>
-                <h3 className="mt-2 text-2xl font-bold">
+                <h3 className="type-heading mt-2">
                   <Link
                     className="hover:text-brand-text transition"
                     href={`/admin/vendors/${vendor.id}`}
@@ -225,7 +223,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       <section aria-labelledby="listing-heading" className="mt-14">
         <div className="flex items-center gap-3">
           <ClipboardCheck aria-hidden="true" className="text-brand-text" />
-          <h2 className="text-3xl font-bold" id="listing-heading">
+          <h2 className="type-title" id="listing-heading">
             Listing review
           </h2>
         </div>
@@ -248,7 +246,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                   </span>
                 )}
               </p>
-              <h3 className="mt-2 text-2xl font-bold">
+              <h3 className="type-heading mt-2">
                 <Link
                   className="hover:text-brand-text transition"
                   href={`/admin/listings/${listing.id}`}
@@ -284,7 +282,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       <section aria-labelledby="review-heading" className="mt-14">
         <div className="flex items-center gap-3">
           <MessageSquareText aria-hidden="true" className="text-brand-text" />
-          <h2 className="text-3xl font-bold" id="review-heading">
+          <h2 className="type-title" id="review-heading">
             Review moderation
           </h2>
         </div>

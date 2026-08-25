@@ -76,10 +76,8 @@ export default async function EnquiryDetailPage({
         </StatusBanner>
       )}
 
-      <p className="text-brand-text mt-9 text-sm font-bold tracking-[0.16em] uppercase">
-        Private contact
-      </p>
-      <h1 className="mt-3 text-5xl font-bold">
+      <p className="text-brand-text eyebrow mt-9">Private contact</p>
+      <h1 className="type-display mt-3">
         {lead.listings?.title ?? "Vendor contact"}
       </h1>
       <p className="text-muted-foreground mt-4">
@@ -92,7 +90,7 @@ export default async function EnquiryDetailPage({
       >
         <div className="flex items-center gap-3">
           <ShieldCheck aria-hidden="true" className="text-success" />
-          <h2 className="text-2xl font-bold" id="contact-heading">
+          <h2 className="type-heading" id="contact-heading">
             Revealed for this enquiry
           </h2>
         </div>

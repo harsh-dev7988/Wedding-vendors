@@ -66,10 +66,8 @@ export default async function NotificationsPage({
 
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-brand-text text-sm font-bold tracking-[0.16em] uppercase">
-            Account
-          </p>
-          <h1 className="mt-2 text-5xl font-bold">Notifications</h1>
+          <p className="text-brand-text eyebrow">Account</p>
+          <h1 className="type-display mt-2">Notifications</h1>
         </div>
         {unread > 0 && (
           <form action={markAllRead}>
@@ -92,7 +90,7 @@ export default async function NotificationsPage({
       {notifications.length === 0 ? (
         <div className="border-border mt-10 rounded-[2rem] border border-dashed p-10 text-center">
           <Bell aria-hidden="true" className="text-brand-text mx-auto" />
-          <h2 className="mt-4 text-2xl font-bold">Nothing yet</h2>
+          <h2 className="type-heading mt-4">Nothing yet</h2>
           <p className="text-muted-foreground mt-3">
             Enquiries, replies and moderation decisions will appear here.
           </p>

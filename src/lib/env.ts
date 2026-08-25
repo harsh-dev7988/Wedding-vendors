@@ -7,6 +7,20 @@ export function isSupabaseConfigured() {
   );
 }
 
+/**
+ * Google sign-in is opt-in because enabling it takes two steps outside this
+ * repository — an OAuth client in Google Cloud and the provider toggle in the
+ * Supabase dashboard. Without the flag the button is hidden rather than
+ * offered and then failing, which is what happens when the provider is not
+ * actually enabled on the project.
+ */
+export function isGoogleAuthEnabled() {
+  return (
+    isSupabaseConfigured() &&
+    process.env.NEXT_PUBLIC_AUTH_GOOGLE_ENABLED === "1"
+  );
+}
+
 export function getSupabasePublicEnv() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;

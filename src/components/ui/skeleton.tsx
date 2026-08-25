@@ -12,7 +12,10 @@ export function Skeleton({ className }: { className?: string }) {
 
 export function DirectorySkeleton() {
   return (
-    <main className="mx-auto max-w-7xl px-5 py-12 md:px-8" id="main-content">
+    // No id="main-content" here: the streamed response carries both this
+    // fallback and the resolved page, so duplicating the id left the skip
+    // link pointing at a skeleton that was about to be replaced.
+    <main className="mx-auto max-w-7xl px-5 py-12 md:px-8">
       <p className="sr-only" role="status">
         Loading listings…
       </p>

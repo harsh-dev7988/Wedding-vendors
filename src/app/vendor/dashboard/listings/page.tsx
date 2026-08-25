@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ClipboardList, Plus, Trash2, Upload } from "lucide-react";
+import { ClipboardList, Plus, Trash2 } from "lucide-react";
 
 import { FormAlert, StatusBanner } from "@/components/ui/feedback";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -9,12 +9,10 @@ import { launchCategories } from "@/config/categories";
 import { metros } from "@/data/seed/marketplace";
 import { requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { mediaUrlResolver } from "@/lib/supabase/media";
 
-import {
-  deleteListingImage,
-  submitListingForReview,
-  uploadListingImage,
-} from "../actions";
+import { deleteListingImage, submitListingForReview } from "../actions";
+import { ImageUploadForm } from "../image-upload-form";
 import { ListingForm } from "../listing-form";
 
 export const dynamic = "force-dynamic";
@@ -89,7 +87,7 @@ export default async function VendorListingsPage({
         className="mx-auto max-w-3xl px-5 py-16 text-center md:px-8"
         id="main-content"
       >
-        <h1 className="text-4xl font-bold">No business yet</h1>
+        <h1 className="type-title">No business yet</h1>
         <p className="text-muted-foreground mt-4 leading-7">
           Create a vendor workspace before adding listings.
         </p>
@@ -152,8 +150,7 @@ export default async function VendorListingsPage({
     storage_path: string;
   }>;
 
-  const publicUrl = (path: string) =>
-    supabase.storage.from("vendor-media").getPublicUrl(path).data.publicUrl;
+  const publicUrl = mediaUrlResolver(supabase, "thumb");
 
   const notice = typeof params.notice === "string" ? params.notice : null;
   const errorFlag = typeof params.error === "string" ? params.error : null;
@@ -168,7 +165,7 @@ export default async function VendorListingsPage({
     <main className="mx-auto max-w-7xl px-5 py-10 md:px-8" id="main-content">
       <div className="flex items-center gap-3">
         <ClipboardList aria-hidden="true" className="text-brand-text" />
-        <h1 className="text-4xl font-bold">Listings</h1>
+        <h1 className="type-title">Listings</h1>
       </div>
 
       <div className="mt-6 space-y-3">
@@ -186,7 +183,7 @@ export default async function VendorListingsPage({
         <section aria-labelledby="create-heading">
           <div className="flex items-center gap-3">
             <Plus aria-hidden="true" className="text-brand-text" />
-            <h2 className="text-2xl font-bold" id="create-heading">
+            <h2 className="type-heading" id="create-heading">
               Create a listing
             </h2>
           </div>
@@ -201,7 +198,7 @@ export default async function VendorListingsPage({
         </section>
 
         <section aria-labelledby="existing-heading">
-          <h2 className="text-2xl font-bold" id="existing-heading">
+          <h2 className="type-heading" id="existing-heading">
             Your listings ({listings.length})
           </h2>
 
@@ -335,47 +332,7 @@ export default async function VendorListingsPage({
                       </ul>
                     )}
 
-                    <form
-                      action={uploadListingImage}
-                      className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
-                    >
-                      <input
-                        name="listingId"
-                        type="hidden"
-                        value={listing.id}
-                      />
-                      <label className="grid gap-1 text-xs font-bold">
-                        Image file
-                        <input
-                          accept="image/jpeg,image/png,image/webp"
-                          className="border-border min-h-11 rounded-xl border p-2 text-xs"
-                          name="image"
-                          required
-                          type="file"
-                        />
-                      </label>
-                      <label className="grid gap-1 text-xs font-bold">
-                        Alt text
-                        <input
-                          className="border-border min-h-11 rounded-xl border px-3 text-sm"
-                          maxLength={240}
-                          minLength={5}
-                          name="altText"
-                          placeholder="Describe the image"
-                          required
-                        />
-                      </label>
-                      <SubmitButton
-                        className="border-border hover:border-brand-text/50 min-h-11 self-end rounded-xl border px-4 text-sm"
-                        pendingLabel="Uploading…"
-                      >
-                        <Upload aria-hidden="true" size={15} /> Upload
-                      </SubmitButton>
-                    </form>
-                    <p className="text-muted-foreground mt-2 text-xs">
-                      JPEG, PNG or WebP up to 5 MB. At least one image is
-                      required before a moderator can publish.
-                    </p>
+                    <ImageUploadForm listingId={listing.id} />
                   </div>
                 </article>
               );

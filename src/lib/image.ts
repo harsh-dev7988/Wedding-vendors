@@ -36,3 +36,46 @@ export function sniffImageType(bytes: Uint8Array): SniffResult {
 
   return null;
 }
+
+/**
+ * Rendered sizes. Every upload is re-encoded into all three, so a directory
+ * card never has to download a 5 MB original to fill a 400 px slot.
+ */
+export const IMAGE_VARIANTS = {
+  card: 800,
+  full: 2000,
+  thumb: 400,
+} as const;
+
+export type ImageVariant = keyof typeof IMAGE_VARIANTS;
+
+/** Extension every stored object uses once it has been through the pipeline. */
+export const STORED_IMAGE_EXTENSION = "webp";
+export const STORED_IMAGE_CONTENT_TYPE = "image/webp";
+
+/**
+ * Storage key for one variant of a stored image.
+ *
+ * `listing_media.storage_path` holds the full-size key; the smaller renditions
+ * live beside it under a suffix. Anything that predates the pipeline is still
+ * a `.jpg` or `.png` with no siblings on disk, so those paths are returned
+ * unchanged rather than pointing at an object that was never written.
+ */
+export function variantPath(storagePath: string, variant: ImageVariant) {
+  const suffix = `.${STORED_IMAGE_EXTENSION}`;
+  if (variant === "full") return storagePath;
+  if (!storagePath.endsWith(suffix)) return storagePath;
+  return `${storagePath.slice(0, -suffix.length)}-${variant}${suffix}`;
+}
+
+/**
+ * Every object one stored image occupies, de-duplicated.
+ *
+ * Deleting a listing image has to remove the renditions too, or the bucket
+ * accumulates orphans that are still publicly fetchable. Legacy paths collapse
+ * to a single entry because `variantPath` leaves them alone.
+ */
+export function allVariantPaths(storagePath: string) {
+  const keys = Object.keys(IMAGE_VARIANTS) as ImageVariant[];
+  return [...new Set(keys.map((variant) => variantPath(storagePath, variant)))];
+}

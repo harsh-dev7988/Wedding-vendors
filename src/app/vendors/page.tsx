@@ -8,6 +8,7 @@ import {
   getMetroBySlug,
   searchVendors,
 } from "@/data/marketplace";
+import { parsePage } from "@/lib/pagination";
 
 export const metadata: Metadata = {
   title: "Wedding vendors across India",
@@ -21,11 +22,6 @@ export const metadata: Metadata = {
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
-}
-
-function parsePage(value: string | undefined) {
-  const parsed = Number.parseInt(value ?? "1", 10);
-  return Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, 500) : 1;
 }
 
 /** Every numeric filter is clamped, so a hand-edited URL cannot skew a query. */
@@ -52,7 +48,7 @@ export default async function VendorsPage({
   const requestedCity = first(raw.city);
   const requestedCategory = first(raw.category);
   const query = first(raw.q)?.slice(0, 80);
-  const page = parsePage(first(raw.page));
+  const page = parsePage(raw.page);
   const minPrice = parseNumber(first(raw.minPrice), 100000000);
   const maxPrice = parseNumber(first(raw.maxPrice), 100000000);
   const minRating = parseNumber(first(raw.minRating), 5);
@@ -127,18 +123,6 @@ export default async function VendorsPage({
         verifiedOnly,
       }}
       facets={facets}
-      searchParams={{
-        category: categorySlug,
-        city,
-        maxPrice: maxPrice ? String(maxPrice) : undefined,
-        minPrice: minPrice ? String(minPrice) : undefined,
-        minRating: minRating ? String(minRating) : undefined,
-        pincode,
-        q: query,
-        radiusKm: radiusKm ? String(radiusKm) : undefined,
-        sort,
-        verifiedOnly: verifiedOnly ? "1" : undefined,
-      }}
       title={`${subject}${location}`}
       total={live.total}
       vendors={vendors}

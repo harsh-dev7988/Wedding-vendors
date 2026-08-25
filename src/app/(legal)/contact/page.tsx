@@ -11,10 +11,8 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <article>
-      <p className="text-brand-text text-sm font-bold tracking-[0.16em] uppercase">
-        Support
-      </p>
-      <h1 className="mt-2 text-4xl font-bold md:text-5xl">Contact us</h1>
+      <p className="text-brand-text eyebrow">Support</p>
+      <h1 className="type-title mt-2 md:text-5xl">Contact us</h1>
 
       <p className="border-brand-text/25 bg-brand-soft text-brand-text mt-6 rounded-2xl border p-4 text-sm font-semibold">
         Replace the bracketed placeholders with real, monitored addresses before

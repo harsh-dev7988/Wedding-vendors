@@ -48,7 +48,7 @@ export function AccountControl() {
   return (
     <div className="flex items-center gap-2">
       <Link
-        className="border-border hover:border-brand-text/40 inline-flex h-11 items-center gap-2 rounded-full border bg-white px-3 text-sm font-bold transition"
+        className="header-pill inline-flex h-11 items-center gap-2 rounded-full border bg-white px-3 text-sm font-bold transition"
         href="/account"
       >
         <UserRound aria-hidden="true" size={17} />

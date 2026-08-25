@@ -45,7 +45,7 @@ export default async function AccountReviewsPage() {
     <main className="mx-auto max-w-3xl px-5 py-10 md:px-8" id="main-content">
       <div className="flex items-center gap-3">
         <Star aria-hidden="true" className="text-brand-text" />
-        <h1 className="text-4xl font-bold">Your reviews</h1>
+        <h1 className="type-title">Your reviews</h1>
       </div>
       <p className="text-muted-foreground mt-3 text-sm leading-6">
         {reviews.length === 0

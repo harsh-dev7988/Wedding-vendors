@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  app:
+    name: Typecheck, lint, unit tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run format:check
+      # The build needs the public Supabase values to prerender the directory.
+      # These are browser-visible by design; see .env.example.
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+
+  database:
+    name: pgTAP
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The CLI starts the whole Supabase stack in Docker, which the runner
+      # already has. That is what makes this possible here and not on a
+      # developer machine without Docker Desktop.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      # `db start` applies supabase/migrations in order against a fresh
+      # Postgres 17, so a migration that cannot apply fails here rather than in
+      # production.
+      - run: supabase db start
+      - run: supabase test db
+      # Surfaces drift between the migrations and what they actually produce.
+      - run: supabase db diff --local --schema public

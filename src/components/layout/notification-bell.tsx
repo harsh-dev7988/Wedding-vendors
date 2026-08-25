@@ -60,7 +60,7 @@ export function NotificationBell() {
 
   return (
     <Link
-      className="border-border hover:border-brand-text/40 relative inline-flex h-11 w-11 items-center justify-center rounded-full border bg-white transition"
+      className="header-pill relative inline-flex h-11 w-11 items-center justify-center rounded-full border bg-white transition"
       href="/account/notifications"
     >
       <Bell aria-hidden="true" size={18} />

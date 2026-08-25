@@ -37,9 +37,7 @@ export function SiteFooter() {
           </p>
         </div>
         <div>
-          <h2 className="text-accent-gold text-sm font-bold tracking-[0.16em] uppercase">
-            Categories
-          </h2>
+          <h2 className="text-accent-gold eyebrow">Categories</h2>
           <ul className="mt-4 space-y-1 text-sm text-white/80">
             {categories.map((category) => (
               <li key={category.slug}>
@@ -54,9 +52,7 @@ export function SiteFooter() {
           </ul>
         </div>
         <div>
-          <h2 className="text-accent-gold text-sm font-bold tracking-[0.16em] uppercase">
-            Company
-          </h2>
+          <h2 className="text-accent-gold eyebrow">Company</h2>
           <ul className="mt-4 space-y-1 text-sm text-white/80">
             {POLICY_LINKS.map((link) => (
               <li key={link.href}>
@@ -71,15 +67,13 @@ export function SiteFooter() {
           </ul>
         </div>
         <div>
-          <h2 className="text-accent-gold text-sm font-bold tracking-[0.16em] uppercase">
-            Popular cities
-          </h2>
+          <h2 className="text-accent-gold eyebrow">Popular cities</h2>
           <ul className="mt-4 grid grid-cols-2 gap-x-3 text-sm text-white/80">
             {metros.map((metro) => (
               <li key={metro.slug}>
                 <Link
                   className="inline-flex min-h-11 items-center hover:text-white"
-                  href={`/vendors?city=${metro.slug}`}
+                  href={`/vendors/${metro.slug}`}
                 >
                   {metro.name}
                 </Link>

@@ -145,12 +145,10 @@ export default async function AdminVendorDetailPage({
         <ArrowLeft aria-hidden="true" size={16} /> Back to moderation
       </Link>
 
-      <p className="text-brand-text mt-6 text-sm font-bold tracking-[0.16em] uppercase">
+      <p className="text-brand-text eyebrow mt-6">
         {vendor.status.replaceAll("_", " ")}
       </p>
-      <h1 className="mt-2 text-4xl font-bold md:text-5xl">
-        {vendor.business_name}
-      </h1>
+      <h1 className="type-title mt-2 md:text-5xl">{vendor.business_name}</h1>
       {vendor.legal_name && (
         <p className="text-muted-foreground mt-2">
           Registered as {vendor.legal_name}
@@ -171,7 +169,7 @@ export default async function AdminVendorDetailPage({
       <section aria-labelledby="contact-heading" className="mt-10">
         <div className="flex items-center gap-3">
           <LockKeyhole aria-hidden="true" className="text-brand-text" />
-          <h2 className="text-2xl font-bold" id="contact-heading">
+          <h2 className="type-heading" id="contact-heading">
             Private contact details
           </h2>
         </div>
@@ -213,7 +211,7 @@ export default async function AdminVendorDetailPage({
       <section aria-labelledby="evidence-heading" className="mt-10">
         <div className="flex items-center gap-3">
           <FileText aria-hidden="true" className="text-brand-text" />
-          <h2 className="text-2xl font-bold" id="evidence-heading">
+          <h2 className="type-heading" id="evidence-heading">
             Verification evidence ({signedDocuments.length})
           </h2>
         </div>
@@ -257,7 +255,7 @@ export default async function AdminVendorDetailPage({
       </section>
 
       <section aria-labelledby="listings-heading" className="mt-10">
-        <h2 className="text-2xl font-bold" id="listings-heading">
+        <h2 className="type-heading" id="listings-heading">
           Listings ({listings.length})
         </h2>
         {listings.length === 0 ? (
@@ -292,7 +290,7 @@ export default async function AdminVendorDetailPage({
       </section>
 
       <section aria-labelledby="team-heading" className="mt-10">
-        <h2 className="text-2xl font-bold" id="team-heading">
+        <h2 className="type-heading" id="team-heading">
           Team ({members.length})
         </h2>
         <ul className="text-muted-foreground mt-4 space-y-1 text-sm">
@@ -308,7 +306,7 @@ export default async function AdminVendorDetailPage({
       <section aria-labelledby="decision-heading" className="mt-10">
         <div className="flex items-center gap-3">
           <ShieldCheck aria-hidden="true" className="text-brand-text" />
-          <h2 className="text-2xl font-bold" id="decision-heading">
+          <h2 className="type-heading" id="decision-heading">
             Verification decision
           </h2>
         </div>

@@ -92,7 +92,7 @@ export function MobileMenu({
         aria-controls="mobile-navigation"
         aria-expanded={open}
         aria-label={open ? "Close navigation menu" : "Open navigation menu"}
-        className="border-border inline-flex h-11 w-11 items-center justify-center rounded-full border bg-white"
+        className="header-pill inline-flex h-11 w-11 items-center justify-center rounded-full border bg-white"
         onClick={() => setOpen(!open)}
         ref={toggleRef}
         type="button"

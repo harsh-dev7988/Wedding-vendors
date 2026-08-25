@@ -58,7 +58,7 @@ export default function ForVendorsPage() {
       <section className="bg-foreground on-dark text-white">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 md:px-8 lg:grid-cols-2 lg:items-center lg:py-24">
           <div>
-            <p className="text-accent-gold text-sm font-bold tracking-[0.16em] uppercase">
+            <p className="text-accent-gold eyebrow">
               For wedding professionals
             </p>
             <h1 className="mt-4 text-5xl leading-tight font-bold md:text-6xl">
@@ -89,10 +89,8 @@ export default function ForVendorsPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-20 md:px-8">
-        <p className="text-brand-text text-sm font-bold tracking-[0.16em] uppercase">
-          Available today
-        </p>
-        <h2 className="mt-3 text-4xl font-bold">
+        <p className="text-brand-text eyebrow">Available today</p>
+        <h2 className="type-title mt-3">
           What the vendor workspace does right now
         </h2>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -113,7 +111,7 @@ export default function ForVendorsPage() {
 
       <section className="border-border bg-muted/55 border-t">
         <div className="mx-auto max-w-7xl px-5 py-16 md:px-8">
-          <h2 className="text-3xl font-bold">Planned, not yet built</h2>
+          <h2 className="type-title">Planned, not yet built</h2>
           <p className="text-muted-foreground mt-3 max-w-2xl leading-7">
             These are on the roadmap. They are listed here so you can judge the
             product on what it does today rather than what it intends to do.

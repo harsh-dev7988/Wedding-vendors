@@ -32,8 +32,11 @@ import {
   getVendorBySlug,
 } from "@/data/marketplace";
 import { isPreviewVendor, type PublicVendor } from "@/domain/marketplace";
+import { getViewer } from "@/lib/auth";
 import { formatEventDate } from "@/lib/datetime";
 import { breadcrumbJsonLd, vendorJsonLd } from "@/lib/seo/structured-data";
+
+import { ReportListingForm } from "./report-form";
 import {
   formatReviewCount,
   formatStartingPrice,
@@ -97,6 +100,7 @@ export default async function VendorProfilePage({
   const category = getCategoryBySlug(vendor.categorySlug);
   const price = formatStartingPrice(vendor.startingPrice, vendor.priceUnit);
 
+  const viewer = await getViewer();
   const [related, reviews] = await Promise.all([
     preview
       ? Promise.resolve(getRelatedPreviewVendors(vendor.slug))
@@ -122,7 +126,7 @@ export default async function VendorProfilePage({
     : breadcrumbJsonLd([
         { name: "Vendors", path: "/vendors" },
         ...(metro
-          ? [{ name: metro.name, path: `/vendors?city=${metro.slug}` }]
+          ? [{ name: metro.name, path: `/vendors/${metro.slug}` }]
           : []),
         ...(metro && category
           ? [
@@ -152,7 +156,7 @@ export default async function VendorProfilePage({
             <>
               <Link
                 className="hover:text-foreground"
-                href={`/vendors?city=${metro.slug}`}
+                href={`/vendors/${metro.slug}`}
               >
                 {metro.name}
               </Link>
@@ -266,9 +270,7 @@ export default async function VendorProfilePage({
           <div className="border-border flex flex-col justify-between gap-5 border-b pb-8 sm:flex-row sm:items-start">
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-4xl font-bold md:text-5xl">
-                  {vendor.name}
-                </h1>
+                <h1 className="type-title md:text-5xl">{vendor.name}</h1>
                 {vendor.verified && (
                   <span className="text-success inline-flex items-center gap-1 rounded-full bg-[color:var(--success-soft)] px-3 py-1 text-xs font-bold">
                     <BadgeCheck aria-hidden="true" size={15} /> Verified
@@ -331,12 +333,8 @@ export default async function VendorProfilePage({
           </div>
 
           <article className="py-9">
-            <p className="text-brand-text text-sm font-bold tracking-[0.16em] uppercase">
-              About
-            </p>
-            <h2 className="mt-2 text-3xl font-bold">
-              A closer look at {vendor.name}
-            </h2>
+            <p className="text-brand-text eyebrow">About</p>
+            <h2 className="type-title mt-2">A closer look at {vendor.name}</h2>
             <p className="text-muted-foreground mt-5 max-w-3xl leading-8 whitespace-pre-wrap">
               {vendor.description}
             </p>
@@ -364,7 +362,7 @@ export default async function VendorProfilePage({
               aria-labelledby="reviews-heading"
               className="border-border border-t py-9"
             >
-              <h2 className="text-3xl font-bold" id="reviews-heading">
+              <h2 className="type-title" id="reviews-heading">
                 Reviews
               </h2>
               {reviews.length === 0 ? (
@@ -404,6 +402,15 @@ export default async function VendorProfilePage({
                 </ul>
               )}
             </section>
+          )}
+
+          {/* Preview fixtures are fictional, so there is nothing to report and
+              nothing a moderator could act on. */}
+          {!preview && vendor.listingId && (
+            <ReportListingForm
+              listingId={vendor.listingId}
+              signedIn={Boolean(viewer)}
+            />
           )}
         </div>
 
@@ -459,7 +466,7 @@ export default async function VendorProfilePage({
       {related.length > 0 && (
         <section className="border-border bg-muted/45 border-t">
           <div className="mx-auto max-w-7xl px-5 py-16 md:px-8">
-            <h2 className="text-3xl font-bold">You may also like</h2>
+            <h2 className="type-title">You may also like</h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {related.map((item) => (
                 <VendorCard headingLevel="h3" key={item.slug} vendor={item} />

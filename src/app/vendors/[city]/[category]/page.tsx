@@ -114,7 +114,7 @@ export default async function CityCategoryPage({
       <JsonLd
         data={breadcrumbJsonLd([
           { name: "Vendors", path: "/vendors" },
-          { name: metro.name, path: `/vendors?city=${metro.slug}` },
+          { name: metro.name, path: `/vendors/${metro.slug}` },
           { name: categoryDetails.name, path },
         ])}
       />

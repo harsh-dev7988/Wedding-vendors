@@ -51,10 +51,8 @@ export default async function AccountSettingsPage() {
         <ArrowLeft aria-hidden="true" size={16} /> Back to your enquiries
       </Link>
 
-      <p className="text-brand-text mt-6 text-sm font-bold tracking-[0.16em] uppercase">
-        Account
-      </p>
-      <h1 className="mt-2 text-5xl font-bold">Settings</h1>
+      <p className="text-brand-text eyebrow mt-6">Account</p>
+      <h1 className="type-display mt-2">Settings</h1>
       <p className="text-muted-foreground mt-3 text-sm">
         Signed in as {viewer.email ?? "verified customer"}
       </p>
@@ -64,7 +62,7 @@ export default async function AccountSettingsPage() {
         className="border-border mt-10 rounded-3xl border bg-white p-6 md:p-8"
       >
         <h2
-          className="flex items-center gap-3 text-2xl font-bold"
+          className="type-heading flex items-center gap-3"
           id="profile-heading"
         >
           <UserRound aria-hidden="true" className="text-brand-text" size={20} />
@@ -77,10 +75,7 @@ export default async function AccountSettingsPage() {
         aria-labelledby="email-heading"
         className="border-border mt-6 rounded-3xl border bg-white p-6 md:p-8"
       >
-        <h2
-          className="flex items-center gap-3 text-2xl font-bold"
-          id="email-heading"
-        >
+        <h2 className="type-heading flex items-center gap-3" id="email-heading">
           <Mail aria-hidden="true" className="text-brand-text" size={20} />
           Email preferences
         </h2>
@@ -106,7 +101,7 @@ export default async function AccountSettingsPage() {
         className="border-brand-text/25 mt-6 rounded-3xl border bg-white p-6 md:p-8"
       >
         <h2
-          className="flex items-center gap-3 text-2xl font-bold"
+          className="type-heading flex items-center gap-3"
           id="danger-heading"
         >
           <TriangleAlert

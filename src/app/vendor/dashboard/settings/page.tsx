@@ -72,10 +72,8 @@ export default async function VendorSettingsPage() {
         <ArrowLeft aria-hidden="true" size={16} /> Back to the dashboard
       </Link>
 
-      <p className="text-brand-text mt-6 text-sm font-bold tracking-[0.16em] uppercase">
-        Business settings
-      </p>
-      <h1 className="mt-2 text-5xl font-bold">Your business details</h1>
+      <p className="text-brand-text eyebrow mt-6">Business settings</p>
+      <h1 className="type-display mt-2">Your business details</h1>
 
       {vendors.length === 0 ? (
         <p className="text-muted-foreground mt-6 leading-7">
@@ -96,7 +94,7 @@ export default async function VendorSettingsPage() {
               className="mt-10"
               key={vendor.id}
             >
-              <h2 className="text-2xl font-bold" id={`settings-${vendor.id}`}>
+              <h2 className="type-heading" id={`settings-${vendor.id}`}>
                 {vendor.business_name}
               </h2>
               <p className="text-muted-foreground mt-1 text-xs font-bold tracking-widest uppercase">

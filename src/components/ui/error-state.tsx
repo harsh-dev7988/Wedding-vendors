@@ -31,10 +31,8 @@ export function ErrorState({
       className="mx-auto flex min-h-[65vh] max-w-3xl flex-col items-center justify-center px-5 py-20 text-center"
       id="main-content"
     >
-      <p className="text-brand-text text-sm font-bold tracking-[0.16em] uppercase">
-        Something went wrong
-      </p>
-      <h1 className="mt-4 text-4xl font-bold sm:text-5xl">{title}</h1>
+      <p className="text-brand-text eyebrow">Something went wrong</p>
+      <h1 className="type-title mt-4 sm:text-5xl">{title}</h1>
       <p className="text-muted-foreground mt-5 leading-7">{description}</p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         <button

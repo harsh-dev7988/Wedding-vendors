@@ -74,7 +74,7 @@ export function ListingForm({
       >
         Business
         <select
-          className="border-border min-h-12 rounded-xl border px-3 font-medium"
+          className="border-border select-field min-h-12 rounded-xl border px-3 font-medium"
           defaultValue={value("vendorId")}
           disabled={mode === "edit"}
           id={`${prefix}-vendorId`}
@@ -99,7 +99,7 @@ export function ListingForm({
         >
           Category
           <select
-            className="border-border min-h-12 rounded-xl border px-3 font-medium"
+            className="border-border select-field min-h-12 rounded-xl border px-3 font-medium"
             defaultValue={value("categorySlug")}
             id={`${prefix}-categorySlug`}
             name="categorySlug"
@@ -118,7 +118,7 @@ export function ListingForm({
         >
           Primary city
           <select
-            className="border-border min-h-12 rounded-xl border px-3 font-medium"
+            className="border-border select-field min-h-12 rounded-xl border px-3 font-medium"
             defaultValue={value("citySlug")}
             id={`${prefix}-citySlug`}
             name="citySlug"
@@ -241,7 +241,7 @@ export function ListingForm({
         >
           Price unit
           <select
-            className="border-border min-h-12 rounded-xl border px-3 font-medium"
+            className="border-border select-field min-h-12 rounded-xl border px-3 font-medium"
             defaultValue={value("priceUnit") || "on_request"}
             id={`${prefix}-priceUnit`}
             name="priceUnit"

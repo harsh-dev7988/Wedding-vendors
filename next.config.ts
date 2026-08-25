@@ -49,6 +49,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   experimental: { serverActions: { bodySizeLimit: "6mb" } },
   images: {
+    // Next 16 only honours a `quality` prop whose value is listed here; an
+    // unlisted one silently falls back to 75. The hero sources were generated
+    // at 82 and were being re-encoded down.
+    qualities: [75, 82],
     remotePatterns: supabaseUrl
       ? [new URL("/storage/v1/object/public/vendor-media/**", supabaseUrl)]
       : [],

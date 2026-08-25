@@ -64,7 +64,7 @@ export function CategoryMenu({
       <button
         aria-controls="category-menu"
         aria-expanded={open}
-        className="hover:text-brand-text inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold transition"
+        className="header-link inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold transition"
         onClick={() => setOpenPath(open ? null : pathname)}
         ref={toggleRef}
         type="button"
@@ -120,7 +120,10 @@ export function CategoryMenu({
                   <li key={city.slug}>
                     <Link
                       className="hover:bg-muted flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-semibold transition"
-                      href={`/vendors?city=${city.slug}`}
+                      // The city hub, not `/vendors?city=…`: the search page is
+                      // noindex by design, so linking it from every page sent
+                      // the site's internal link equity to a dead end.
+                      href={`/vendors/${city.slug}`}
                     >
                       <MapPin
                         aria-hidden="true"

@@ -9,7 +9,6 @@ import {
   Plus,
   Settings,
   Trash2,
-  Upload,
 } from "lucide-react";
 
 import { FormAlert, StatusBanner } from "@/components/ui/feedback";
@@ -19,13 +18,14 @@ import { metros } from "@/data/seed/marketplace";
 import { requireViewer } from "@/lib/auth";
 import { formatEventDate, formatIndiaDateTime } from "@/lib/datetime";
 import { createClient } from "@/lib/supabase/server";
+import { mediaUrlResolver } from "@/lib/supabase/media";
 
 import {
   deleteListingImage,
   submitListingForReview,
   updateLeadStatus,
-  uploadListingImage,
 } from "./actions";
+import { ImageUploadForm } from "./image-upload-form";
 import { ListingForm } from "./listing-form";
 
 export const dynamic = "force-dynamic";
@@ -134,9 +134,7 @@ export default async function VendorDashboardPage({
         id="main-content"
       >
         <Building2 aria-hidden="true" className="text-brand-text" size={36} />
-        <h1 className="mt-5 text-4xl font-bold">
-          Create your vendor workspace
-        </h1>
+        <h1 className="type-title mt-5">Create your vendor workspace</h1>
         <p className="text-muted-foreground mt-4 max-w-xl leading-7">
           Start with private business details, then add category-specific
           listings for moderation.
@@ -205,8 +203,7 @@ export default async function VendorDashboardPage({
   const notice = typeof params.notice === "string" ? params.notice : null;
   const errorFlag = typeof params.error === "string" ? params.error : null;
 
-  const publicUrl = (path: string) =>
-    supabase.storage.from("vendor-media").getPublicUrl(path).data.publicUrl;
+  const publicUrl = mediaUrlResolver(supabase, "thumb");
 
   const categoryOptions = launchCategories.map((category) => ({
     name: category.name,
@@ -221,10 +218,8 @@ export default async function VendorDashboardPage({
     <main className="mx-auto max-w-7xl px-5 py-12 md:px-8" id="main-content">
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
-          <p className="text-brand-text text-sm font-bold tracking-[0.16em] uppercase">
-            Vendor workspace
-          </p>
-          <h1 className="mt-2 text-5xl font-bold">Manage listings and leads</h1>
+          <p className="text-brand-text eyebrow">Vendor workspace</p>
+          <h1 className="type-display mt-2">Manage listings and leads</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
@@ -275,9 +270,7 @@ export default async function VendorDashboardPage({
               <p className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
                 {vendor.status.replaceAll("_", " ")}
               </p>
-              <h3 className="mt-3 text-2xl font-bold">
-                {vendor.business_name}
-              </h3>
+              <h3 className="type-heading mt-3">{vendor.business_name}</h3>
               <p className="text-muted-foreground mt-3 text-sm leading-6">
                 {vendor.status === "approved"
                   ? "Approved. Published listings are visible in the marketplace."
@@ -297,7 +290,7 @@ export default async function VendorDashboardPage({
         <div>
           <div className="flex items-center gap-3">
             <Plus aria-hidden="true" className="text-brand-text" />
-            <h2 className="text-3xl font-bold" id="create-listing-heading">
+            <h2 className="type-title" id="create-listing-heading">
               Create a listing
             </h2>
           </div>
@@ -314,7 +307,7 @@ export default async function VendorDashboardPage({
         <div>
           <div className="flex items-center gap-3">
             <ClipboardList aria-hidden="true" className="text-brand-text" />
-            <h2 className="text-3xl font-bold">Listings</h2>
+            <h2 className="type-title">Listings</h2>
           </div>
 
           <div className="mt-6 space-y-4">
@@ -447,47 +440,7 @@ export default async function VendorDashboardPage({
                       </ul>
                     )}
 
-                    <form
-                      action={uploadListingImage}
-                      className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
-                    >
-                      <input
-                        name="listingId"
-                        type="hidden"
-                        value={listing.id}
-                      />
-                      <label className="grid gap-1 text-xs font-bold">
-                        Image file
-                        <input
-                          accept="image/jpeg,image/png,image/webp"
-                          className="border-border min-h-11 rounded-xl border p-2 text-xs"
-                          name="image"
-                          required
-                          type="file"
-                        />
-                      </label>
-                      <label className="grid gap-1 text-xs font-bold">
-                        Alt text
-                        <input
-                          className="border-border min-h-11 rounded-xl border px-3 text-sm"
-                          maxLength={240}
-                          minLength={5}
-                          name="altText"
-                          placeholder="Describe the image"
-                          required
-                        />
-                      </label>
-                      <SubmitButton
-                        className="border-border hover:border-brand-text/50 min-h-11 self-end rounded-xl border px-4 text-sm"
-                        pendingLabel="Uploading…"
-                      >
-                        <Upload aria-hidden="true" size={15} /> Upload
-                      </SubmitButton>
-                    </form>
-                    <p className="text-muted-foreground mt-2 text-xs">
-                      JPEG, PNG or WebP up to 5 MB. At least one image is
-                      required before a moderator can publish the listing.
-                    </p>
+                    <ImageUploadForm listingId={listing.id} />
                   </div>
                 </article>
               );
@@ -496,7 +449,7 @@ export default async function VendorDashboardPage({
 
           <div className="mt-12 flex items-center gap-3">
             <Inbox aria-hidden="true" className="text-brand-text" />
-            <h2 className="text-3xl font-bold">Lead inbox</h2>
+            <h2 className="type-title">Lead inbox</h2>
           </div>
 
           <div className="mt-6 space-y-4">
@@ -556,7 +509,7 @@ export default async function VendorDashboardPage({
                     >
                       Lead status
                       <select
-                        className="border-border min-h-11 rounded-xl border px-3 text-sm font-medium"
+                        className="border-border select-field min-h-11 rounded-xl border px-3 text-sm font-medium"
                         defaultValue={
                           lead.status === "new" ? "viewed" : lead.status
                         }

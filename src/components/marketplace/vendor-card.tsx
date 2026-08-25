@@ -24,7 +24,7 @@ export function VendorCard({
   const price = formatStartingPrice(vendor.startingPrice, vendor.priceUnit);
 
   return (
-    <article className="group border-border shadow-soft hover:border-brand-text/30 motion-lift overflow-hidden rounded-3xl border bg-white transition hover:-translate-y-1">
+    <article className="group border-border shadow-soft hover:border-brand-text/30 motion-lift overflow-hidden rounded-[1.75rem] border bg-white">
       <div className="bg-muted relative aspect-[4/3] overflow-hidden">
         <Link
           aria-label={`View ${vendor.name}`}
@@ -33,7 +33,7 @@ export function VendorCard({
         >
           <Image
             alt={vendor.imageAlt}
-            className="motion-zoom object-cover transition duration-500 group-hover:scale-[1.035]"
+            className="motion-zoom object-cover"
             fill
             priority={priority}
             sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw"
@@ -62,7 +62,7 @@ export function VendorCard({
           <div className="min-w-0">
             <Heading className="text-xl font-bold break-words">
               <Link
-                className="hover:text-brand-text transition"
+                className="link-underline hover:text-brand-text transition"
                 href={`/vendor/${vendor.slug}`}
               >
                 {vendor.name}

@@ -34,12 +34,8 @@ export default async function EnquiryPage({
       >
         <ArrowLeft aria-hidden="true" size={16} /> Back to {vendor.name}
       </Link>
-      <p className="text-brand-text mt-8 text-sm font-bold tracking-[0.16em] uppercase">
-        Validated enquiry
-      </p>
-      <h1 className="mt-3 text-5xl font-bold">
-        Share your wedding requirements.
-      </h1>
+      <p className="text-brand-text eyebrow mt-8">Validated enquiry</p>
+      <h1 className="type-display mt-3">Share your wedding requirements.</h1>
       <p className="text-muted-foreground mt-5 leading-7">
         Once the enquiry is accepted, this account can view {vendor.name}’s
         private phone and email. The vendor receives your event details in their

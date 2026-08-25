@@ -39,7 +39,7 @@ export function ReviewForm({
         <label className="grid gap-1.5 text-sm font-bold" htmlFor={ratingId}>
           Rating
           <select
-            className="border-border min-h-11 rounded-xl border px-3 font-medium"
+            className="border-border select-field min-h-11 rounded-xl border px-3 font-medium"
             defaultValue={state.values?.rating ?? "5"}
             id={ratingId}
             name="rating"

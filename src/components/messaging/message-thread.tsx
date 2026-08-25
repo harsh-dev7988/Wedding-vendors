@@ -41,7 +41,7 @@ export function MessageThread({
           className="text-brand-text"
           size={20}
         />
-        <h2 className="text-2xl font-bold" id="thread-heading">
+        <h2 className="type-heading" id="thread-heading">
           Conversation
         </h2>
       </div>

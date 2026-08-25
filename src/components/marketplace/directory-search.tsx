@@ -30,7 +30,7 @@ export function DirectorySearch({
           Category
         </span>
         <select
-          className="mt-1 min-h-8 w-full bg-transparent text-sm font-semibold"
+          className="select-bare mt-1 min-h-8 w-full bg-transparent text-sm font-semibold"
           defaultValue={category ?? ""}
           name="category"
         >
@@ -47,7 +47,7 @@ export function DirectorySearch({
           City
         </span>
         <select
-          className="mt-1 min-h-8 w-full bg-transparent text-sm font-semibold"
+          className="select-bare mt-1 min-h-8 w-full bg-transparent text-sm font-semibold"
           defaultValue={city ?? ""}
           name="city"
         >

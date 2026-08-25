@@ -59,7 +59,7 @@ export default async function BillingPage() {
   if (vendorIds.length === 0) {
     return (
       <main className="mx-auto max-w-3xl px-5 py-16 md:px-8" id="main-content">
-        <h1 className="text-4xl font-bold">Billing</h1>
+        <h1 className="type-title">Billing</h1>
         <p className="text-muted-foreground mt-4 leading-7">
           Only a business owner or manager can view billing. If you manage a
           business here, ask the owner to add you.
@@ -125,10 +125,8 @@ export default async function BillingPage() {
         <ArrowLeft aria-hidden="true" size={16} /> Back to the dashboard
       </Link>
 
-      <p className="text-brand-text mt-6 text-sm font-bold tracking-[0.16em] uppercase">
-        Billing
-      </p>
-      <h1 className="mt-2 text-5xl font-bold">Plans and payments</h1>
+      <p className="text-brand-text eyebrow mt-6">Billing</p>
+      <h1 className="type-display mt-2">Plans and payments</h1>
       <p className="text-muted-foreground mt-4 max-w-2xl leading-7">
         Every business starts on the free plan and can receive enquiries without
         paying. Pro adds reach and performance data. Payments are processed by
@@ -155,7 +153,7 @@ export default async function BillingPage() {
             className="mt-12"
             key={vendor.id}
           >
-            <h2 className="text-2xl font-bold" id={`billing-${vendor.id}`}>
+            <h2 className="type-heading" id={`billing-${vendor.id}`}>
               {vendor.business_name}
             </h2>
             <p className="text-muted-foreground mt-2 text-sm">
@@ -242,7 +240,7 @@ export default async function BillingPage() {
       <section aria-labelledby="payment-history" className="mt-14">
         <div className="flex items-center gap-3">
           <Receipt aria-hidden="true" className="text-brand-text" />
-          <h2 className="text-2xl font-bold" id="payment-history">
+          <h2 className="type-heading" id="payment-history">
             Payment history
           </h2>
         </div>

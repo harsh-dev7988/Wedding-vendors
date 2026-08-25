@@ -15,10 +15,8 @@ export default async function VendorApplicationPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-16 md:px-8" id="main-content">
-      <p className="text-brand-text text-sm font-bold tracking-[0.16em] uppercase">
-        Vendor application
-      </p>
-      <h1 className="mt-3 text-5xl font-bold">Tell us about your business.</h1>
+      <p className="text-brand-text eyebrow">Vendor application</p>
+      <h1 className="type-display mt-3">Tell us about your business.</h1>
       <p className="text-muted-foreground mt-5 max-w-2xl leading-7">
         This creates a private vendor workspace. Listings stay unpublished until
         moderation is complete.

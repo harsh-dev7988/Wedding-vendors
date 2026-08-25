@@ -11,6 +11,7 @@ import type {
 import { isSupabaseConfigured } from "@/lib/env";
 import { formatResponseTime } from "@/lib/format";
 import { createPublicClient } from "@/lib/supabase/public";
+import { mediaUrlResolver } from "@/lib/supabase/media";
 
 const LISTING_MEDIA_LIMIT = 12;
 
@@ -23,7 +24,10 @@ const LISTING_MEDIA_LIMIT = 12;
 const LISTING_SELECT =
   "id, slug, title, summary, description, locality, price_from, price_unit, years_experience, rating_avg, rating_count, response_minutes, response_sample_size, published_at, " +
   "vendors!inner(id, business_name, status, verified_at, verification_expires_at), " +
-  "cities!inner(name, slug), categories!inner(name, slug), " +
+  // `listings` reaches `cities` twice — through primary_city_id and through
+  // listing_service_areas — so PostgREST refuses a bare `cities` embed. Naming the
+  // foreign key is what makes this the primary city rather than a service area.
+  "cities!listings_primary_city_id_fkey!inner(name, slug), categories!inner(name, slug), " +
   "listing_media(storage_path, alt_text, sort_order)";
 
 type LiveListingRow = {
@@ -171,8 +175,7 @@ export async function searchLiveVendors(
   const rows = data as SearchRow[];
   if (rows.length === 0) return { vendors: [], total: 0 };
 
-  const publicUrl = (path: string) =>
-    supabase.storage.from("vendor-media").getPublicUrl(path).data.publicUrl;
+  const publicUrl = mediaUrlResolver(supabase, "card");
 
   const vendors: PublicVendor[] = rows.map((row) => {
     const cover = row.cover_path
@@ -226,8 +229,7 @@ export async function getLiveVendorBySlug(slug: string) {
 
   if (error || !data) return null;
 
-  const publicUrl: StorageUrlResolver = (path) =>
-    supabase.storage.from("vendor-media").getPublicUrl(path).data.publicUrl;
+  const publicUrl = mediaUrlResolver(supabase, "card");
 
   return toPublicVendor(data as unknown as LiveListingRow, publicUrl);
 }
@@ -318,7 +320,12 @@ export async function getDirectorySupply(): Promise<DirectorySupply[]> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("listings")
-    .select("cities!inner(slug), categories!inner(slug)")
+    // vendors has to be embedded to be filtered on: PostgREST rejects a filter
+    // that names a relation the select never joined, so this whole query used
+    // to fail and every supply count silently read as zero.
+    .select(
+      "cities!listings_primary_city_id_fkey!inner(slug), categories!inner(slug), vendors!inner(status)",
+    )
     .eq("status", "published")
     .eq("vendors.status", "approved")
     .limit(10000);
@@ -356,7 +363,7 @@ export async function countPublishedListings(
   const { count, error } = await supabase
     .from("listings")
     .select(
-      "id, cities!inner(slug), categories!inner(slug), vendors!inner(status)",
+      "id, cities!listings_primary_city_id_fkey!inner(slug), categories!inner(slug), vendors!inner(status)",
       {
         count: "exact",
         head: true,

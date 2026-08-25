@@ -1,21 +1,14 @@
+"use client";
+
 import { SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
+import { useState, type FormEvent } from "react";
 
 import type { ListingFacets } from "@/data/live-marketplace";
+import { DEFAULT_SORT, filterHref, type ActiveFilters } from "@/lib/filters";
 import { formatIndianPrice } from "@/lib/format";
 
-export type ActiveFilters = {
-  readonly category?: string;
-  readonly city?: string;
-  readonly maxPrice?: number;
-  readonly minPrice?: number;
-  readonly minRating?: number;
-  readonly pincode?: string;
-  readonly q?: string;
-  readonly radiusKm?: number;
-  readonly sort?: string;
-  readonly verifiedOnly?: boolean;
-};
+export type { ActiveFilters };
 
 const SORTS = [
   { label: "Most recent", value: "recent" },
@@ -29,9 +22,9 @@ const SORTS = [
 
 const RATINGS = [
   { label: "Any rating", value: "" },
-  { label: "4.5+", value: "4.5" },
-  { label: "4+", value: "4" },
-  { label: "3+", value: "3" },
+  { label: "4.5 and above", value: "4.5" },
+  { label: "4 and above", value: "4" },
+  { label: "3 and above", value: "3" },
 ] as const;
 
 const RADII = [
@@ -42,57 +35,58 @@ const RADII = [
   { label: "Within 50 km", value: "50" },
 ] as const;
 
-/** Human-readable summary of what is currently applied, each with a remove link. */
-function activeChips(filters: ActiveFilters, basePath: string) {
+const SELECT_CLASS =
+  "border-border select-field focus:border-brand-text min-h-11 w-full rounded-xl border bg-white px-3 text-sm font-semibold transition";
+const INPUT_CLASS =
+  "border-border focus:border-brand-text min-h-11 w-full rounded-xl border bg-white px-3 text-sm font-semibold transition";
+
+function chipsFor(filters: ActiveFilters, basePath: string) {
   const chips: Array<{ href: string; label: string }> = [];
-  const without = (keys: readonly (keyof ActiveFilters)[]) => {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(filters)) {
-      if (keys.includes(key as keyof ActiveFilters)) continue;
-      if (value === undefined || value === "" || value === false) continue;
-      params.set(key, String(value));
-    }
-    const query = params.toString();
-    return query ? `${basePath}?${query}` : basePath;
-  };
 
   if (filters.minPrice || filters.maxPrice) {
     const from = filters.minPrice ? formatIndianPrice(filters.minPrice) : "Any";
     const to = filters.maxPrice ? formatIndianPrice(filters.maxPrice) : "Any";
     chips.push({
-      href: without(["minPrice", "maxPrice"]),
+      href: filterHref(basePath, filters, ["minPrice", "maxPrice"]),
       label: `${from} – ${to}`,
     });
   }
   if (filters.minRating) {
     chips.push({
-      href: without(["minRating"]),
-      label: `${filters.minRating}+ rating`,
+      href: filterHref(basePath, filters, ["minRating"]),
+      label: `${filters.minRating}★ and above`,
     });
   }
   if (filters.verifiedOnly) {
-    chips.push({ href: without(["verifiedOnly"]), label: "Verified only" });
+    chips.push({
+      href: filterHref(basePath, filters, ["verifiedOnly"]),
+      label: "Verified only",
+    });
   }
   if (filters.pincode) {
     chips.push({
-      href: without(["pincode", "radiusKm"]),
+      href: filterHref(basePath, filters, ["pincode", "radiusKm"]),
       label: filters.radiusKm
         ? `${filters.radiusKm} km of ${filters.pincode}`
         : `Near ${filters.pincode}`,
     });
   }
   if (filters.q) {
-    chips.push({ href: without(["q"]), label: `“${filters.q}”` });
+    chips.push({
+      href: filterHref(basePath, filters, ["q"]),
+      label: `“${filters.q}”`,
+    });
   }
   return chips;
 }
 
 /**
- * Faceted filters, rendered as a plain GET form.
+ * Faceted filters as a GET form: state lives in the URL, so a filtered view is
+ * shareable and server-rendered, and it still submits without JavaScript.
  *
- * State lives in the URL, so a filtered view is shareable, server-rendered and
- * works without JavaScript. Price bounds come from `listing_facets` rather than
- * being invented, so the slider never offers a range with nothing in it.
+ * The one client-side enhancement is stripping empty fields on submit —
+ * otherwise every apply produced `?minPrice=&maxPrice=&minRating=` and two
+ * identical result sets ended up with two different URLs.
  */
 export function FilterPanel({
   basePath,
@@ -103,28 +97,66 @@ export function FilterPanel({
   readonly facets: ListingFacets;
   readonly filters: ActiveFilters;
 }) {
-  const chips = activeChips(filters, basePath);
-  const hasPriceData = facets.minPrice !== null && facets.maxPrice !== null;
+  const chips = chipsFor(filters, basePath);
+  const [open, setOpen] = useState(false);
+  const hasPriceRange =
+    facets.minPrice !== null &&
+    facets.maxPrice !== null &&
+    facets.maxPrice > facets.minPrice;
+
+  // Empty controls are disabled at submit time so the browser omits them. The
+  // handler runs before navigation but after the values are read, so nothing
+  // the visitor entered is lost.
+  const stripEmpty = (event: FormEvent<HTMLFormElement>) => {
+    for (const field of Array.from(event.currentTarget.elements)) {
+      const el = field as HTMLInputElement | HTMLSelectElement;
+      if (!el.name || el.tagName === "BUTTON") continue;
+      if (
+        el.value === "" ||
+        (el.name === "sort" && el.value === DEFAULT_SORT)
+      ) {
+        el.disabled = true;
+      }
+    }
+  };
 
   return (
     <section
       aria-labelledby="filters-heading"
-      className="border-border rounded-3xl border bg-white p-5"
+      className="border-border rounded-3xl border bg-white"
     >
-      <h2
-        className="flex items-center gap-2 text-sm font-bold"
-        id="filters-heading"
-      >
-        <SlidersHorizontal
-          aria-hidden="true"
-          className="text-brand-text"
-          size={16}
-        />
-        Refine
-      </h2>
+      <div className="border-border flex items-center justify-between gap-2 border-b px-5 py-4">
+        <h2
+          className="flex items-center gap-2 text-sm font-bold"
+          id="filters-heading"
+        >
+          <SlidersHorizontal
+            aria-hidden="true"
+            className="text-brand-text"
+            size={16}
+          />
+          Refine
+          {chips.length > 0 && (
+            <span className="bg-brand-solid rounded-full px-2 py-0.5 text-xs text-white">
+              {chips.length}
+            </span>
+          )}
+        </h2>
+        {/* Collapsed by default on mobile, where a full-width panel above the
+            results pushed every listing below the fold. */}
+        <button
+          aria-controls="filter-fields"
+          aria-expanded={open}
+          className="border-border min-h-9 rounded-full border px-3 text-xs font-bold lg:hidden"
+          onClick={() => setOpen((value) => !value)}
+          type="button"
+        >
+          {open ? "Hide" : "Show"}
+        </button>
+      </div>
 
       {chips.length > 0 && (
-        <ul className="mt-4 flex flex-wrap gap-2">
+        <ul className="border-border flex flex-wrap gap-2 border-b px-5 py-3">
           {chips.map((chip) => (
             <li key={chip.label}>
               <Link
@@ -140,9 +172,14 @@ export function FilterPanel({
         </ul>
       )}
 
-      <form action={basePath} className="mt-4 grid gap-4">
-        {/* Carried through so refining never silently drops the city,
-            category or keyword the visitor already chose. */}
+      <form
+        action={basePath}
+        className={`grid gap-4 px-5 py-4 ${open ? "" : "hidden lg:grid"}`}
+        id="filter-fields"
+        onSubmit={stripEmpty}
+      >
+        {/* Carried through so refining never drops the city, category or
+            keyword the visitor already chose. */}
         {filters.city && (
           <input name="city" type="hidden" value={filters.city} />
         )}
@@ -155,9 +192,9 @@ export function FilterPanel({
           <legend className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
             Budget
           </legend>
-          {hasPriceData && (
-            <p className="text-muted-foreground text-xs">
-              Listings here range from {formatIndianPrice(facets.minPrice!)} to{" "}
+          {hasPriceRange && (
+            <p className="text-muted-foreground text-xs leading-5">
+              Listings here run {formatIndianPrice(facets.minPrice!)} to{" "}
               {formatIndianPrice(facets.maxPrice!)}.
             </p>
           )}
@@ -165,24 +202,26 @@ export function FilterPanel({
             <label className="grid gap-1 text-xs font-bold" htmlFor="minPrice">
               Min ₹
               <input
-                className="border-border min-h-11 rounded-xl border px-3 text-sm font-medium"
+                className={INPUT_CLASS}
                 defaultValue={filters.minPrice ?? ""}
                 id="minPrice"
                 inputMode="numeric"
                 min={0}
                 name="minPrice"
+                placeholder="Any"
                 type="number"
               />
             </label>
             <label className="grid gap-1 text-xs font-bold" htmlFor="maxPrice">
               Max ₹
               <input
-                className="border-border min-h-11 rounded-xl border px-3 text-sm font-medium"
+                className={INPUT_CLASS}
                 defaultValue={filters.maxPrice ?? ""}
                 id="maxPrice"
                 inputMode="numeric"
                 min={0}
                 name="maxPrice"
+                placeholder="Any"
                 type="number"
               />
             </label>
@@ -194,7 +233,7 @@ export function FilterPanel({
             Rating
           </span>
           <select
-            className="border-border min-h-11 rounded-xl border px-3 text-sm font-medium"
+            className={SELECT_CLASS}
             defaultValue={filters.minRating ? String(filters.minRating) : ""}
             id="minRating"
             name="minRating"
@@ -215,7 +254,7 @@ export function FilterPanel({
             <label className="grid gap-1 text-xs font-bold" htmlFor="pincode">
               Pincode
               <input
-                className="border-border min-h-11 rounded-xl border px-3 text-sm font-medium"
+                className={INPUT_CLASS}
                 defaultValue={filters.pincode ?? ""}
                 id="pincode"
                 inputMode="numeric"
@@ -223,12 +262,13 @@ export function FilterPanel({
                 name="pincode"
                 pattern="[1-9][0-9]{5}"
                 placeholder="400001"
+                title="Six digits, not starting with zero"
               />
             </label>
             <label className="grid gap-1 text-xs font-bold" htmlFor="radiusKm">
               Distance
               <select
-                className="border-border min-h-11 rounded-xl border px-3 text-sm font-medium"
+                className={SELECT_CLASS}
                 defaultValue={filters.radiusKm ? String(filters.radiusKm) : ""}
                 id="radiusKm"
                 name="radiusKm"
@@ -243,7 +283,7 @@ export function FilterPanel({
           </div>
         </fieldset>
 
-        <label className="flex items-start gap-3 text-sm font-bold">
+        <label className="border-border flex items-start gap-3 rounded-xl border p-3 text-sm font-bold">
           <input
             className="mt-0.5 size-5 shrink-0 accent-[color:var(--brand-solid)]"
             defaultChecked={filters.verifiedOnly}
@@ -253,9 +293,11 @@ export function FilterPanel({
           />
           <span>
             Verified businesses only
-            <span className="text-muted-foreground block text-xs font-medium">
-              {facets.verifiedCount} of {facets.total} here are verified
-            </span>
+            {facets.total > 0 && (
+              <span className="text-muted-foreground block text-xs font-medium">
+                {facets.verifiedCount} of {facets.total} here are verified
+              </span>
+            )}
           </span>
         </label>
 
@@ -264,8 +306,8 @@ export function FilterPanel({
             Sort by
           </span>
           <select
-            className="border-border min-h-11 rounded-xl border px-3 text-sm font-medium"
-            defaultValue={filters.sort ?? "recent"}
+            className={SELECT_CLASS}
+            defaultValue={filters.sort ?? DEFAULT_SORT}
             id="sort"
             name="sort"
           >
@@ -287,7 +329,10 @@ export function FilterPanel({
           {chips.length > 0 && (
             <Link
               className="border-border hover:border-brand-text/50 inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-bold transition"
-              href={basePath}
+              href={filterHref(basePath, {
+                category: filters.category,
+                city: filters.city,
+              })}
             >
               Clear
             </Link>

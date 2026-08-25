@@ -74,10 +74,8 @@ export default async function VendorLeadPage({
         <ArrowLeft aria-hidden="true" size={16} /> Back to the dashboard
       </Link>
 
-      <p className="text-brand-text mt-6 text-sm font-bold tracking-[0.16em] uppercase">
-        Enquiry · {lead.status}
-      </p>
-      <h1 className="mt-2 text-4xl font-bold md:text-5xl">
+      <p className="text-brand-text eyebrow mt-6">Enquiry · {lead.status}</p>
+      <h1 className="type-title mt-2 md:text-5xl">
         {lead.listings?.title ?? "Listing enquiry"}
       </h1>
 
@@ -155,7 +153,7 @@ export default async function VendorLeadPage({
           >
             Current stage
             <select
-              className="border-border min-h-11 rounded-xl border px-3 text-sm font-medium"
+              className="border-border select-field min-h-11 rounded-xl border px-3 text-sm font-medium"
               defaultValue={lead.status === "new" ? "viewed" : lead.status}
               id="lead-status"
               name="status"

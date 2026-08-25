@@ -9,6 +9,7 @@ import { requireViewer } from "@/lib/auth";
 import { formatIndiaDateTime } from "@/lib/datetime";
 import { formatStartingPrice } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
+import { mediaUrlResolver } from "@/lib/supabase/media";
 
 import { moderateListing } from "../../actions";
 import { ModerationForm } from "../../moderation-form";
@@ -105,8 +106,7 @@ export default async function AdminListingDetailPage({
     status: string;
   }>;
 
-  const publicUrl = (path: string) =>
-    supabase.storage.from("vendor-media").getPublicUrl(path).data.publicUrl;
+  const publicUrl = mediaUrlResolver(supabase, "thumb");
 
   const price = formatStartingPrice(
     listing.price_from,
@@ -124,10 +124,10 @@ export default async function AdminListingDetailPage({
         <ArrowLeft aria-hidden="true" size={16} /> Back to moderation
       </Link>
 
-      <p className="text-brand-text mt-6 text-sm font-bold tracking-[0.16em] uppercase">
+      <p className="text-brand-text eyebrow mt-6">
         {listing.status.replaceAll("_", " ")}
       </p>
-      <h1 className="mt-2 text-4xl font-bold md:text-5xl">{listing.title}</h1>
+      <h1 className="type-title mt-2 md:text-5xl">{listing.title}</h1>
       <p className="text-muted-foreground mt-3">
         <Link
           className="hover:text-foreground font-bold"
@@ -163,7 +163,7 @@ export default async function AdminListingDetailPage({
       {/* The moderation queue previously showed a title and a summary only,
           so nobody could see the photographs they were approving. */}
       <section aria-labelledby="media-heading" className="mt-10">
-        <h2 className="text-2xl font-bold" id="media-heading">
+        <h2 className="type-heading" id="media-heading">
           Portfolio ({media.length})
         </h2>
         {media.length === 0 ? (
@@ -196,7 +196,7 @@ export default async function AdminListingDetailPage({
       </section>
 
       <section aria-labelledby="content-heading" className="mt-10">
-        <h2 className="text-2xl font-bold" id="content-heading">
+        <h2 className="type-heading" id="content-heading">
           Listing content
         </h2>
         <dl className="border-border mt-4 grid gap-4 rounded-3xl border bg-white p-6 sm:grid-cols-2">
@@ -251,7 +251,7 @@ export default async function AdminListingDetailPage({
         <section aria-labelledby="reports-heading" className="mt-10">
           <div className="flex items-center gap-3">
             <AlertTriangle aria-hidden="true" className="text-brand-text" />
-            <h2 className="text-2xl font-bold" id="reports-heading">
+            <h2 className="type-heading" id="reports-heading">
               Reports
             </h2>
           </div>
@@ -279,7 +279,7 @@ export default async function AdminListingDetailPage({
       )}
 
       <section aria-labelledby="history-heading" className="mt-10">
-        <h2 className="text-2xl font-bold" id="history-heading">
+        <h2 className="type-heading" id="history-heading">
           Moderation
         </h2>
         <p className="text-muted-foreground mt-2 text-sm">
