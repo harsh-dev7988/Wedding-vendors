@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
 import type { ListingFacets } from "@/data/live-marketplace";
+import { SelectMenu } from "@/components/ui/select-menu";
 import { DEFAULT_SORT, filterHref, type ActiveFilters } from "@/lib/filters";
 import { formatIndianPrice } from "@/lib/format";
 
@@ -35,8 +36,6 @@ const RADII = [
   { label: "Within 50 km", value: "50" },
 ] as const;
 
-const SELECT_CLASS =
-  "border-border select-field focus:border-brand-text min-h-11 w-full rounded-xl border bg-white px-3 text-sm font-semibold transition";
 const INPUT_CLASS =
   "border-border focus:border-brand-text min-h-11 w-full rounded-xl border bg-white px-3 text-sm font-semibold transition";
 
@@ -232,18 +231,17 @@ export function FilterPanel({
           <span className="text-muted-foreground tracking-widest uppercase">
             Rating
           </span>
-          <select
-            className={SELECT_CLASS}
-            defaultValue={filters.minRating ? String(filters.minRating) : ""}
+          <SelectMenu
+            className="border-border focus:border-brand-text min-h-11 rounded-xl border bg-white px-3 text-sm font-semibold transition"
             id="minRating"
+            label="Rating"
             name="minRating"
-          >
-            {RATINGS.map((option) => (
-              <option key={option.label} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            options={RATINGS.map((option) => ({
+              label: option.label,
+              value: option.value,
+            }))}
+            value={filters.minRating ? String(filters.minRating) : ""}
+          />
         </label>
 
         <fieldset className="grid gap-2">
@@ -267,18 +265,17 @@ export function FilterPanel({
             </label>
             <label className="grid gap-1 text-xs font-bold" htmlFor="radiusKm">
               Distance
-              <select
-                className={SELECT_CLASS}
-                defaultValue={filters.radiusKm ? String(filters.radiusKm) : ""}
+              <SelectMenu
+                className="border-border focus:border-brand-text min-h-11 rounded-xl border bg-white px-3 text-sm font-semibold transition"
                 id="radiusKm"
+                label="Distance"
                 name="radiusKm"
-              >
-                {RADII.map((option) => (
-                  <option key={option.label} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                options={RADII.map((option) => ({
+                  label: option.label,
+                  value: option.value,
+                }))}
+                value={filters.radiusKm ? String(filters.radiusKm) : ""}
+              />
             </label>
           </div>
         </fieldset>
@@ -305,18 +302,17 @@ export function FilterPanel({
           <span className="text-muted-foreground tracking-widest uppercase">
             Sort by
           </span>
-          <select
-            className={SELECT_CLASS}
-            defaultValue={filters.sort ?? DEFAULT_SORT}
+          <SelectMenu
+            className="border-border focus:border-brand-text min-h-11 rounded-xl border bg-white px-3 text-sm font-semibold transition"
             id="sort"
+            label="Sort by"
             name="sort"
-          >
-            {SORTS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            options={SORTS.map((option) => ({
+              label: option.label,
+              value: option.value,
+            }))}
+            value={filters.sort ?? DEFAULT_SORT}
+          />
         </label>
 
         <div className="flex flex-wrap gap-2">

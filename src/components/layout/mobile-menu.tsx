@@ -106,7 +106,9 @@ export function MobileMenu({
       {open && (
         <nav
           aria-label="Mobile navigation"
-          className="border-border shadow-soft absolute top-13 right-0 z-50 grid max-h-[75vh] min-w-64 gap-0.5 overflow-y-auto rounded-2xl border bg-white p-2"
+          // See category-menu.tsx: the header is text-white over the hero, and
+          // this panel is white.
+          className="border-border shadow-soft text-foreground absolute top-13 right-0 z-50 grid max-h-[75vh] min-w-64 gap-0.5 overflow-y-auto rounded-2xl border bg-white p-2"
           id="mobile-navigation"
         >
           {section("Browse", [

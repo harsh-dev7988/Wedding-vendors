@@ -56,9 +56,23 @@
   --focus-ring: #c9430a; /* 4.82:1 on cream, 3.55:1 on foreground */
 }
 
-* {
-  box-sizing: border-box;
-  border-color: var(--border);
+/* These resets are in `@layer base` on purpose.
+ *
+ * Unlayered CSS outranks every cascade layer, including Tailwind's utilities.
+ * Left unlayered, `* { border-color: var(--border) }` silently beat all 53
+ * border-colour utilities in this application — `border-transparent` on the
+ * hero header still drew a cream hairline across the photograph, every
+ * `hover:border-brand-text/50` on a card did nothing, and the status pills
+ * lost their outlines. A reset must lose to a utility, which is exactly what
+ * `base` means.
+ *
+ * The component classes further down stay unlayered deliberately: `.select-field`
+ * has to beat a `pr-*` utility or the chevron would sit on top of the label. */
+@layer base {
+  * {
+    box-sizing: border-box;
+    border-color: var(--border);
+  }
 }
 
 html {

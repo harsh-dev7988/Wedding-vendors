@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 
+import { SelectMenu } from "@/components/ui/select-menu";
 import { getCategories, getMetros } from "@/data/marketplace";
 
 type DirectorySearchProps = {
@@ -25,40 +26,42 @@ export function DirectorySearch({
       <h2 className="sr-only" id="directory-search-heading">
         Search wedding vendors
       </h2>
-      <label className="bg-muted/55 rounded-2xl px-4 py-3">
+      <div className="bg-muted/55 rounded-2xl px-4 py-3">
         <span className="text-muted-foreground block text-[0.68rem] font-bold tracking-widest uppercase">
           Category
         </span>
-        <select
-          className="select-bare mt-1 min-h-8 w-full bg-transparent text-sm font-semibold"
-          defaultValue={category ?? ""}
+        <SelectMenu
+          className="mt-1 min-h-8 text-sm font-semibold"
+          label="Category"
           name="category"
-        >
-          <option value="">All categories</option>
-          {getCategories().map((item) => (
-            <option key={item.slug} value={item.slug}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="bg-muted/55 rounded-2xl px-4 py-3">
+          options={[
+            { label: "All categories", value: "" },
+            ...getCategories().map((item) => ({
+              label: item.name,
+              value: item.slug,
+            })),
+          ]}
+          value={category ?? ""}
+        />
+      </div>
+      <div className="bg-muted/55 rounded-2xl px-4 py-3">
         <span className="text-muted-foreground block text-[0.68rem] font-bold tracking-widest uppercase">
           City
         </span>
-        <select
-          className="select-bare mt-1 min-h-8 w-full bg-transparent text-sm font-semibold"
-          defaultValue={city ?? ""}
+        <SelectMenu
+          className="mt-1 min-h-8 text-sm font-semibold"
+          label="City"
           name="city"
-        >
-          <option value="">All metros</option>
-          {getMetros().map((metro) => (
-            <option key={metro.slug} value={metro.slug}>
-              {metro.name}
-            </option>
-          ))}
-        </select>
-      </label>
+          options={[
+            { label: "All metros", value: "" },
+            ...getMetros().map((metro) => ({
+              label: metro.name,
+              value: metro.slug,
+            })),
+          ]}
+          value={city ?? ""}
+        />
+      </div>
       <label className="bg-muted/55 rounded-2xl px-4 py-3">
         <span className="text-muted-foreground block text-[0.68rem] font-bold tracking-widest uppercase">
           Keywords

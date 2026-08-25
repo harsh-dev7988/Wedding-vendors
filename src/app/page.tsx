@@ -10,6 +10,7 @@ import {
   Stars,
 } from "lucide-react";
 
+import { SelectMenu } from "@/components/ui/select-menu";
 import { launchCategories } from "@/config/categories";
 import { nextImageSrcSet, nextImageUrl } from "@/lib/image-url";
 import { metros } from "@/data/seed/marketplace";
@@ -157,46 +158,46 @@ export default function HomePage() {
             <h2 className="sr-only" id="hero-search-heading">
               Find wedding vendors
             </h2>
-            <label className="focus-within:bg-muted flex min-h-14 items-center gap-3 rounded-[1.25rem] px-4 transition">
+            <div className="focus-within:bg-muted flex min-h-14 items-center gap-3 rounded-[1.25rem] px-4 transition">
               <Search
                 aria-hidden="true"
                 className="text-brand-text"
                 size={19}
               />
-              <span className="sr-only">Vendor category</span>
-              <select
-                className="select-bare text-foreground w-full bg-transparent text-sm font-semibold"
-                defaultValue=""
+              <SelectMenu
+                className="text-foreground text-sm font-semibold"
+                label="Vendor category"
                 name="category"
-              >
-                <option value="">What do you need?</option>
-                {launchCategories.map((category) => (
-                  <option key={category.slug} value={category.slug}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="border-border focus-within:bg-muted flex min-h-14 items-center gap-3 rounded-[1.25rem] border-t px-4 transition sm:border-t-0 sm:border-l">
+                options={[
+                  { label: "Any category", value: "" },
+                  ...launchCategories.map((category) => ({
+                    label: category.name,
+                    value: category.slug,
+                  })),
+                ]}
+                placeholder="What do you need?"
+              />
+            </div>
+            <div className="border-border focus-within:bg-muted flex min-h-14 items-center gap-3 rounded-[1.25rem] border-t px-4 transition sm:border-t-0 sm:border-l">
               <MapPin
                 aria-hidden="true"
                 className="text-brand-text"
                 size={19}
               />
-              <span className="sr-only">City</span>
-              <select
-                className="select-bare text-foreground w-full bg-transparent text-sm font-semibold"
-                defaultValue=""
+              <SelectMenu
+                className="text-foreground text-sm font-semibold"
+                label="City"
                 name="city"
-              >
-                <option value="">All launch cities</option>
-                {metros.map((metro) => (
-                  <option key={metro.slug} value={metro.slug}>
-                    {metro.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+                options={[
+                  { label: "All launch cities", value: "" },
+                  ...metros.map((metro) => ({
+                    label: metro.name,
+                    value: metro.slug,
+                  })),
+                ]}
+                placeholder="All launch cities"
+              />
+            </div>
             <button
               className="bg-brand-solid hover:bg-brand-solid-hover motion-lift min-h-14 rounded-[1.25rem] px-7 text-sm font-bold text-white"
               type="submit"

@@ -79,7 +79,10 @@ export function CategoryMenu({
 
       {open && (
         <div
-          className="border-border shadow-soft absolute top-12 left-1/2 z-50 w-[min(44rem,90vw)] -translate-x-1/2 rounded-2xl border bg-white p-4"
+          // `text-foreground` is load-bearing: over the hero the header is
+          // `text-white`, and this panel is white, so every label inside it
+          // inherited white on white and vanished.
+          className="border-border shadow-soft text-foreground absolute top-12 left-1/2 z-50 w-[min(44rem,90vw)] -translate-x-1/2 rounded-2xl border bg-white p-4"
           id="category-menu"
         >
           <div className="grid gap-4 sm:grid-cols-[1.4fr_1fr]">
