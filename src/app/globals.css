@@ -359,7 +359,12 @@ header[data-transparent] .header-pill:hover {
    `vh` taller than the visible viewport, which pushed the search field under
    the browser chrome. Capped so the hero never dwarfs a short laptop screen. */
 .hero-full {
-  min-height: clamp(34rem, 100svh, 56rem);
+  /* `max`, not `clamp`. The upper bound was 56rem, so any viewport taller than
+     896px ended the hero early and showed a strip of the next section under
+     it. There is nothing to cap: `100svh` is the viewport by definition and
+     cannot overshoot. The floor only matters on a landscape phone, where a
+     full-viewport hero would be a letterbox. */
+  min-height: max(32rem, 100svh);
 }
 
 /* Two stacked scrims. The vertical one anchors the headline; the radial one
@@ -368,17 +373,27 @@ header[data-transparent] .header-pill:hover {
    image and above 4.5:1 over the lightest. */
 .hero-scrim {
   background:
+    /* Anchors the text column. The headline is left-aligned, and the wall
+       behind the subject in the current photograph is bright enough that white
+       type would otherwise depend on which frame is in place. */
+    linear-gradient(
+      90deg,
+      rgb(26 15 4 / 66%) 0%,
+      rgb(26 15 4 / 40%) 34%,
+      rgb(26 15 4 / 8%) 62%,
+      transparent 80%
+    ),
     linear-gradient(
       180deg,
-      rgb(26 15 4 / 62%) 0%,
-      rgb(26 15 4 / 34%) 38%,
-      rgb(26 15 4 / 72%) 78%,
-      rgb(26 15 4 / 88%) 100%
+      rgb(26 15 4 / 55%) 0%,
+      rgb(26 15 4 / 30%) 38%,
+      rgb(26 15 4 / 70%) 78%,
+      rgb(26 15 4 / 86%) 100%
     ),
     radial-gradient(
       120% 80% at 50% 40%,
       transparent 30%,
-      rgb(26 15 4 / 45%) 100%
+      rgb(26 15 4 / 40%) 100%
     );
 }
 

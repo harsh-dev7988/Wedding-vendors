@@ -53,7 +53,10 @@ export function HeaderChrome({ children }: { readonly children: ReactNode }) {
     <header
       className={`z-50 border-b transition-colors duration-300 ${position} ${
         transparent
-          ? "on-dark border-white/15 bg-transparent text-white"
+          ? // No visible rule while transparent: a hairline drawn across the
+            // photograph reads as a seam, and there is nothing above the hero
+            // to separate the bar from.
+            "on-dark border-transparent bg-transparent text-white"
           : "border-border/80 bg-background/90 backdrop-blur-xl"
       }`}
       data-transparent={transparent ? "true" : undefined}
