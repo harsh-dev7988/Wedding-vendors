@@ -19,7 +19,8 @@
     "db:apply": "node scripts/db-apply.mjs",
     "db:verify": "node scripts/db-verify.mjs",
     "db:make-admin": "node scripts/db-make-admin.mjs",
-    "media:backfill": "node scripts/media-backfill.mjs"
+    "media:backfill": "node scripts/media-backfill.mjs",
+    "email:test": "node scripts/email-test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",
