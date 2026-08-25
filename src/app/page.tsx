@@ -208,14 +208,19 @@ export default function HomePage() {
             <div className="from-foreground/90 via-foreground/20 absolute inset-0 bg-gradient-to-t to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-7 md:p-10">
               <p className="text-accent-gold text-xs font-bold tracking-[0.18em] uppercase">
-                Real weddings
+                Photography &amp; film
               </p>
               <h2 className="mt-3 max-w-xl text-4xl font-bold">
-                Stories worth saving, details worth stealing.
+                <Link
+                  className="after:absolute after:inset-0 after:content-['']"
+                  href="/vendors?category=photographers"
+                >
+                  Stories worth saving, details worth stealing.
+                </Link>
               </h2>
               <p className="mt-3 max-w-lg text-sm leading-6 text-white/85">
-                Editorial inspiration will connect real celebrations directly to
-                the professionals who brought them to life.
+                Browse the photographers and filmmakers who document
+                celebrations like these.
               </p>
             </div>
           </article>
@@ -231,10 +236,15 @@ export default function HomePage() {
             <div className="from-foreground/80 absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-7 text-white">
               <p className="text-accent-gold text-xs font-bold tracking-[0.18em] uppercase">
-                Inspiration
+                Planning &amp; decor
               </p>
               <h2 className="mt-2 text-2xl font-bold">
-                Build a celebration that feels like yours.
+                <Link
+                  className="after:absolute after:inset-0 after:content-['']"
+                  href="/vendors?category=planners-decorators"
+                >
+                  Build a celebration that feels like yours.
+                </Link>
               </h2>
             </div>
           </article>

@@ -5,13 +5,24 @@ import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-const LINKS = [
-  { href: "/vendors", label: "Explore vendors" },
+type Category = { readonly name: string; readonly slug: string };
+
+const BROWSE = [
+  { href: "/vendors", label: "All vendors" },
+  { href: "/trust-and-safety", label: "How it works" },
+] as const;
+
+const ACCOUNT = [
+  { href: "/account", label: "My enquiries" },
+  { href: "/account/notifications", label: "Alerts" },
   { href: "/shortlist", label: "Shortlist" },
-  { href: "/for-vendors", label: "For vendors" },
-  { href: "/account", label: "Account" },
-  { href: "/account/notifications", label: "Notifications" },
-  { href: "/vendor/dashboard", label: "Vendor workspace" },
+  { href: "/account/reviews", label: "My reviews" },
+  { href: "/account/settings", label: "Settings" },
+] as const;
+
+const VENDOR = [
+  { href: "/for-vendors", label: "List your business" },
+  { href: "/vendor/dashboard", label: "Vendor dashboard" },
 ] as const;
 
 /**
@@ -20,7 +31,11 @@ const LINKS = [
  * and the panel stayed over the new page. `<details>` also offers no Escape or
  * outside-click dismissal.
  */
-export function MobileMenu() {
+export function MobileMenu({
+  categories,
+}: {
+  readonly categories: readonly Category[];
+}) {
   const pathname = usePathname();
   // Storing the path the menu was opened on means a client-side navigation
   // closes it as a pure derivation rather than through an effect.
@@ -51,6 +66,26 @@ export function MobileMenu() {
     };
   }, [open]);
 
+  const section = (
+    title: string,
+    items: readonly { href: string; label: string }[],
+  ) => (
+    <div key={title}>
+      <p className="text-muted-foreground px-3 pt-2 text-[0.65rem] font-bold tracking-widest uppercase">
+        {title}
+      </p>
+      {items.map((item) => (
+        <Link
+          className="hover:bg-muted flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold"
+          href={item.href}
+          key={item.href}
+        >
+          {item.label}
+        </Link>
+      ))}
+    </div>
+  );
+
   return (
     <div className="relative md:hidden" ref={containerRef}>
       <button
@@ -71,18 +106,18 @@ export function MobileMenu() {
       {open && (
         <nav
           aria-label="Mobile navigation"
-          className="border-border shadow-soft absolute top-13 right-0 z-50 grid min-w-56 gap-1 rounded-2xl border bg-white p-2 text-sm font-semibold"
+          className="border-border shadow-soft absolute top-13 right-0 z-50 grid max-h-[75vh] min-w-64 gap-0.5 overflow-y-auto rounded-2xl border bg-white p-2"
           id="mobile-navigation"
         >
-          {LINKS.map((link) => (
-            <Link
-              className="hover:bg-muted flex min-h-11 items-center rounded-xl px-3"
-              href={link.href}
-              key={link.href}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {section("Browse", [
+            ...BROWSE,
+            ...categories.map((category) => ({
+              href: `/vendors?category=${category.slug}`,
+              label: category.name,
+            })),
+          ])}
+          {section("Your account", ACCOUNT)}
+          {section("For vendors", VENDOR)}
         </nav>
       )}
     </div>

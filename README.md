@@ -30,15 +30,15 @@ the application still runs.
 
 ## Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Development server |
-| `npm run build` | Production build |
+| Command             | Purpose                                  |
+| ------------------- | ---------------------------------------- |
+| `npm run dev`       | Development server                       |
+| `npm run build`     | Production build                         |
 | `npm run typecheck` | Route type generation and `tsc --noEmit` |
-| `npm run lint` | ESLint |
-| `npm run test` | Unit tests (Vitest) |
-| `npm run format` | Prettier |
-| `npm run verify` | typecheck, lint, test and build together |
+| `npm run lint`      | ESLint                                   |
+| `npm run test`      | Unit tests (Vitest)                      |
+| `npm run format`    | Prettier                                 |
+| `npm run verify`    | typecheck, lint, test and build together |
 
 ## Database
 
