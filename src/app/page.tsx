@@ -69,7 +69,12 @@ export default function HomePage() {
           are sold on atmosphere, and a card-sized image could not carry it.
           The header is translucent and sits over this section.
          ------------------------------------------------------------------ */}
-      <section className="hero-full on-dark relative isolate flex items-end overflow-hidden text-white">
+      {/* No `overflow-hidden` on the section. It was there to contain the
+          drifting background image, but it also clipped anything a control
+          inside the hero opened downward — the search dropdown was sliced off
+          at the hero's bottom edge with no way to see the rest. The clip now
+          sits on the image wrapper, which is the only thing that needs it. */}
+      <section className="hero-full on-dark relative isolate flex items-end text-white">
         {/* `priority` is deliberately absent. It emits an unconditional
             `<link rel="preload" as="image">` naming only the landscape file,
             and the preload scanner cannot see the sibling `<source>` — so a
@@ -103,7 +108,7 @@ export default function HomePage() {
           rel="preload"
         />
 
-        <div className="absolute inset-0 -z-20">
+        <div className="absolute inset-0 -z-20 overflow-hidden">
           {/* Art direction, not just resizing: a 16:9 frame centre-cropped to a
               tall phone viewport keeps a vertical sliver of the middle, which
               is the part the composition deliberately leaves empty. */}
@@ -152,7 +157,7 @@ export default function HomePage() {
           <form
             action="/vendors"
             aria-labelledby="hero-search-heading"
-            className="shadow-warm mt-10 grid max-w-3xl gap-2 rounded-[1.75rem] border border-white/60 bg-white/95 p-2 backdrop-blur-md sm:grid-cols-[1fr_1fr_auto]"
+            className="shadow-warm text-foreground mt-10 grid max-w-3xl gap-2 rounded-[1.75rem] border border-white/60 bg-white/95 p-2 backdrop-blur-md sm:grid-cols-[1fr_1fr_auto]"
             role="search"
           >
             <h2 className="sr-only" id="hero-search-heading">

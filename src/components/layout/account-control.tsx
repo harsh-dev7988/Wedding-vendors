@@ -62,7 +62,7 @@ export function AccountControl() {
       {signedIn && (
         <form action="/auth/sign-out" className="hidden lg:block" method="post">
           <button
-            className="text-muted-foreground hover:text-foreground inline-flex h-11 items-center px-2 text-sm font-bold"
+            className="header-muted inline-flex h-11 items-center px-2 text-sm font-bold transition"
             type="submit"
           >
             Sign out

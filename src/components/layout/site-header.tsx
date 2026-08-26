@@ -37,7 +37,7 @@ export function SiteHeader() {
 
   return (
     <HeaderChrome>
-      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-3 px-4 md:px-8">
+      <div className="flex h-18 w-full items-center justify-between gap-3 px-4 md:px-6">
         {/* `min-w-0` + `truncate`: at 320px the CTA pill wrapped to two lines
             and overlapped the wordmark. */}
         <Link

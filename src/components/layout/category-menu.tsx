@@ -82,7 +82,10 @@ export function CategoryMenu({
           // `text-foreground` is load-bearing: over the hero the header is
           // `text-white`, and this panel is white, so every label inside it
           // inherited white on white and vanished.
-          className="border-border shadow-soft text-foreground absolute top-12 left-1/2 z-50 w-[min(44rem,90vw)] -translate-x-1/2 rounded-2xl border bg-white p-4"
+          // `max-h` + `overflow-y-auto`: the panel must never run past the
+          // bottom of the viewport, where it would look truncated with no way
+          // to reach the rest of it.
+          className="border-border shadow-soft text-foreground absolute top-12 left-1/2 z-[110] max-h-[calc(100svh-6rem)] w-[min(44rem,90vw)] -translate-x-1/2 overflow-y-auto rounded-2xl border bg-white p-4"
           id="category-menu"
         >
           <div className="grid gap-4 sm:grid-cols-[1.4fr_1fr]">
@@ -122,7 +125,7 @@ export function CategoryMenu({
                 {cities.map((city) => (
                   <li key={city.slug}>
                     <Link
-                      className="hover:bg-muted flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-semibold transition"
+                      className="hover:bg-muted flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm font-semibold transition"
                       // The city hub, not `/vendors?city=…`: the search page is
                       // noindex by design, so linking it from every page sent
                       // the site's internal link equity to a dead end.
@@ -139,7 +142,7 @@ export function CategoryMenu({
                 ))}
               </ul>
               <Link
-                className="text-brand-text hover:bg-muted mt-1 flex min-h-10 items-center rounded-xl px-2 text-sm font-bold transition"
+                className="text-brand-text hover:bg-muted mt-1 flex min-h-11 items-center rounded-xl px-2 text-sm font-bold transition"
                 href="/vendors"
               >
                 See all vendors →

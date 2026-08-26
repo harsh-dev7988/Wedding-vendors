@@ -146,7 +146,7 @@ export function FilterPanel({
         <button
           aria-controls="filter-fields"
           aria-expanded={open}
-          className="border-border min-h-9 rounded-full border px-3 text-xs font-bold lg:hidden"
+          className="border-border min-h-11 rounded-full border px-4 text-xs font-bold lg:hidden"
           onClick={() => setOpen((value) => !value)}
           type="button"
         >

@@ -51,7 +51,7 @@ export function HeaderChrome({ children }: { readonly children: ReactNode }) {
 
   return (
     <header
-      className={`z-50 border-b transition-colors duration-300 ${position} ${
+      className={`z-[100] border-b transition-colors duration-300 ${position} ${
         transparent
           ? // No visible rule while transparent: a hairline drawn across the
             // photograph reads as a seam, and there is nothing above the hero

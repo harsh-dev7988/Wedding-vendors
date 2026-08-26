@@ -339,6 +339,27 @@ footer :focus-visible {
   color: var(--brand-text);
 }
 
+/* Secondary header text — "Sign out". `text-muted-foreground` is #756542, a
+   dark brown chosen for contrast on cream. Over the hero photograph it was
+   effectively invisible. */
+.header-muted {
+  color: var(--muted-foreground);
+}
+
+.header-muted:hover,
+.header-muted:focus-visible {
+  color: var(--foreground);
+}
+
+header[data-transparent] .header-muted {
+  color: rgb(255 255 255 / 82%);
+}
+
+header[data-transparent] .header-muted:hover,
+header[data-transparent] .header-muted:focus-visible {
+  color: #fff;
+}
+
 .header-pill {
   border-color: var(--border);
 }

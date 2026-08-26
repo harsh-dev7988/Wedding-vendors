@@ -54,6 +54,7 @@ export function SelectMenu({
   const [value, setValue] = useState(initialValue);
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [dropUp, setDropUp] = useState(false);
 
   // These fields are driven by the URL. A soft navigation within the same
   // route keeps this component mounted, so without this the control would go
@@ -93,7 +94,18 @@ export function SelectMenu({
       [activeIndex]?.scrollIntoView({ block: "nearest" });
   }, [activeIndex, open]);
 
+  /** Tallest the list can get, matching the max-h below. */
+  const LIST_HEIGHT = 288;
+
   const openAt = (index: number) => {
+    // Decide the direction before painting. A control near the bottom of the
+    // viewport — the hero search sits there — would otherwise open into space
+    // that is not on screen.
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (rect) {
+      const below = window.innerHeight - rect.bottom;
+      setDropUp(below < LIST_HEIGHT && rect.top > below);
+    }
     setActiveIndex(Math.max(0, index));
     setOpen(true);
   };
@@ -228,7 +240,10 @@ export function SelectMenu({
       {open && (
         <ul
           aria-label={label}
-          className="border-border shadow-soft text-foreground absolute top-[calc(100%+0.5rem)] left-0 z-50 max-h-72 w-full min-w-56 overflow-y-auto rounded-2xl border bg-white p-1.5"
+          className={cn(
+            "border-border shadow-soft text-foreground absolute left-0 z-50 max-h-72 w-full min-w-56 overflow-y-auto rounded-2xl border bg-white p-1.5",
+            dropUp ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]",
+          )}
           id={listId}
           onKeyDown={onKeyDown}
           ref={listRef}
