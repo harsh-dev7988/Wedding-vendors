@@ -494,26 +494,48 @@ export async function getDirectoryParams(): Promise<DirectoryParam[]> {
   );
 }
 
+export type PincodeArea = {
+  readonly cityName: string | null;
+  readonly citySlug: string | null;
+  readonly district: string | null;
+  readonly known: boolean;
+};
+
 /**
- * Whether a pincode can actually be resolved to a point.
+ * Where a pincode is, if we know it.
  *
  * `search_listings` treats an unknown pincode as "no origin", which silently
  * turns the distance filter into a no-op — the visitor sets a radius, gets
- * unfiltered results, and is told nothing. The table currently holds a single
- * row, so that is the outcome for essentially every pincode entered.
- *
- * Surfacing it is not the real fix; loading the full dataset is. Until then a
- * visitor should at least know why their filter did nothing.
+ * unfiltered results, and is told nothing. Returning the area lets the caller
+ * both explain that and, when the pincode *is* known but nothing is nearby,
+ * offer the surrounding city instead of an empty page.
  */
-export async function isKnownPincode(pincode: string | undefined) {
-  if (!pincode || !isSupabaseConfigured()) return true;
+export async function lookupPincode(
+  pincode: string | undefined,
+): Promise<PincodeArea> {
+  const unknown: PincodeArea = {
+    cityName: null,
+    citySlug: null,
+    district: null,
+    known: false,
+  };
+  if (!pincode) return { ...unknown, known: true };
+  if (!isSupabaseConfigured()) return { ...unknown, known: true };
 
   const supabase = createPublicClient();
-  const { count, error } = await supabase
-    .from("pincodes")
-    .select("pincode", { count: "exact", head: true })
-    .eq("pincode", pincode);
+  const { data, error } = await supabase.rpc("lookup_pincode", {
+    requested_pincode: pincode,
+  });
+  const row = Array.isArray(data) ? data[0] : null;
+  // A failed lookup must not masquerade as an unknown pincode — that would
+  // show a misleading message during an outage.
+  if (error) return { ...unknown, known: true };
+  if (!row) return unknown;
 
-  if (error) return true;
-  return (count ?? 0) > 0;
+  return {
+    cityName: (row.city_name as string | null) ?? null,
+    citySlug: (row.city_slug as string | null) ?? null,
+    district: (row.district as string | null) ?? null,
+    known: true,
+  };
 }

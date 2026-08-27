@@ -20,7 +20,8 @@
     "db:verify": "node scripts/db-verify.mjs",
     "db:make-admin": "node scripts/db-make-admin.mjs",
     "media:backfill": "node scripts/media-backfill.mjs",
-    "email:test": "node scripts/email-test.mjs"
+    "email:test": "node scripts/email-test.mjs",
+    "db:pincodes": "node scripts/import-pincodes.mjs"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.8",

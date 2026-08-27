@@ -4,7 +4,7 @@ import { VendorDirectory } from "@/components/marketplace/vendor-directory";
 import { DIRECTORY_PAGE_SIZE } from "@/config/site";
 import {
   getListingFacets,
-  isKnownPincode,
+  lookupPincode,
   searchLiveVendors,
 } from "@/data/live-marketplace";
 import { getCityBySlug } from "@/data/cities";
@@ -86,7 +86,7 @@ export default async function VendorsPage({
   const city = metro?.slug;
   const categorySlug = category?.slug;
 
-  const [live, facets, pincodeKnown] = await Promise.all([
+  const [live, facets, pincodeArea] = await Promise.all([
     searchLiveVendors({
       category: categorySlug,
       city,
@@ -104,7 +104,7 @@ export default async function VendorsPage({
       verifiedOnly,
     }),
     getListingFacets(city, categorySlug),
-    isKnownPincode(pincode),
+    lookupPincode(pincode),
   ]);
   const filtersApplied = Boolean(
     minPrice || maxPrice || minRating || pincode || verifiedOnly,
@@ -118,6 +118,15 @@ export default async function VendorsPage({
           (preview) => !live.vendors.some((item) => item.slug === preview.slug),
         )
       : [];
+
+  // Three distinct outcomes, and an empty page explains none of them: the
+  // pincode is not in the dataset, or it is but nothing serves it, or all is
+  // well.
+  const pincodeNotice = !pincodeArea.known
+    ? `We do not have coordinates for pincode ${pincode} yet, so the distance filter was not applied. Try “Use my location” instead.`
+    : pincode && live.total === 0 && pincodeArea.citySlug
+      ? `No listings reach ${pincodeArea.district ?? pincode} yet.`
+      : undefined;
 
   const vendors = [...live.vendors, ...previewVendors];
   const subject = category?.name ?? "Wedding vendors";
@@ -147,10 +156,14 @@ export default async function VendorsPage({
         verifiedOnly,
       }}
       facets={facets}
-      notice={
-        pincodeKnown
-          ? undefined
-          : `We do not have coordinates for pincode ${pincode} yet, so the distance filter was not applied. Try “Use my location” instead.`
+      notice={pincodeNotice}
+      noticeAction={
+        pincodeArea.known && pincode && live.total === 0 && pincodeArea.citySlug
+          ? {
+              href: `/vendors/${pincodeArea.citySlug}`,
+              label: `See everything in ${pincodeArea.cityName}`,
+            }
+          : undefined
       }
       title={`${subject}${location}`}
       total={live.total}

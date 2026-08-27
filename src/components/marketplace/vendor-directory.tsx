@@ -14,6 +14,8 @@ import { VendorCard } from "./vendor-card";
 type VendorDirectoryProps = {
   /** Shown above the results when a filter could not be honoured. */
   readonly notice?: string;
+  /** An escape route offered alongside the notice, when one exists. */
+  readonly noticeAction?: { readonly href: string; readonly label: string };
   readonly title: string;
   readonly description: string;
   readonly vendors: readonly PublicVendor[];
@@ -32,6 +34,7 @@ type VendorDirectoryProps = {
 
 export function VendorDirectory({
   notice,
+  noticeAction,
   title,
   description,
   vendors,
@@ -69,6 +72,17 @@ export function VendorDirectory({
               role="status"
             >
               {notice}
+              {noticeAction && (
+                <>
+                  {" "}
+                  <Link
+                    className="link-underline underline-offset-2"
+                    href={noticeAction.href}
+                  >
+                    {noticeAction.label}
+                  </Link>
+                </>
+              )}
             </p>
           )}
           <div className="mt-8">
