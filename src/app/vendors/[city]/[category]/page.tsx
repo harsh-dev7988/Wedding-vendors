@@ -6,6 +6,7 @@ import { VendorDirectory } from "@/components/marketplace/vendor-directory";
 import { DIRECTORY_PAGE_SIZE } from "@/config/site";
 import {
   countPublishedListings,
+  getDirectoryParams,
   getListingFacets,
   isIndexableDirectory,
   searchLiveVendors,
@@ -32,8 +33,13 @@ export const revalidate = 300;
 // then discover the route does not exist, which crawlers read as a soft 404.
 export const dynamicParams = false;
 
-export function generateStaticParams() {
-  return getAllDirectoryParams();
+export async function generateStaticParams() {
+  // Database first, so a city added in Supabase produces pages without a
+  // deploy. The seed list is the fallback: if the database is unreachable
+  // during a build, shipping zero directory pages would be far worse than
+  // shipping the last known set.
+  const live = await getDirectoryParams();
+  return live.length > 0 ? live : getAllDirectoryParams();
 }
 
 export async function generateMetadata({

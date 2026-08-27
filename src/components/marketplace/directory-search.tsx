@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 
+import { NearMeButton } from "@/components/marketplace/near-me-button";
 import { SelectMenu } from "@/components/ui/select-menu";
 import { getCategories, getMetros } from "@/data/marketplace";
 
@@ -82,5 +83,15 @@ export function DirectorySearch({
         <Search aria-hidden="true" size={17} /> Search
       </button>
     </form>
+  );
+}
+
+/** The search form plus a location shortcut, for surfaces with room for both. */
+export function DirectorySearchWithNearMe(props: DirectorySearchProps) {
+  return (
+    <div className="space-y-3">
+      <DirectorySearch {...props} />
+      <NearMeButton category={props.category} />
+    </div>
   );
 }

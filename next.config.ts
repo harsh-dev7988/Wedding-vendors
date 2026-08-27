@@ -31,11 +31,12 @@ const securityHeaders = [
       // rebuild callstacks across the server/client boundary, and the dev
       // overlay will not render without it. It is never emitted in production
       // — React does not use eval() there.
-      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://checkout.razorpay.com`,
-      "style-src 'self' 'unsafe-inline'",
-      `img-src 'self' data: blob: https://*.razorpay.com${supabaseOrigin ? ` ${supabaseOrigin}` : ""}`,
-      "font-src 'self' data:",
-      `connect-src 'self' https://*.razorpay.com${isDev ? " ws: http://localhost:*" : ""}${supabaseOrigin ? ` ${supabaseOrigin} ${supabaseOrigin.replace(/^http/, "ws")}` : ""}`,
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://checkout.razorpay.com https://maps.googleapis.com`,
+      // Google Maps injects its own stylesheet and icon font at runtime.
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      `img-src 'self' data: blob: https://*.razorpay.com https://*.googleapis.com https://*.gstatic.com${supabaseOrigin ? ` ${supabaseOrigin}` : ""}`,
+      "font-src 'self' data: https://fonts.gstatic.com",
+      `connect-src 'self' https://*.razorpay.com https://maps.googleapis.com${isDev ? " ws: http://localhost:*" : ""}${supabaseOrigin ? ` ${supabaseOrigin} ${supabaseOrigin.replace(/^http/, "ws")}` : ""}`,
       "frame-src https://api.razorpay.com https://checkout.razorpay.com",
       "form-action 'self' https://api.razorpay.com",
       "frame-ancestors 'none'",

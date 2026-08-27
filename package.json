@@ -23,6 +23,7 @@
     "email:test": "node scripts/email-test.mjs"
   },
   "dependencies": {
+    "@react-google-maps/api": "^2.20.8",
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.112.4",
     "clsx": "^2.1.1",

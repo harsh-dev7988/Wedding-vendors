@@ -4,6 +4,7 @@ import { BadgeCheck, MapPin } from "lucide-react";
 
 import { RatingBadge } from "@/components/ui/rating";
 import { isPreviewVendor, type PublicVendor } from "@/domain/marketplace";
+import { formatDistance, formatServiceRadius } from "@/lib/geo";
 import { formatReviewCount, formatStartingPrice } from "@/lib/format";
 
 import { ShortlistButton } from "./shortlist-button";
@@ -21,6 +22,8 @@ export function VendorCard({
   priority = false,
 }: VendorCardProps) {
   const preview = isPreviewVendor(vendor);
+  const distance = formatDistance(vendor.distanceKm);
+  const travels = formatServiceRadius(vendor.serviceRadiusM);
   const price = formatStartingPrice(vendor.startingPrice, vendor.priceUnit);
 
   return (
@@ -68,9 +71,24 @@ export function VendorCard({
                 {vendor.name}
               </Link>
             </Heading>
-            <p className="text-muted-foreground mt-1 inline-flex items-center gap-1.5 text-sm">
-              <MapPin aria-hidden="true" size={14} /> {vendor.locality}
+            {/* Locality and distance only. The exact point is never sent to
+                the browser — see the column grants on `listings`. */}
+            <p className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin aria-hidden="true" size={14} /> {vendor.locality}
+              </span>
+              {distance && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span className="text-brand-text font-semibold">
+                    {distance}
+                  </span>
+                </>
+              )}
             </p>
+            {travels && !distance && (
+              <p className="text-muted-foreground mt-0.5 text-xs">{travels}</p>
+            )}
           </div>
           <RatingBadge
             rating={vendor.rating}

@@ -24,6 +24,13 @@ function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+/** A coordinate, or undefined for anything out of range or unparseable. */
+function parseCoordinate(value: string | undefined, bound: number) {
+  const parsed = Number.parseFloat(value ?? "");
+  if (!Number.isFinite(parsed) || Math.abs(parsed) > bound) return undefined;
+  return parsed;
+}
+
 /** Every numeric filter is clamped, so a hand-edited URL cannot skew a query. */
 function parseNumber(value: string | undefined, max: number) {
   const parsed = Number.parseFloat(value ?? "");
@@ -49,13 +56,21 @@ export default async function VendorsPage({
   const requestedCategory = first(raw.category);
   const query = first(raw.q)?.slice(0, 80);
   const page = parsePage(raw.page);
+  // Sent by the "use my location" control. Clamped, and only honoured as a
+  // pair — a lone latitude is meaningless.
+  const originLat = parseCoordinate(first(raw.lat), 90);
+  const originLng = parseCoordinate(first(raw.lng), 180);
+  const hasOrigin = originLat !== undefined && originLng !== undefined;
   const minPrice = parseNumber(first(raw.minPrice), 100000000);
   const maxPrice = parseNumber(first(raw.maxPrice), 100000000);
   const minRating = parseNumber(first(raw.minRating), 5);
   const rawPincode = first(raw.pincode);
   const pincode =
     rawPincode && /^[1-9][0-9]{5}$/.test(rawPincode) ? rawPincode : undefined;
-  const radiusKm = pincode ? parseNumber(first(raw.radiusKm), 200) : undefined;
+  const radiusKm =
+    pincode || (originLat !== undefined && originLng !== undefined)
+      ? parseNumber(first(raw.radiusKm), 200)
+      : undefined;
   const verifiedOnly = first(raw.verifiedOnly) === "1";
   const rawSort = first(raw.sort);
   const sort = rawSort && SORTS.has(rawSort) ? (rawSort as never) : undefined;
@@ -76,6 +91,8 @@ export default async function VendorsPage({
       minRating,
       page,
       pageSize: DIRECTORY_PAGE_SIZE,
+      originLat: hasOrigin ? originLat : undefined,
+      originLng: hasOrigin ? originLng : undefined,
       pincode,
       query,
       radiusKm,
@@ -91,7 +108,7 @@ export default async function VendorsPage({
   // Preview fixtures only pad out the first page, and only while real supply is
   // thin. They are never counted as if they were available inventory.
   const previewVendors =
-    page === 1 && !filtersApplied
+    page === 1 && !filtersApplied && !hasOrigin
       ? searchVendors({ category: categorySlug, city, query }).filter(
           (preview) => !live.vendors.some((item) => item.slug === preview.slug),
         )

@@ -1,11 +1,29 @@
 "use client";
 
 import { Plus, Save } from "lucide-react";
-import { useActionState } from "react";
+import dynamic from "next/dynamic";
+import { useActionState, useState } from "react";
 
 import { FieldError, FormAlert } from "@/components/ui/feedback";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { idleState } from "@/lib/action-result";
+import { DEFAULT_SERVICE_RADIUS_M, isFixedLocationCategory } from "@/lib/geo";
+import type { PickedLocation } from "@/components/maps/location-picker";
+
+/**
+ * The Google Maps SDK is roughly 200 KB and is only ever needed here, on a
+ * signed-in dashboard page. `ssr: false` because it touches `window` on load.
+ */
+const LocationPicker = dynamic(
+  () =>
+    import("@/components/maps/location-picker").then((m) => m.LocationPicker),
+  {
+    loading: () => (
+      <div className="bg-muted h-96 w-full animate-pulse rounded-2xl" />
+    ),
+    ssr: false,
+  },
+);
 
 import { createListing, updateListing } from "./actions";
 
@@ -19,7 +37,11 @@ export type ListingDefaults = {
   readonly id?: string;
   readonly locality?: string;
   readonly priceFrom?: string;
+  readonly latitude?: string;
+  readonly longitude?: string;
   readonly priceUnit?: string;
+  readonly serviceRadiusKm?: string;
+  readonly streetAddress?: string;
   readonly summary?: string;
   readonly title?: string;
   readonly vendorId?: string;
@@ -54,6 +76,28 @@ export function ListingForm({
   );
   const errors = state.fieldErrors ?? {};
   const prefix = defaults?.id ?? "new";
+
+  const initialLat = Number(defaults?.latitude);
+  const initialLng = Number(defaults?.longitude);
+  const [location, setLocation] = useState<PickedLocation | null>(
+    Number.isFinite(initialLat) &&
+      Number.isFinite(initialLng) &&
+      defaults?.latitude
+      ? {
+          lat: initialLat,
+          lng: initialLng,
+          locality: defaults?.locality ?? "",
+          streetAddress: defaults?.streetAddress ?? "",
+        }
+      : null,
+  );
+  // Tracked so the service-radius field can disappear for a venue, which is a
+  // fixed place and has no radius.
+  const [categorySlug, setCategorySlug] = useState(
+    defaults?.categorySlug ?? categories[0]?.slug ?? "",
+  );
+  const [locality, setLocality] = useState(defaults?.locality ?? "");
+  const fixedLocation = isFixedLocationCategory(categorySlug);
   const value = (key: keyof ListingDefaults) =>
     state.values?.[key] ?? defaults?.[key] ?? "";
 
@@ -103,6 +147,7 @@ export function ListingForm({
             defaultValue={value("categorySlug")}
             id={`${prefix}-categorySlug`}
             name="categorySlug"
+            onChange={(event) => setCategorySlug(event.currentTarget.value)}
             required
           >
             {categories.map((category) => (
@@ -151,20 +196,82 @@ export function ListingForm({
         <FieldError id={`${prefix}-title-error`} message={errors.title} />
       </label>
 
-      <label
-        className="grid gap-1.5 text-sm font-bold"
-        htmlFor={`${prefix}-locality`}
-      >
-        Locality{" "}
-        <span className="text-muted-foreground font-medium">Optional</span>
+      <fieldset className="grid gap-3">
+        <legend className="text-sm font-bold">Where you are based</legend>
+
+        {/* The picker owns the coordinates; these carry them to the action. */}
+        <input name="latitude" type="hidden" value={location?.lat ?? ""} />
+        <input name="longitude" type="hidden" value={location?.lng ?? ""} />
         <input
-          className="border-border min-h-12 rounded-xl border px-3 font-medium"
-          defaultValue={value("locality")}
-          id={`${prefix}-locality`}
-          maxLength={120}
-          name="locality"
+          name="streetAddress"
+          type="hidden"
+          value={location?.streetAddress ?? ""}
         />
-      </label>
+
+        <LocationPicker
+          defaultValue={location}
+          onChange={(next) => {
+            setLocation(next);
+            // Prefill the public label, still editable — Places sometimes
+            // returns a ward name where the vendor would write a landmark.
+            if (next?.locality) setLocality(next.locality);
+          }}
+        />
+
+        <label
+          className="grid gap-1.5 text-sm font-bold"
+          htmlFor={`${prefix}-locality`}
+        >
+          Neighbourhood shown to customers
+          <input
+            className="border-border min-h-12 rounded-xl border px-3 font-medium"
+            id={`${prefix}-locality`}
+            maxLength={120}
+            name="locality"
+            onChange={(event) => setLocality(event.currentTarget.value)}
+            placeholder="e.g. Vasant Kunj"
+            value={locality}
+          />
+          <span className="text-muted-foreground text-xs">
+            This is the only part of your address customers ever see.
+          </span>
+        </label>
+
+        {fixedLocation ? (
+          <p className="text-muted-foreground text-xs leading-5">
+            Venues are a fixed location, so there is no travel radius —
+            customers come to you.
+          </p>
+        ) : (
+          <label
+            className="grid gap-1.5 text-sm font-bold"
+            htmlFor={`${prefix}-serviceRadiusKm`}
+          >
+            How far will you travel?
+            <div className="flex items-center gap-2">
+              <input
+                className="border-border min-h-12 w-28 rounded-xl border px-3 font-medium"
+                defaultValue={
+                  value("serviceRadiusKm") ||
+                  String(DEFAULT_SERVICE_RADIUS_M / 1000)
+                }
+                id={`${prefix}-serviceRadiusKm`}
+                inputMode="numeric"
+                max={200}
+                min={1}
+                name="serviceRadiusKm"
+                type="number"
+              />
+              <span className="text-muted-foreground text-sm font-medium">
+                km from your base
+              </span>
+            </div>
+            <span className="text-muted-foreground text-xs">
+              Customers searching inside this radius will find you.
+            </span>
+          </label>
+        )}
+      </fieldset>
 
       <label
         className="grid gap-1.5 text-sm font-bold"

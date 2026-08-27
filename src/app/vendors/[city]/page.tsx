@@ -3,9 +3,10 @@ import { ArrowRight, ChevronRight, MapPin } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { DirectorySearch } from "@/components/marketplace/directory-search";
+import { DirectorySearchWithNearMe } from "@/components/marketplace/directory-search";
 import { JsonLd } from "@/components/seo/json-ld";
 import {
+  getDirectoryParams,
   getDirectorySupply,
   isIndexableDirectory,
 } from "@/data/live-marketplace";
@@ -17,8 +18,13 @@ import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 export const revalidate = 300;
 export const dynamicParams = false;
 
-export function generateStaticParams() {
-  return getMetros().map((metro) => ({ city: metro.slug }));
+export async function generateStaticParams() {
+  // See the category page: database first, seed list as the fallback.
+  const live = await getDirectoryParams();
+  const slugs = [...new Set(live.map((row) => row.city))];
+  return slugs.length > 0
+    ? slugs.map((city) => ({ city }))
+    : getMetros().map((metro) => ({ city: metro.slug }));
 }
 
 export async function generateMetadata({
@@ -102,7 +108,7 @@ export default async function CityHubPage({
       </p>
 
       <div className="mt-8 max-w-3xl">
-        <DirectorySearch city={metro.slug} compact />
+        <DirectorySearchWithNearMe city={metro.slug} compact />
       </div>
 
       <h2 className="type-heading mt-14">Browse by category</h2>

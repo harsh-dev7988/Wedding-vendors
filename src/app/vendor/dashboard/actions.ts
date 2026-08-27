@@ -14,6 +14,13 @@ import {
 } from "@/lib/action-result";
 import { requireViewer } from "@/lib/auth";
 import {
+  DEFAULT_SERVICE_RADIUS_M,
+  MAX_SERVICE_RADIUS_M,
+  MIN_SERVICE_RADIUS_M,
+  isFixedLocationCategory,
+  isPlausibleIndianCoordinate,
+} from "@/lib/geo";
+import {
   MAX_IMAGE_BYTES,
   STORED_IMAGE_EXTENSION,
   allVariantPaths,
@@ -58,7 +65,9 @@ const listingSchema = z.object({
     .trim()
     .min(50, "Describe the service in at least 50 characters.")
     .max(10000, "Keep the description under 10,000 characters."),
+  latitude: z.coerce.number().min(-90).max(90).optional(),
   locality: z.string().trim().max(120).optional().default(""),
+  longitude: z.coerce.number().min(-180).max(180).optional(),
   priceFrom: z.coerce.number().int().min(0).max(100000000).optional(),
   priceUnit: z.enum([
     "per_plate",
@@ -75,6 +84,13 @@ const listingSchema = z.object({
     .max(320, "Keep the summary under 320 characters."),
   title: z.string().trim().min(2, "Enter a listing title.").max(160),
   vendorId: z.uuid(),
+  serviceRadiusKm: z.coerce
+    .number()
+    .int()
+    .min(MIN_SERVICE_RADIUS_M / 1000)
+    .max(MAX_SERVICE_RADIUS_M / 1000)
+    .optional(),
+  streetAddress: z.string().trim().max(500).optional().default(""),
   yearsExperience: z.coerce.number().int().min(0).max(100).optional(),
 });
 
@@ -82,7 +98,11 @@ const LISTING_FIELDS = [
   "categorySlug",
   "citySlug",
   "description",
+  "latitude",
   "locality",
+  "longitude",
+  "serviceRadiusKm",
+  "streetAddress",
   "priceFrom",
   "priceUnit",
   "summary",
@@ -96,14 +116,87 @@ function parseListing(formData: FormData) {
     categorySlug: formData.get("categorySlug"),
     citySlug: formData.get("citySlug"),
     description: formData.get("description"),
+    latitude: formData.get("latitude") || undefined,
     locality: formData.get("locality") ?? "",
+    longitude: formData.get("longitude") || undefined,
     priceFrom: formData.get("priceFrom") || undefined,
     priceUnit: formData.get("priceUnit"),
     summary: formData.get("summary"),
     title: formData.get("title"),
     vendorId: formData.get("vendorId"),
+    serviceRadiusKm: formData.get("serviceRadiusKm") || undefined,
+    streetAddress: formData.get("streetAddress") ?? "",
     yearsExperience: formData.get("yearsExperience") || undefined,
   });
+}
+
+type GeoInput = Pick<
+  z.infer<typeof listingSchema>,
+  | "categorySlug"
+  | "latitude"
+  | "longitude"
+  | "serviceRadiusKm"
+  | "streetAddress"
+>;
+
+/**
+ * Turns the picked coordinates into the columns the database expects.
+ *
+ * `geo` is written as WKT rather than through PostGIS helpers because
+ * PostgREST cannot call a function in an insert payload. A trigger keeps
+ * `latitude`/`longitude` in step with it.
+ *
+ * Returns `null` for the geo columns when no location was picked, so a vendor
+ * can save a draft before they have decided where they are.
+ */
+function geoColumns(input: GeoInput) {
+  const hasPoint =
+    typeof input.latitude === "number" && typeof input.longitude === "number";
+
+  if (
+    hasPoint &&
+    !isPlausibleIndianCoordinate(input.latitude!, input.longitude!)
+  ) {
+    return null;
+  }
+
+  // A venue is a fixed place, so it has no service radius at all. Anything
+  // mobile falls back to the 30 km default rather than being unbounded.
+  const radius = isFixedLocationCategory(input.categorySlug)
+    ? null
+    : (input.serviceRadiusKm ?? DEFAULT_SERVICE_RADIUS_M / 1000) * 1000;
+
+  return {
+    geo: hasPoint
+      ? `SRID=4326;POINT(${input.longitude} ${input.latitude})`
+      : null,
+    service_radius_m: radius,
+    street_address: input.streetAddress || null,
+  };
+}
+
+/**
+ * The vendor declares a city and separately picks a point. When those disagree
+ * we trust the geometry and say so, rather than silently filing a Pune venue
+ * under Mumbai — but we do not block, because border cases are real.
+ */
+async function cityMismatchWarning(
+  supabase: Supabase,
+  declaredSlug: string,
+  latitude?: number,
+  longitude?: number,
+) {
+  if (typeof latitude !== "number" || typeof longitude !== "number")
+    return null;
+
+  const { data } = await supabase.rpc("get_nearest_city", {
+    origin_lat: latitude,
+    origin_lng: longitude,
+  });
+  const nearest = Array.isArray(data) ? data[0] : null;
+  if (!nearest || nearest.slug === declaredSlug) return null;
+
+  return `That address looks closest to ${nearest.name}, but you chose a different city. Customers searching ${nearest.name} may not find you.`;
 }
 
 export async function createListing(
@@ -146,6 +239,14 @@ export async function createListing(
     );
   }
 
+  const geo = geoColumns(parsed.data);
+  if (!geo) {
+    return invalid(
+      "That location is outside India. Search for your address again.",
+      { values },
+    );
+  }
+
   const slugBase = createSlug(parsed.data.title) || "listing";
 
   // `listings.slug` is unique. Retry with a fresh suffix rather than surfacing
@@ -157,6 +258,7 @@ export async function createListing(
     const { data, error } = await supabase
       .from("listings")
       .insert({
+        ...geo,
         category_id: category.id,
         description: parsed.data.description,
         locality: parsed.data.locality || null,
@@ -173,8 +275,18 @@ export async function createListing(
       .select("id");
 
     if (!error && data?.length) {
+      const mismatch = await cityMismatchWarning(
+        supabase,
+        parsed.data.citySlug,
+        parsed.data.latitude,
+        parsed.data.longitude,
+      );
       revalidatePath("/vendor/dashboard");
-      redirect("/vendor/dashboard?notice=listing-created");
+      redirect(
+        mismatch
+          ? `/vendor/dashboard/listings?notice=listing-created&warn=${encodeURIComponent(mismatch)}`
+          : "/vendor/dashboard/listings?notice=listing-created",
+      );
     }
     if (error?.code !== "23505") {
       return invalid(
@@ -243,11 +355,20 @@ export async function updateListing(
     return invalid("That city or category is no longer available.", { values });
   }
 
+  const geo = geoColumns(parsed.data);
+  if (!geo) {
+    return invalid(
+      "That location is outside India. Search for your address again.",
+      { values },
+    );
+  }
+
   // Editing returns a listing to draft so a published page can never change
   // without passing moderation again.
   const { data, error } = await supabase
     .from("listings")
     .update({
+      ...geo,
       category_id: category.id,
       description: parsed.data.description,
       locality: parsed.data.locality || null,

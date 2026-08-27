@@ -22,7 +22,7 @@ const LISTING_MEDIA_LIMIT = 12;
  * every review row for up to 60 listings on a single directory render.
  */
 const LISTING_SELECT =
-  "id, slug, title, summary, description, locality, price_from, price_unit, years_experience, rating_avg, rating_count, response_minutes, response_sample_size, published_at, " +
+  "id, slug, title, summary, description, locality, price_from, price_unit, years_experience, rating_avg, rating_count, response_minutes, response_sample_size, service_radius_m, published_at, " +
   "vendors!inner(id, business_name, status, verified_at, verification_expires_at), " +
   // `listings` reaches `cities` twice — through primary_city_id and through
   // listing_service_areas — so PostgREST refuses a bare `cities` embed. Naming the
@@ -54,6 +54,7 @@ type LiveListingRow = {
   rating_count: number;
   response_minutes: number | null;
   response_sample_size: number;
+  service_radius_m: number | null;
   slug: string;
   summary: string;
   title: string;
@@ -113,6 +114,7 @@ function toPublicVendor(
       row.response_sample_size,
     ),
     reviewCount: row.rating_count,
+    serviceRadiusM: row.service_radius_m,
     slug: row.slug,
     startingPrice: row.price_from,
     summary: row.summary,
@@ -138,6 +140,7 @@ type SearchRow = {
   rating_avg: number | null;
   rating_count: number;
   response_minutes: number | null;
+  service_radius_m: number | null;
   slug: string;
   summary: string;
   title: string;
@@ -166,6 +169,8 @@ export async function searchLiveVendors(
     filter_query: search.query ?? null,
     filter_radius_km: search.radiusKm ?? null,
     filter_verified_only: search.verifiedOnly ?? false,
+    origin_lat: search.originLat ?? null,
+    origin_lng: search.originLng ?? null,
     page_limit: pageSize,
     page_offset: (page - 1) * pageSize,
     sort_by: search.sort ?? "recent",
@@ -197,6 +202,7 @@ export async function searchLiveVendors(
       rating: row.rating_count > 0 ? row.rating_avg : null,
       responseTime: formatResponseTime(row.response_minutes, row.rating_count),
       reviewCount: row.rating_count,
+      serviceRadiusM: row.service_radius_m,
       slug: row.slug,
       startingPrice: row.price_from,
       summary: row.summary,
@@ -448,4 +454,42 @@ export async function getListingFacets(
     total: Number(row.total ?? 0),
     verifiedCount: Number(row.verified_count ?? 0),
   };
+}
+
+export type DirectoryParam = { category: string; city: string };
+
+/**
+ * Every city/category pair that should have a page, read from the database.
+ *
+ * Previously this came from a seed file, so cities lived in two places and
+ * adding one in Supabase did nothing until somebody edited code and redeployed.
+ * Reading it here means a row insert produces pages on the next revalidation.
+ *
+ * Falls back to an empty list when Supabase is unreachable at build time; the
+ * caller keeps its seed list for that case, so a transient outage cannot ship a
+ * build with no directory pages at all.
+ */
+export async function getDirectoryParams(): Promise<DirectoryParam[]> {
+  if (!isSupabaseConfigured()) return [];
+
+  const supabase = createPublicClient();
+  const [cities, categories] = await Promise.all([
+    supabase
+      .from("cities")
+      .select("slug")
+      .eq("is_active", true)
+      .order("sort_order"),
+    supabase.from("categories").select("slug").order("sort_order"),
+  ]);
+
+  if (cities.error || categories.error || !cities.data || !categories.data) {
+    return [];
+  }
+
+  return cities.data.flatMap((city) =>
+    (categories.data ?? []).map((category) => ({
+      category: category.slug as string,
+      city: city.slug as string,
+    })),
+  );
 }

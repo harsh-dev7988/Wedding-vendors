@@ -33,6 +33,7 @@ import {
 } from "@/data/marketplace";
 import { isPreviewVendor, type PublicVendor } from "@/domain/marketplace";
 import { getViewer } from "@/lib/auth";
+import { formatServiceRadius } from "@/lib/geo";
 import { formatEventDate } from "@/lib/datetime";
 import { breadcrumbJsonLd, vendorJsonLd } from "@/lib/seo/structured-data";
 
@@ -110,6 +111,7 @@ export default async function VendorProfilePage({
       : getPublishedReviews(vendor.listingId),
   ]);
 
+  const travels = formatServiceRadius(vendor.serviceRadiusM);
   const gallery = vendor.media.length
     ? vendor.media
     : [{ url: vendor.image, alt: vendor.imageAlt }];
@@ -402,6 +404,17 @@ export default async function VendorProfilePage({
                 </ul>
               )}
             </section>
+          )}
+
+          {travels && (
+            <p className="text-muted-foreground mt-6 inline-flex items-center gap-2 text-sm font-semibold">
+              <MapPin
+                aria-hidden="true"
+                className="text-brand-text"
+                size={15}
+              />
+              {travels} from {vendor.locality}
+            </p>
           )}
 
           {/* Preview fixtures are fictional, so there is nothing to report and

@@ -57,6 +57,9 @@ export type PublicVendor = {
   readonly vendorId?: string;
   /** Only set when the search supplied a pincode origin. */
   readonly distanceKm?: number | null;
+  /** How far this business travels, in metres. Null means a fixed location —
+   *  a venue is somewhere you go to. */
+  readonly serviceRadiusM?: number | null;
 };
 
 /** Preview fixtures never carry a listing id, so they can never transact. */
@@ -84,6 +87,10 @@ export type VendorSearch = {
   readonly minRating?: number;
   readonly verifiedOnly?: boolean;
   readonly pincode?: string;
+  /** An explicit search origin, from browser geolocation. Beats `pincode`,
+   *  which can only ever be a postcode centroid. */
+  readonly originLat?: number;
+  readonly originLng?: number;
   readonly radiusKm?: number;
   readonly sort?: VendorSort;
 };
