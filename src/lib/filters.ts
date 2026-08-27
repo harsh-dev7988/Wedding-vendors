@@ -1,6 +1,12 @@
 export type ActiveFilters = {
   readonly category?: string;
   readonly city?: string;
+  /** A search origin from "use my location". Serialised as `lat`/`lng`, the
+   *  names the page parses, and carried through every chip and page change —
+   *  otherwise applying a price filter would silently drop the origin and turn
+   *  a proximity search back into a plain one. */
+  readonly originLat?: number;
+  readonly originLng?: number;
   readonly maxPrice?: number;
   readonly minPrice?: number;
   readonly minRating?: number;
@@ -43,6 +49,16 @@ export function serializeFilters(
   text("city", filters.city);
   text("category", filters.category);
   text("q", filters.q);
+  // Only ever a pair — a lone coordinate is meaningless to the page.
+  if (
+    !skip.has("originLat") &&
+    !skip.has("originLng") &&
+    typeof filters.originLat === "number" &&
+    typeof filters.originLng === "number"
+  ) {
+    params.set("lat", filters.originLat.toFixed(5));
+    params.set("lng", filters.originLng.toFixed(5));
+  }
   number("minPrice", filters.minPrice);
   number("maxPrice", filters.maxPrice);
   number("minRating", filters.minRating);

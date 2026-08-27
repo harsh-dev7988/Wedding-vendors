@@ -73,3 +73,41 @@ describe("parsePage", () => {
     expect(parsePage("7")).toBe(7);
   });
 });
+
+describe("search origin", () => {
+  const origin = { originLat: 28.6315, originLng: 77.2167 };
+
+  it("survives removing an unrelated chip", () => {
+    // The bug this guards: "use my location" was one-shot. Applying or
+    // removing any other filter dropped lat/lng, so a proximity search
+    // silently became a plain one while the sort still said "Nearest".
+    expect(
+      filterHref("/vendors", { ...origin, minPrice: 1000 }, [
+        "minPrice",
+        "maxPrice",
+      ]),
+    ).toBe("/vendors?lat=28.63150&lng=77.21670");
+  });
+
+  it("is removable as a unit, leaving other filters intact", () => {
+    expect(
+      filterHref("/vendors", { ...origin, minPrice: 1000, radiusKm: 25 }, [
+        "originLat",
+        "originLng",
+        "radiusKm",
+      ]),
+    ).toBe("/vendors?minPrice=1000");
+  });
+
+  it("is only emitted as a pair", () => {
+    // A lone coordinate is meaningless to the page, which requires both.
+    expect(filterHref("/vendors", { originLat: 28.6315 })).toBe("/vendors");
+    expect(filterHref("/vendors", { originLng: 77.2167 })).toBe("/vendors");
+  });
+
+  it("survives pagination", () => {
+    expect(filterHref("/vendors", { ...origin, page: 3 })).toBe(
+      "/vendors?lat=28.63150&lng=77.21670&page=3",
+    );
+  });
+});

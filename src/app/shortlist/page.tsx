@@ -6,6 +6,7 @@ import { FormAlert, StatusBanner } from "@/components/ui/feedback";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { getViewer } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/env";
+import { formatServiceRadius } from "@/lib/geo";
 import { formatStartingPrice } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
@@ -21,6 +22,7 @@ type ShortlistRow = {
   listing_id: string;
   listings: {
     locality: string | null;
+    service_radius_m: number | null;
     price_from: number | null;
     price_unit:
       | "per_plate"
@@ -90,7 +92,7 @@ export default async function ShortlistPage({
   const { data, error } = await supabase
     .from("shortlists")
     .select(
-      "listing_id, listings(title, slug, summary, locality, price_from, price_unit, status)",
+      "listing_id, listings(title, slug, summary, locality, price_from, price_unit, service_radius_m, status)",
     )
     .eq("customer_id", viewer.id)
     .order("created_at", { ascending: false });
@@ -145,6 +147,12 @@ export default async function ShortlistPage({
               >
                 <p className="text-muted-foreground text-sm">
                   {listing.locality}
+                  {formatServiceRadius(listing.service_radius_m) && (
+                    <span className="text-muted-foreground">
+                      {" · "}
+                      {formatServiceRadius(listing.service_radius_m)}
+                    </span>
+                  )}
                 </p>
                 <h2 className="type-heading mt-2">
                   <Link

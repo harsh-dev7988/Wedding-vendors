@@ -133,6 +133,8 @@ export default async function VendorsPage({
         maxPrice,
         minPrice,
         minRating,
+        originLat: hasOrigin ? originLat : undefined,
+        originLng: hasOrigin ? originLng : undefined,
         pincode,
         q: query,
         radiusKm,

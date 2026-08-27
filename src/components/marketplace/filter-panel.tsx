@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
 import type { ListingFacets } from "@/data/live-marketplace";
+import { NearMeButton } from "@/components/marketplace/near-me-button";
 import { SelectMenu } from "@/components/ui/select-menu";
 import { DEFAULT_SORT, filterHref, type ActiveFilters } from "@/lib/filters";
 import { formatIndianPrice } from "@/lib/format";
@@ -60,6 +61,18 @@ function chipsFor(filters: ActiveFilters, basePath: string) {
       label: "Verified only",
     });
   }
+  if (filters.originLat !== undefined && filters.originLng !== undefined) {
+    chips.push({
+      href: filterHref(basePath, filters, [
+        "originLat",
+        "originLng",
+        "radiusKm",
+      ]),
+      label: filters.radiusKm
+        ? `Within ${filters.radiusKm} km of you`
+        : "Near your location",
+    });
+  }
   if (filters.pincode) {
     chips.push({
       href: filterHref(basePath, filters, ["pincode", "radiusKm"]),
@@ -95,6 +108,8 @@ export function FilterPanel({
   readonly filters: ActiveFilters;
 }) {
   const chips = chipsFor(filters, basePath);
+  const hasOrigin =
+    filters.originLat !== undefined && filters.originLng !== undefined;
   const [open, setOpen] = useState(false);
   const hasPriceRange =
     facets.minPrice !== null &&
@@ -184,6 +199,14 @@ export function FilterPanel({
           <input name="category" type="hidden" value={filters.category} />
         )}
         {filters.q && <input name="q" type="hidden" value={filters.q} />}
+        {/* Without these, applying any filter would discard the origin and
+            quietly turn a proximity search back into a plain one. */}
+        {hasOrigin && (
+          <>
+            <input name="lat" type="hidden" value={filters.originLat} />
+            <input name="lng" type="hidden" value={filters.originLng} />
+          </>
+        )}
 
         <fieldset className="grid gap-2">
           <legend className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
@@ -244,24 +267,39 @@ export function FilterPanel({
 
         <fieldset className="grid gap-2">
           <legend className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
-            Near a pincode
+            {hasOrigin ? "Distance from you" : "Location"}
           </legend>
+
+          {/* Distance needs an origin. Offer the precise one first — a pincode
+              can only ever resolve to a postcode centroid. */}
+          {!hasOrigin && <NearMeButton category={filters.category} />}
+
           <div className="grid grid-cols-2 gap-2">
-            <label className="grid gap-1 text-xs font-bold" htmlFor="pincode">
-              Pincode
-              <input
-                className={INPUT_CLASS}
-                defaultValue={filters.pincode ?? ""}
-                id="pincode"
-                inputMode="numeric"
-                maxLength={6}
-                name="pincode"
-                pattern="[1-9][0-9]{5}"
-                placeholder="400001"
-                title="Six digits, not starting with zero"
-              />
-            </label>
-            <label className="grid gap-1 text-xs font-bold" htmlFor="radiusKm">
+            {hasOrigin ? (
+              <p className="text-muted-foreground col-span-2 text-xs leading-5">
+                Measuring from your current location. Remove the “Near your
+                location” filter above to search by pincode instead.
+              </p>
+            ) : (
+              <label className="grid gap-1 text-xs font-bold" htmlFor="pincode">
+                Pincode
+                <input
+                  className={INPUT_CLASS}
+                  defaultValue={filters.pincode ?? ""}
+                  id="pincode"
+                  inputMode="numeric"
+                  maxLength={6}
+                  name="pincode"
+                  pattern="[1-9][0-9]{5}"
+                  placeholder="400001"
+                  title="Six digits, not starting with zero"
+                />
+              </label>
+            )}
+            <label
+              className={`grid gap-1 text-xs font-bold ${hasOrigin ? "col-span-2" : ""}`}
+              htmlFor="radiusKm"
+            >
               Distance
               <SelectMenu
                 className="border-border focus:border-brand-text min-h-11 rounded-xl border bg-white px-3 text-sm font-semibold transition"
@@ -305,8 +343,15 @@ export function FilterPanel({
             id="sort"
             label="Sort by"
             name="sort"
+            // "Nearest" needs somewhere to measure from. Offering it without
+            // an origin looked like it worked and silently changed nothing.
             options={SORTS.map((option) => ({
-              label: option.label,
+              disabled:
+                option.value === "distance" && !hasOrigin && !filters.pincode,
+              label:
+                option.value === "distance" && !hasOrigin && !filters.pincode
+                  ? "Nearest (set a location first)"
+                  : option.label,
               value: option.value,
             }))}
             value={filters.sort ?? DEFAULT_SORT}

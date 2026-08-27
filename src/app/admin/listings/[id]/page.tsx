@@ -108,6 +108,16 @@ export default async function AdminListingDetailPage({
 
   const publicUrl = mediaUrlResolver(supabase, "thumb");
 
+  const { data: locationRows } = await supabase.rpc("get_listing_location", {
+    requested_listing_id: listing.id as string,
+  });
+  const location = (Array.isArray(locationRows) ? locationRows[0] : null) as {
+    latitude: number | null;
+    longitude: number | null;
+    service_radius_m: number | null;
+    street_address: string | null;
+  } | null;
+
   const price = formatStartingPrice(
     listing.price_from,
     listing.price_unit.replaceAll("_", " ") as never,
@@ -213,6 +223,39 @@ export default async function AdminListingDetailPage({
               Locality
             </dt>
             <dd className="mt-1 font-bold">{listing.locality ?? "—"}</dd>
+          </div>
+          {/* A moderator approving a business needs the address it claims.
+              This is the only surface that shows it: it is not a readable
+              column, and this page reads it through a definer function scoped
+              to admins and vendor members. */}
+          <div className="sm:col-span-2">
+            <dt className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
+              Address on file
+            </dt>
+            <dd className="mt-1 font-bold">
+              {location?.street_address ?? "Not provided"}
+            </dd>
+            <dd className="text-muted-foreground mt-1 text-sm">
+              {location?.latitude != null && location?.longitude != null ? (
+                <>
+                  Pinned at {location.latitude.toFixed(5)},{" "}
+                  {location.longitude.toFixed(5)} ·{" "}
+                  <a
+                    className="link-underline text-brand-text font-bold"
+                    href={`https://www.google.com/maps?q=${location.latitude},${location.longitude}`}
+                    rel="noreferrer noopener"
+                    target="_blank"
+                  >
+                    open in Maps
+                  </a>
+                </>
+              ) : (
+                "No pin set — this listing is matched by its city only."
+              )}
+              {location?.service_radius_m
+                ? ` · travels up to ${Math.round(location.service_radius_m / 1000)} km`
+                : " · fixed location"}
+            </dd>
           </div>
           <div>
             <dt className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
