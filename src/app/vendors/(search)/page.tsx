@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 
 import { VendorDirectory } from "@/components/marketplace/vendor-directory";
 import { DIRECTORY_PAGE_SIZE } from "@/config/site";
-import { getListingFacets, searchLiveVendors } from "@/data/live-marketplace";
+import {
+  getListingFacets,
+  isKnownPincode,
+  searchLiveVendors,
+} from "@/data/live-marketplace";
 import { getCityBySlug } from "@/data/cities";
 import { getCategoryBySlug, searchVendors } from "@/data/marketplace";
 import { parsePage } from "@/lib/pagination";
@@ -82,7 +86,7 @@ export default async function VendorsPage({
   const city = metro?.slug;
   const categorySlug = category?.slug;
 
-  const [live, facets] = await Promise.all([
+  const [live, facets, pincodeKnown] = await Promise.all([
     searchLiveVendors({
       category: categorySlug,
       city,
@@ -100,6 +104,7 @@ export default async function VendorsPage({
       verifiedOnly,
     }),
     getListingFacets(city, categorySlug),
+    isKnownPincode(pincode),
   ]);
   const filtersApplied = Boolean(
     minPrice || maxPrice || minRating || pincode || verifiedOnly,
@@ -142,6 +147,11 @@ export default async function VendorsPage({
         verifiedOnly,
       }}
       facets={facets}
+      notice={
+        pincodeKnown
+          ? undefined
+          : `We do not have coordinates for pincode ${pincode} yet, so the distance filter was not applied. Try “Use my location” instead.`
+      }
       title={`${subject}${location}`}
       total={live.total}
       vendors={vendors}

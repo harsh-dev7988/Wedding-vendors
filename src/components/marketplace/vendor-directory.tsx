@@ -12,6 +12,8 @@ import { FilterPanel } from "./filter-panel";
 import { VendorCard } from "./vendor-card";
 
 type VendorDirectoryProps = {
+  /** Shown above the results when a filter could not be honoured. */
+  readonly notice?: string;
   readonly title: string;
   readonly description: string;
   readonly vendors: readonly PublicVendor[];
@@ -29,6 +31,7 @@ type VendorDirectoryProps = {
 };
 
 export function VendorDirectory({
+  notice,
   title,
   description,
   vendors,
@@ -60,6 +63,14 @@ export function VendorDirectory({
           <p className="text-muted-foreground mt-4 max-w-3xl leading-7">
             {description}
           </p>
+          {notice && (
+            <p
+              className="border-brand-text/25 bg-brand-soft text-brand-text mt-5 max-w-3xl rounded-2xl border px-4 py-3 text-sm font-semibold"
+              role="status"
+            >
+              {notice}
+            </p>
+          )}
           <div className="mt-8">
             <DirectorySearch
               category={category}

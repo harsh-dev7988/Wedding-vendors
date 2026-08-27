@@ -16,6 +16,24 @@ const LIBRARIES: "places"[] = ["places"];
 
 const MAP_STYLE = { borderRadius: "1rem", height: "18rem", width: "100%" };
 
+/**
+ * `sublocality` is the neighbourhood ("Vasant Kunj"); `locality` is the city.
+ * The neighbourhood is the useful public label, so it is preferred.
+ */
+function localityFrom(
+  components: google.maps.GeocoderAddressComponent[] | undefined,
+) {
+  const pick = (type: string) =>
+    components?.find((component) => component.types.includes(type))?.long_name;
+  return (
+    pick("sublocality_level_1") ??
+    pick("sublocality") ??
+    pick("neighborhood") ??
+    pick("locality") ??
+    ""
+  );
+}
+
 export type PickedLocation = {
   readonly lat: number;
   readonly lng: number;
@@ -59,6 +77,7 @@ export function LocationPicker({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const sessionTokenRef =
     useRef<google.maps.places.AutocompleteSessionToken | null>(null);
+  const geocoderRef = useRef<google.maps.Geocoder | null>(null);
 
   const publish = useCallback(
     (next: PickedLocation | null) => {
@@ -91,17 +110,7 @@ export function LocationPicker({
     // Consumed — the next keystroke starts a fresh billable session.
     sessionTokenRef.current = null;
 
-    // `sublocality` is the neighbourhood ("Vasant Kunj"); `locality` is the
-    // city. The neighbourhood is the useful public label, so prefer it.
-    const components = place.address_components ?? [];
-    const pick = (type: string) =>
-      components.find((c) => c.types.includes(type))?.long_name;
-    const locality =
-      pick("sublocality_level_1") ??
-      pick("sublocality") ??
-      pick("neighborhood") ??
-      pick("locality") ??
-      "";
+    const locality = localityFrom(place.address_components);
 
     moveTo(
       point.lat(),
@@ -112,11 +121,39 @@ export function LocationPicker({
     mapRef.current?.setZoom(16);
   };
 
+  /**
+   * Dragging used to move the point while leaving the address and locality
+   * untouched. The locality is the only location string published, so a vendor
+   * who nudged the pin two kilometres was left advertising the wrong
+   * neighbourhood. Reverse geocoding keeps the label honest.
+   *
+   * If the lookup fails the point still moves — a slightly stale label is a far
+   * better outcome than refusing the correction the vendor came here to make.
+   */
   const onMarkerDragEnd = (event: google.maps.MapMouseEvent) => {
     const point = event.latLng;
     if (!point || !picked) return;
-    // Dragging adjusts the point; the address text the vendor chose stands.
-    moveTo(point.lat(), point.lng(), picked.streetAddress, picked.locality);
+
+    const lat = point.lat();
+    const lng = point.lng();
+    moveTo(lat, lng, picked.streetAddress, picked.locality);
+
+    geocoderRef.current ??= new google.maps.Geocoder();
+    geocoderRef.current
+      .geocode({ location: { lat, lng } })
+      .then(({ results }) => {
+        const best = results[0];
+        if (!best) return;
+        moveTo(
+          lat,
+          lng,
+          best.formatted_address ?? picked.streetAddress,
+          localityFrom(best.address_components) || picked.locality,
+        );
+      })
+      .catch(() => {
+        // Keep the moved point and the previous label.
+      });
   };
 
   if (!apiKey) {

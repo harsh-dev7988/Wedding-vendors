@@ -493,3 +493,27 @@ export async function getDirectoryParams(): Promise<DirectoryParam[]> {
     })),
   );
 }
+
+/**
+ * Whether a pincode can actually be resolved to a point.
+ *
+ * `search_listings` treats an unknown pincode as "no origin", which silently
+ * turns the distance filter into a no-op — the visitor sets a radius, gets
+ * unfiltered results, and is told nothing. The table currently holds a single
+ * row, so that is the outcome for essentially every pincode entered.
+ *
+ * Surfacing it is not the real fix; loading the full dataset is. Until then a
+ * visitor should at least know why their filter did nothing.
+ */
+export async function isKnownPincode(pincode: string | undefined) {
+  if (!pincode || !isSupabaseConfigured()) return true;
+
+  const supabase = createPublicClient();
+  const { count, error } = await supabase
+    .from("pincodes")
+    .select("pincode", { count: "exact", head: true })
+    .eq("pincode", pincode);
+
+  if (error) return true;
+  return (count ?? 0) > 0;
+}
