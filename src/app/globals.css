@@ -73,6 +73,21 @@
     box-sizing: border-box;
     border-color: var(--border);
   }
+
+  /* Form controls carry an intrinsic width, and a grid or flex child defaults
+   * to `min-width: auto` — so a control refuses to shrink below that width even
+   * when its track can. A bare `<input type="number">` falls back to the
+   * 20-character default and rendered 214px wide in a 140px column, laying its
+   * right border across the control beside it. It was invisible on the sibling
+   * that happened to declare `max={100}`, because that lets the browser size
+   * for three digits. Sizing must not depend on which validation attributes a
+   * field happens to carry, so remove the floor for every control.
+   * Layered, so a deliberate `min-w-*` utility still wins. */
+  input,
+  select,
+  textarea {
+    min-width: 0;
+  }
 }
 
 html {

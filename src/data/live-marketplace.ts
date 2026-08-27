@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { INDEXABLE_SUPPLY_THRESHOLD } from "@/config/site";
 import type {
   PriceUnit,
@@ -415,8 +417,12 @@ export type ListingFacets = {
   verifiedCount: number;
 };
 
-/** Price and rating bounds for a city/category, so the UI never invents ranges. */
-export async function getListingFacets(
+/** Price and rating bounds for a city/category, so the UI never invents ranges.
+ *
+ * Request-cached: `generateMetadata` needs the price floor for the description
+ * and the page needs the same bounds for the filter panel. Without this they
+ * are two identical round trips per directory render. */
+export const getListingFacets = cache(async function getListingFacets(
   citySlug?: string,
   categorySlug?: string,
 ): Promise<ListingFacets> {
@@ -454,7 +460,7 @@ export async function getListingFacets(
     total: Number(row.total ?? 0),
     verifiedCount: Number(row.verified_count ?? 0),
   };
-}
+});
 
 export type DirectoryParam = { category: string; city: string };
 

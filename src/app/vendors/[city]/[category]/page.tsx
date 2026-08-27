@@ -99,12 +99,16 @@ export default async function CityCategoryPage({
 
   if (!metro || !categoryDetails) notFound();
 
-  const live = await searchLiveVendors({
-    category: categoryDetails.slug,
-    city: metro.slug,
-    page: 1,
-    pageSize: DIRECTORY_PAGE_SIZE,
-  });
+  const [live, facets] = await Promise.all([
+    searchLiveVendors({
+      category: categoryDetails.slug,
+      city: metro.slug,
+      page: 1,
+      pageSize: DIRECTORY_PAGE_SIZE,
+    }),
+    // Request-cached, so this is the same round trip `generateMetadata` made.
+    getListingFacets(metro.slug, categoryDetails.slug),
+  ]);
 
   const previewVendors = searchVendors({
     category: categoryDetails.slug,
@@ -134,9 +138,18 @@ export default async function CityCategoryPage({
         ])}
       />
       <VendorDirectory
+        // The city and category are this page's identity, not filters — the
+        // panel has no controls for them and carries them as hidden fields, so
+        // refining never navigates away from the pair the visitor chose.
+        activeFilters={{
+          category: categoryDetails.slug,
+          city: metro.slug,
+        }}
         basePath={`/vendors/${metro.slug}/${categoryDetails.slug}`}
         category={categoryDetails.slug}
         city={metro.slug}
+        facets={facets}
+        filterBasePath="/vendors"
         description={`Compare ${categoryDetails.name.toLocaleLowerCase("en-IN")} serving ${metro.name}. Public profiles contain service information only; direct contact is released after a validated enquiry.`}
         moreHref={
           live.total > DIRECTORY_PAGE_SIZE

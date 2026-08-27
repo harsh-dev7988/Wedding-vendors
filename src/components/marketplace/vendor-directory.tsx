@@ -23,6 +23,18 @@ type VendorDirectoryProps = {
   readonly page: number;
   readonly pageSize: number;
   readonly basePath: string;
+  /**
+   * Where refining a filter should land, when that is not this page.
+   *
+   * A `/vendors/[city]/[category]` page is prerendered, and reading
+   * `searchParams` there would opt all sixty of them into dynamic rendering.
+   * So the panel is rendered on the directory page — that is where people
+   * actually arrive — but submitting it navigates to the dynamic search route,
+   * which carries the city and category through as hidden fields. The
+   * unfiltered directory stays the cacheable, canonical, indexable page and a
+   * refined view is correctly a `noindex` one.
+   */
+  readonly filterBasePath?: string;
   /** Set when a static landing page defers deeper pages to the search route. */
   readonly moreHref?: string;
   readonly city?: string;
@@ -42,6 +54,7 @@ export function VendorDirectory({
   page,
   pageSize,
   basePath,
+  filterBasePath,
   moreHref,
   city,
   category,
@@ -141,7 +154,7 @@ export function VendorDirectory({
           {facets ? (
             <div className="lg:sticky lg:top-24 lg:self-start">
               <FilterPanel
-                basePath={basePath}
+                basePath={filterBasePath ?? basePath}
                 facets={facets}
                 filters={activeFilters ?? {}}
               />
@@ -194,7 +207,7 @@ export function VendorDirectory({
                 </p>
                 <Link
                   className="bg-brand-solid hover:bg-brand-solid-hover mt-6 inline-flex min-h-11 items-center gap-2 rounded-full px-5 text-sm font-bold text-white transition"
-                  href="/vendors"
+                  href={basePath}
                 >
                   Clear filters <ArrowRight aria-hidden="true" size={16} />
                 </Link>
