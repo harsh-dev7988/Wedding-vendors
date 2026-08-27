@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import { DirectoryPage } from "@/components/marketplace/directory-page";
 import {
@@ -82,14 +82,16 @@ export default async function CityCategoryPage({
   const { city, category } = await params;
 
   // Venues are their own section now. These URLs were indexable, so a real one
-  // redirects rather than 404s — a permanent move, not a dead page.
+  // redirects rather than 404s, and permanently (308) rather than temporarily:
+  // a 307 tells a crawler to keep the old URL in the index and check back,
+  // which is the opposite of what a completed move should say.
   //
   // The city is resolved first so a URL that never existed still answers with a
   // real 404 instead of a redirect to one. A 307 pointing at a 404 tells a
   // crawler the page moved, which is worse than saying it was never there.
   if (getCategoryBySlug(category)?.kind === "venue") {
     if (!(await getCityBySlug(city))) notFound();
-    redirect(`/venues/${city}`);
+    permanentRedirect(`/venues/${city}`);
   }
 
   return (

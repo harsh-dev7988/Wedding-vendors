@@ -16,7 +16,6 @@ export const metadata: Metadata = {
 type VendorRow = {
   business_name: string;
   id: string;
-  legal_name: string | null;
   status: string;
 };
 
@@ -44,9 +43,14 @@ export default async function VendorSettingsPage() {
 
   const [{ data: vendorRows }, { data: contactRows }] = vendorIds.length
     ? await Promise.all([
+        // `legal_name` is not selected here. `vendors` is readable by anyone
+        // for any approved business, so the column is granted to no client
+        // role — and naming it made PostgREST refuse the whole request, which
+        // this page rendered as "you do not manage a business yet" to an
+        // owner. It comes from the definer RPC below instead.
         supabase
           .from("vendors")
-          .select("id, business_name, legal_name, status")
+          .select("id, business_name, status")
           .in("id", vendorIds),
         // Readable only by owners and managers under the `members read
         // contacts` policy, so an editor simply sees blank fields.
@@ -58,6 +62,15 @@ export default async function VendorSettingsPage() {
     : [{ data: [] }, { data: [] }];
 
   const vendors = (vendorRows ?? []) as VendorRow[];
+  const { data: privateRows } = await supabase.rpc(
+    "get_vendor_private_details",
+    { requested_vendor_ids: vendorIds },
+  );
+  const legalNameById = new Map(
+    (
+      (privateRows ?? []) as Array<{ id: string; legal_name: string | null }>
+    ).map((row) => [row.id, row.legal_name]),
+  );
   const contacts = new Map(
     ((contactRows ?? []) as ContactRow[]).map((row) => [row.vendor_id, row]),
   );
@@ -106,7 +119,7 @@ export default async function VendorSettingsPage() {
                 defaults={{
                   businessName: vendor.business_name,
                   email: contact?.email ?? "",
-                  legalName: vendor.legal_name ?? "",
+                  legalName: legalNameById.get(vendor.id) ?? "",
                   phone: contact?.phone_e164 ?? "",
                   vendorId: vendor.id,
                   whatsapp: contact?.whatsapp_e164 ?? "",

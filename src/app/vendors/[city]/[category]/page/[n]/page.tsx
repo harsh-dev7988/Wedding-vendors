@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import {
   DirectoryPage,
@@ -74,12 +74,12 @@ export default async function CityCategoryPagedPage({
   const page = parsePageSegment(n);
   if (!page) notFound();
   // Page one lives at the canonical URL; two URLs for it would be duplicates.
-  if (page === 1) redirect(`/vendors/${city}/${category}`);
+  if (page === 1) permanentRedirect(`/vendors/${city}/${category}`);
   // Same as page one: an unknown city answers 404 rather than redirecting to
   // one, so a URL that never existed is never reported as having moved.
   if (getCategoryBySlug(category)?.kind === "venue") {
     if (!(await getCityBySlug(city))) notFound();
-    redirect(`/venues/${city}/page/${page}`);
+    permanentRedirect(`/venues/${city}/page/${page}`);
   }
 
   return (

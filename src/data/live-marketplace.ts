@@ -486,7 +486,14 @@ export async function getDirectoryParams(): Promise<DirectoryParam[]> {
       .select("slug")
       .eq("is_active", true)
       .order("sort_order"),
-    supabase.from("categories").select("slug").order("sort_order"),
+    // Services only. Venues have their own routes, and generating
+    // /vendors/[city]/venues as well would prerender twelve pages whose entire
+    // job is to redirect — pages a crawler still has to fetch to learn that.
+    supabase
+      .from("categories")
+      .select("slug")
+      .eq("kind", "service")
+      .order("sort_order"),
   ]);
 
   if (cities.error || categories.error || !cities.data || !categories.data) {

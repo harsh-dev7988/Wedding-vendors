@@ -56,13 +56,37 @@ export default async function AdminVendorDetailPage({
   const { data } = await supabase
     .from("vendors")
     .select(
-      "id, business_name, legal_name, status, verified_at, verification_expires_at, moderated_at, moderation_note, created_at",
+      // `legal_name`, `moderated_at` and `moderation_note` are granted to no
+      // client role — `vendors` is world-readable for any approved business,
+      // so a moderator note would be public. Naming them here made PostgREST
+      // refuse the request and this page 404 for every vendor.
+      "id, business_name, status, verified_at, verification_expires_at, created_at",
     )
     .eq("id", id)
     .maybeSingle();
 
   if (!data) notFound();
-  const vendor = data as unknown as VendorDetail;
+  // The private half comes from a definer RPC restricted to members and admins.
+  const { data: privateRows } = await supabase.rpc(
+    "get_vendor_private_details",
+    { requested_vendor_ids: [id] },
+  );
+  const priv = (privateRows ?? [])[0] as
+    | {
+        legal_name: string | null;
+        moderated_at: string | null;
+        moderation_note: string | null;
+      }
+    | undefined;
+  const vendor = {
+    ...(data as unknown as Omit<
+      VendorDetail,
+      "legal_name" | "moderated_at" | "moderation_note"
+    >),
+    legal_name: priv?.legal_name ?? null,
+    moderated_at: priv?.moderated_at ?? null,
+    moderation_note: priv?.moderation_note ?? null,
+  } as VendorDetail;
 
   // Admins can read `vendor_contacts` under the `members read contacts`
   // policy. Verifying a business without seeing its contact details was

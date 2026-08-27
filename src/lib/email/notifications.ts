@@ -87,11 +87,21 @@ export async function notifyVendorOfListingDecision(input: {
     const supabase = await createClient();
     const { data } = await supabase
       .from("listings")
-      .select("id, title, slug, vendor_id, moderated_at")
+      // `moderated_at` is granted to no client role, and naming it made this
+      // query fail outright — so this returned early and no listing moderation
+      // email was ever sent. It comes from the definer RPC below.
+      .select("id, title, slug, vendor_id")
       .eq("id", input.listingId)
       .maybeSingle();
 
     if (!data) return;
+    const { data: privateRows } = await supabase.rpc(
+      "get_listing_private_details",
+      { requested_listing_ids: [input.listingId] },
+    );
+    const moderatedAt =
+      ((privateRows ?? [])[0] as { moderated_at: string | null } | undefined)
+        ?.moderated_at ?? "";
     const email = await getVendorEmail(data.vendor_id as string);
     if (!email) return;
 
@@ -104,7 +114,7 @@ export async function notifyVendorOfListingDecision(input: {
       }),
       // Keyed on the moderation timestamp so a later decision on the same
       // listing sends again, but a retry of this one does not.
-      dedupeKey: `listing-${input.action}:${input.listingId}:${data.moderated_at ?? ""}`,
+      dedupeKey: `listing-${input.action}:${input.listingId}:${moderatedAt}`,
       template: `listing-${input.action}`,
       to: email,
     });

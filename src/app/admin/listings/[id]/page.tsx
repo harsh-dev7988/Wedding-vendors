@@ -71,13 +71,30 @@ export default async function AdminListingDetailPage({
   const { data } = await supabase
     .from("listings")
     .select(
-      "id, vendor_id, slug, title, summary, description, locality, price_from, price_unit, years_experience, status, published_at, moderated_at, moderation_note, rating_count, created_at, vendors(id, business_name, status, verification_expires_at), cities(name), categories(name)",
+      // `moderated_at` and `moderation_note` are granted to no client role —
+      // `listings` is world-readable for any published listing, so a moderator
+      // note would be public. Naming them made PostgREST refuse the request
+      // and this page 404 for every listing.
+      "id, vendor_id, slug, title, summary, description, locality, price_from, price_unit, years_experience, status, published_at, rating_count, created_at, vendors(id, business_name, status, verification_expires_at), cities(name), categories(name)",
     )
     .eq("id", id)
     .maybeSingle();
 
   if (!data) notFound();
-  const listing = data as unknown as ListingDetail;
+  const { data: privateRows } = await supabase.rpc(
+    "get_listing_private_details",
+    { requested_listing_ids: [id] },
+  );
+  const priv = (privateRows ?? [])[0] as
+    { moderated_at: string | null; moderation_note: string | null } | undefined;
+  const listing = {
+    ...(data as unknown as Omit<
+      ListingDetail,
+      "moderated_at" | "moderation_note"
+    >),
+    moderated_at: priv?.moderated_at ?? null,
+    moderation_note: priv?.moderation_note ?? null,
+  } as ListingDetail;
 
   const [{ data: mediaRows }, { data: reportRows }] = await Promise.all([
     supabase
