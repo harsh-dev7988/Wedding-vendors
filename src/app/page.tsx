@@ -12,6 +12,7 @@ import {
 
 import { SelectMenu } from "@/components/ui/select-menu";
 import { launchCategories } from "@/config/categories";
+import { getServiceCategories, getVenueCategory } from "@/data/marketplace";
 import { nextImageSrcSet, nextImageUrl } from "@/lib/image-url";
 import { getCities } from "@/data/cities";
 
@@ -177,6 +178,11 @@ export default async function HomePage() {
                 name="category"
                 options={[
                   { label: "Any category", value: "" },
+                  // Every category, venues included. The hero is a search
+                  // box, not a section: picking Venues posts to /vendors,
+                  // which the proxy redirects to /venues. Dropping it here
+                  // would make the one thing the subheading names first
+                  // unreachable from the site's most prominent control.
                   ...launchCategories.map((category) => ({
                     label: category.name,
                     value: category.slug,
@@ -272,12 +278,48 @@ export default async function HomePage() {
         className="mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-24"
         id="categories"
       >
-        <div className="reveal flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+        {/* Venues lead, and they lead alone. The venue fixes the date, the
+            guest count and much of the budget; every other booking is made
+            around it. Listing it as one tile among six said the opposite. */}
+        <Link
+          className="group border-border shadow-soft hover:border-brand-text/30 motion-lift reveal relative block overflow-hidden rounded-[2rem] border bg-white"
+          href="/venues"
+        >
+          <div className="relative aspect-[16/9] overflow-hidden md:aspect-[21/9]">
+            <Image
+              alt={getVenueCategory().imageAlt}
+              className="motion-zoom object-cover"
+              fill
+              sizes="(min-width: 1280px) 76rem, 100vw"
+              src={getVenueCategory().image}
+            />
+            <div className="from-foreground/90 via-foreground/30 absolute inset-0 bg-gradient-to-t to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-7 text-white md:p-10">
+              <p className="eyebrow text-accent-gold">Book this first</p>
+              <h2 className="type-title mt-3 max-w-xl">
+                Find your <span className="type-accent">venue.</span>
+              </h2>
+              <p className="mt-3 max-w-xl leading-7 text-white/85">
+                Banquet halls, lawns, resorts and destination spaces across
+                India — with real starting prices and service areas.
+              </p>
+              <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold">
+                Browse venues
+                <ArrowRight
+                  aria-hidden="true"
+                  className="transition group-hover:translate-x-1"
+                  size={16}
+                />
+              </span>
+            </div>
+          </div>
+        </Link>
+
+        <div className="reveal mt-16 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
-            <p className="eyebrow text-brand-text">Launch categories</p>
+            <p className="eyebrow text-brand-text">Everything else</p>
             <h2 className="type-title mt-4 max-w-xl">
-              Start with what couples book{" "}
-              <span className="type-accent">first.</span>
+              Then build the day <span className="type-accent">around it.</span>
             </h2>
           </div>
           <p className="text-muted-foreground max-w-md leading-7">
@@ -288,7 +330,7 @@ export default async function HomePage() {
         </div>
 
         <div className="reveal-stagger mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {launchCategories.map((category, index) => (
+          {getServiceCategories().map((category, index) => (
             <Link
               className={`group border-border shadow-soft hover:border-brand-text/30 motion-lift relative overflow-hidden rounded-[1.75rem] border bg-white ${
                 // The first tile runs full width on large screens, which turns

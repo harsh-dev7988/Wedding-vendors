@@ -15,6 +15,15 @@ type PaginationProps = {
   /** What is being paged through, for the "1-25 of 40 X" summary. */
   readonly noun?: string;
   readonly page: number;
+  /**
+   * Build a page's URL as a path instead of a `?page=` parameter.
+   *
+   * A prerendered directory cannot read `searchParams` without opting the whole
+   * route into dynamic rendering, so its pages are real routes —
+   * `/venues/mumbai/page/2`. That is also the better URL for a page a crawler
+   * is meant to index.
+   */
+  readonly pageHref?: (page: number) => string;
   readonly pageSize: number;
   readonly total: number;
 };
@@ -29,6 +38,7 @@ export function Pagination({
   filters = {},
   noun = "listings",
   page,
+  pageHref,
   pageSize,
   total,
 }: PaginationProps) {
@@ -39,6 +49,7 @@ export function Pagination({
   const last = Math.min(page * pageSize, total);
 
   const hrefFor = (target: number) => {
+    if (pageHref) return pageHref(target);
     const href = filterHref(basePath, { ...filters, page: target });
     const extras = Object.entries(extraParams ?? {}).filter(
       ([, value]) => value,

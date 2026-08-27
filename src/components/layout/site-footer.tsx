@@ -44,7 +44,11 @@ export async function SiteFooter() {
               <li key={category.slug}>
                 <Link
                   className="inline-flex min-h-11 items-center hover:text-white"
-                  href={`/vendors?category=${category.slug}`}
+                  href={
+                    category.kind === "venue"
+                      ? "/venues"
+                      : `/vendors?category=${category.slug}`
+                  }
                 >
                   {category.name}
                 </Link>

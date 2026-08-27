@@ -6,6 +6,15 @@ import { updateSession } from "@/lib/supabase/proxy";
 /** Where a PKCE `code` is actually exchanged for a session. */
 const CONFIRM_PATH = "/auth/confirm";
 
+/**
+ * Categories that moved out of the vendor directory into their own section.
+ *
+ * Hardcoded rather than read from the database because the proxy runs on every
+ * request and must not make a round trip to decide a redirect. The set changes
+ * roughly never; when it does, it changes here.
+ */
+const RELOCATED_CATEGORIES: Record<string, string> = { venues: "/venues" };
+
 export async function proxy(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
 
@@ -30,6 +39,25 @@ export async function proxy(request: NextRequest) {
       ),
     );
     return NextResponse.redirect(confirm);
+  }
+
+  // `/vendors?category=venues` has to redirect from the edge, not the page.
+  // The search route has a `loading.tsx`, which streams a 200 shell before the
+  // page can run — so a `redirect()` inside it only ever takes effect in the
+  // browser, and a crawler sees a 200 for a URL that has genuinely moved. The
+  // path form, `/vendors/[city]/venues`, has no such boundary and redirects
+  // from the page itself.
+  if (request.nextUrl.pathname === "/vendors") {
+    const category = request.nextUrl.searchParams.get("category");
+    const moved = category ? RELOCATED_CATEGORIES[category] : undefined;
+    if (moved) {
+      const target = new URL(moved, request.nextUrl.origin);
+      // Everything except the category, which the destination now implies.
+      for (const [key, value] of request.nextUrl.searchParams) {
+        if (key !== "category") target.searchParams.append(key, value);
+      }
+      return NextResponse.redirect(target, 308);
+    }
   }
 
   return updateSession(request);

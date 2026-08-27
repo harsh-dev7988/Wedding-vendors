@@ -11,7 +11,7 @@ import {
   isIndexableDirectory,
 } from "@/data/live-marketplace";
 import { getCities, getCityBySlug } from "@/data/cities";
-import { getCategories } from "@/data/marketplace";
+import { getServiceCategories } from "@/data/marketplace";
 import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 
 // Same cadence as the category pages below it, so a newly published listing
@@ -68,7 +68,9 @@ export default async function CityHubPage({
       (row) => row.citySlug === metro.slug && row.categorySlug === categorySlug,
     )?.total ?? 0;
 
-  const categories = getCategories().map((category) => ({
+  // Venues are linked separately below; a city hub that lists them beside
+  // services would send people to a page that no longer exists.
+  const categories = getServiceCategories().map((category) => ({
     ...category,
     total: countFor(category.slug),
   }));
@@ -86,7 +88,12 @@ export default async function CityHubPage({
       <nav aria-label="Breadcrumb">
         <ol className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-sm">
           <li>
-            <Link className="hover:text-foreground" href="/vendors">
+            {/* An 18px-tall link is hard to hit on a phone; the row height is
+                unchanged because the sibling crumbs sit on the same line. */}
+            <Link
+              className="hover:text-foreground inline-flex min-h-11 items-center"
+              href="/vendors"
+            >
               Vendors
             </Link>
           </li>
@@ -114,6 +121,31 @@ export default async function CityHubPage({
       <div className="mt-8 max-w-3xl">
         <DirectorySearchWithNearMe city={metro.slug} compact />
       </div>
+
+      {/* Venues first and on their own, because the venue is the booking that
+          constrains every other one. */}
+      <Link
+        className="border-brand-text/25 bg-brand-soft hover:border-brand-text/50 group mt-12 flex flex-col justify-between gap-4 rounded-3xl border p-6 transition sm:flex-row sm:items-center"
+        href={`/venues/${metro.slug}`}
+      >
+        <span>
+          <span className="text-brand-text block text-lg font-bold">
+            Wedding venues in {metro.name}
+          </span>
+          <span className="text-muted-foreground mt-1 block text-sm">
+            Banquet halls, lawns, resorts and hotels — start here, then book the
+            rest around your date.
+          </span>
+        </span>
+        <span className="text-brand-text inline-flex shrink-0 items-center gap-1.5 text-sm font-bold">
+          Browse venues
+          <ArrowRight
+            aria-hidden="true"
+            className="transition group-hover:translate-x-0.5"
+            size={15}
+          />
+        </span>
+      </Link>
 
       <h2 className="type-heading mt-14">Browse by category</h2>
       <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
 
-import { launchCategories } from "@/config/categories";
+import { getServiceCategories } from "@/data/marketplace";
 import { getCities } from "@/data/cities";
 
 import { AccountControl } from "./account-control";
@@ -15,8 +15,11 @@ import { NotificationBell } from "./notification-bell";
  * carries categories and cities; these are the standalone ones.
  */
 const PRIMARY_LINKS = [
+  // Venues sit beside the vendor directory rather than inside it. You book one
+  // venue and it fixes the date, the guest count and much of the budget;
+  // everything else is chosen around it, so it is not one category among six.
+  { href: "/venues", label: "Venues" },
   { href: "/vendors", label: "All vendors" },
-  { href: "/trust-and-safety", label: "How it works" },
   { href: "/for-vendors", label: "For vendors" },
   { href: "/contact", label: "Contact" },
 ] as const;
@@ -24,7 +27,8 @@ const PRIMARY_LINKS = [
 export async function SiteHeader() {
   // Driven by config rather than hardcoded, so adding a category or a city
   // reaches the navbar without a code change.
-  const categories = launchCategories.map((category) => ({
+  // Services only — venues have their own top-level link above.
+  const categories = getServiceCategories().map((category) => ({
     description: category.description,
     name: category.name,
     slug: category.slug,

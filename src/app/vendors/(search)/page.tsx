@@ -1,173 +1,32 @@
 import type { Metadata } from "next";
 
-import { VendorDirectory } from "@/components/marketplace/vendor-directory";
-import { DIRECTORY_PAGE_SIZE } from "@/config/site";
-import {
-  getListingFacets,
-  lookupPincode,
-  searchLiveVendors,
-} from "@/data/live-marketplace";
-import { getCityBySlug } from "@/data/cities";
-import { getCategoryBySlug, searchVendors } from "@/data/marketplace";
-import { parsePage } from "@/lib/pagination";
+import { SearchPage } from "@/components/marketplace/search-page";
 
 export const metadata: Metadata = {
   title: "Wedding vendors across India",
   description:
-    "Browse wedding venues, photographers, makeup artists, planners, decorators, and caterers across major Indian metros.",
+    "Browse wedding photographers, makeup artists, planners, decorators, and caterers across major Indian metros.",
   // A free-text search surface generates unbounded URLs. The indexable
   // landing pages are /vendors/[city]/[category].
   robots: { index: false, follow: true },
   alternates: { canonical: "/vendors" },
 };
 
-function first(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-/** A coordinate, or undefined for anything out of range or unparseable. */
-function parseCoordinate(value: string | undefined, bound: number) {
-  const parsed = Number.parseFloat(value ?? "");
-  if (!Number.isFinite(parsed) || Math.abs(parsed) > bound) return undefined;
-  return parsed;
-}
-
-/** Every numeric filter is clamped, so a hand-edited URL cannot skew a query. */
-function parseNumber(value: string | undefined, max: number) {
-  const parsed = Number.parseFloat(value ?? "");
-  if (!Number.isFinite(parsed) || parsed < 0) return undefined;
-  return Math.min(parsed, max);
-}
-
-const SORTS = new Set([
-  "recent",
-  "price_asc",
-  "price_desc",
-  "rating",
-  "experience",
-  "response",
-  "distance",
-]);
-
 export default async function VendorsPage({
   searchParams,
 }: PageProps<"/vendors">) {
-  const raw = await searchParams;
-  const requestedCity = first(raw.city);
-  const requestedCategory = first(raw.category);
-  const query = first(raw.q)?.slice(0, 80);
-  const page = parsePage(raw.page);
-  // Sent by the "use my location" control. Clamped, and only honoured as a
-  // pair — a lone latitude is meaningless.
-  const originLat = parseCoordinate(first(raw.lat), 90);
-  const originLng = parseCoordinate(first(raw.lng), 180);
-  const hasOrigin = originLat !== undefined && originLng !== undefined;
-  const minPrice = parseNumber(first(raw.minPrice), 100000000);
-  const maxPrice = parseNumber(first(raw.maxPrice), 100000000);
-  const minRating = parseNumber(first(raw.minRating), 5);
-  const rawPincode = first(raw.pincode);
-  const pincode =
-    rawPincode && /^[1-9][0-9]{5}$/.test(rawPincode) ? rawPincode : undefined;
-  const radiusKm =
-    pincode || (originLat !== undefined && originLng !== undefined)
-      ? parseNumber(first(raw.radiusKm), 200)
-      : undefined;
-  const verifiedOnly = first(raw.verifiedOnly) === "1";
-  const rawSort = first(raw.sort);
-  const sort = rawSort && SORTS.has(rawSort) ? (rawSort as never) : undefined;
-
-  // Resolved against the database, not a hardcoded list. An unknown slug used
-  // to make getMetroBySlug return undefined, which silently dropped the city
-  // filter and returned every city instead of none.
-  const metro = await getCityBySlug(requestedCity);
-  const category = requestedCategory
-    ? getCategoryBySlug(requestedCategory)
-    : undefined;
-  const city = metro?.slug;
-  const categorySlug = category?.slug;
-
-  const [live, facets, pincodeArea] = await Promise.all([
-    searchLiveVendors({
-      category: categorySlug,
-      city,
-      maxPrice,
-      minPrice,
-      minRating,
-      page,
-      pageSize: DIRECTORY_PAGE_SIZE,
-      originLat: hasOrigin ? originLat : undefined,
-      originLng: hasOrigin ? originLng : undefined,
-      pincode,
-      query,
-      radiusKm,
-      sort,
-      verifiedOnly,
-    }),
-    getListingFacets(city, categorySlug),
-    lookupPincode(pincode),
-  ]);
-  const filtersApplied = Boolean(
-    minPrice || maxPrice || minRating || pincode || verifiedOnly,
-  );
-
-  // Preview fixtures only pad out the first page, and only while real supply is
-  // thin. They are never counted as if they were available inventory.
-  const previewVendors =
-    page === 1 && !filtersApplied && !hasOrigin
-      ? searchVendors({ category: categorySlug, city, query }).filter(
-          (preview) => !live.vendors.some((item) => item.slug === preview.slug),
-        )
-      : [];
-
-  // Three distinct outcomes, and an empty page explains none of them: the
-  // pincode is not in the dataset, or it is but nothing serves it, or all is
-  // well.
-  const pincodeNotice = !pincodeArea.known
-    ? `We do not have coordinates for pincode ${pincode} yet, so the distance filter was not applied. Try “Use my location” instead.`
-    : pincode && live.total === 0 && pincodeArea.citySlug
-      ? `No listings reach ${pincodeArea.district ?? pincode} yet.`
-      : undefined;
-
-  const vendors = [...live.vendors, ...previewVendors];
-  const subject = category?.name ?? "Wedding vendors";
-  const location = metro ? ` in ${metro.name}` : " across India";
-
+  // `?category=venues` is redirected in `proxy.ts`, which is the only place it
+  // can be a real HTTP redirect: this route has a `loading.tsx`, and a loading
+  // boundary streams a 200 shell before the page runs. `SearchPage` still
+  // ignores a category of the wrong kind, so a request that somehow reaches
+  // here shows services rather than silently mixing the two.
   return (
-    <VendorDirectory
+    <SearchPage
       basePath="/vendors"
-      category={categorySlug}
-      city={city}
       description="Browse category-aware profiles and starting prices. Contact details stay private until a signed-in customer submits a valid enquiry."
-      page={page}
-      pageSize={DIRECTORY_PAGE_SIZE}
-      query={query}
-      activeFilters={{
-        category: categorySlug,
-        city,
-        maxPrice,
-        minPrice,
-        minRating,
-        originLat: hasOrigin ? originLat : undefined,
-        originLng: hasOrigin ? originLng : undefined,
-        pincode,
-        q: query,
-        radiusKm,
-        sort,
-        verifiedOnly,
-      }}
-      facets={facets}
-      notice={pincodeNotice}
-      noticeAction={
-        pincodeArea.known && pincode && live.total === 0 && pincodeArea.citySlug
-          ? {
-              href: `/vendors/${pincodeArea.citySlug}`,
-              label: `See everything in ${pincodeArea.cityName}`,
-            }
-          : undefined
-      }
-      title={`${subject}${location}`}
-      total={live.total}
-      vendors={vendors}
+      kind="service"
+      raw={await searchParams}
+      subjectFallback="Wedding vendors"
     />
   );
 }

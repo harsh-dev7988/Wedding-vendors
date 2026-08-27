@@ -35,6 +35,10 @@ type VendorDirectoryProps = {
    * refined view is correctly a `noindex` one.
    */
   readonly filterBasePath?: string;
+  /** A single-category section has no category to choose. */
+  readonly hideCategoryControl?: boolean;
+  /** Path-based paging, for prerendered directories. */
+  readonly pageHref?: (page: number) => string;
   /** Set when a static landing page defers deeper pages to the search route. */
   readonly moreHref?: string;
   readonly city?: string;
@@ -55,6 +59,8 @@ export function VendorDirectory({
   pageSize,
   basePath,
   filterBasePath,
+  hideCategoryControl,
+  pageHref,
   moreHref,
   city,
   category,
@@ -73,7 +79,9 @@ export function VendorDirectory({
       <section className="border-border bg-muted/60 border-b">
         <div className="mx-auto max-w-7xl px-5 py-12 md:px-8 md:py-16">
           <p className="text-brand-text eyebrow">
-            Wedding professionals across India
+            {hideCategoryControl
+              ? "Wedding venues across India"
+              : "Wedding professionals across India"}
           </p>
           <h1 className="type-title mt-3 max-w-4xl md:text-5xl">{title}</h1>
           <p className="text-muted-foreground mt-4 max-w-3xl leading-7">
@@ -100,9 +108,13 @@ export function VendorDirectory({
           )}
           <div className="mt-8">
             <DirectorySearch
+              // The section's own root, so a venue search never lands in the
+              // vendor directory and vice versa.
+              action={filterBasePath ?? basePath}
               category={category}
               city={city}
               compact
+              hideCategory={hideCategoryControl}
               query={query}
             />
           </div>
@@ -192,6 +204,7 @@ export function VendorDirectory({
                   <Pagination
                     basePath={basePath}
                     page={page}
+                    pageHref={pageHref}
                     pageSize={pageSize}
                     filters={activeFilters ?? {}}
                     total={total}

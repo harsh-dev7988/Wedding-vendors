@@ -8,8 +8,8 @@ import { useEffect, useRef, useState } from "react";
 type Category = { readonly name: string; readonly slug: string };
 
 const BROWSE = [
+  { href: "/venues", label: "Venues" },
   { href: "/vendors", label: "All vendors" },
-  { href: "/trust-and-safety", label: "How it works" },
 ] as const;
 
 const ACCOUNT = [

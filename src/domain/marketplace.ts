@@ -79,6 +79,14 @@ export type VendorSort =
 export type VendorSearch = {
   readonly city?: string;
   readonly category?: string;
+  /**
+   * Restrict to venues, or to everything that is not a venue.
+   *
+   * The vendor directory and the venue section are different products sharing
+   * one table; this is the line between them. Left unset it means "both",
+   * which is only correct for a search that genuinely spans the two.
+   */
+  readonly kind?: "venue" | "service";
   readonly query?: string;
   readonly page?: number;
   readonly pageSize?: number;

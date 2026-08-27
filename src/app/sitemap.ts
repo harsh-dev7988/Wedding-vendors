@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+import { getCategoryBySlug } from "@/data/marketplace";
 import { siteConfig } from "@/config/site";
 import {
   getDirectorySupply,
@@ -24,6 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: siteConfig.url, lastModified: now, priority: 1 },
+    { url: `${siteConfig.url}/venues`, lastModified: now, priority: 0.9 },
     { url: `${siteConfig.url}/vendors`, lastModified: now, priority: 0.8 },
     { url: `${siteConfig.url}/for-vendors`, lastModified: now, priority: 0.6 },
     {
@@ -41,12 +43,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getLiveSitemapEntries(),
   ]);
 
+  // Venues live at /venues/[city]; every other category at
+  // /vendors/[city]/[category]. Submitting the old venue URL would submit a
+  // redirect, which wastes crawl budget and reports as an error.
   const directories: MetadataRoute.Sitemap = supply
     .filter((entry) => isIndexableDirectory(entry.total))
     .map((entry) => ({
-      url: `${siteConfig.url}/vendors/${entry.citySlug}/${entry.categorySlug}`,
+      url:
+        getCategoryBySlug(entry.categorySlug)?.kind === "venue"
+          ? `${siteConfig.url}/venues/${entry.citySlug}`
+          : `${siteConfig.url}/vendors/${entry.citySlug}/${entry.categorySlug}`,
       lastModified: now,
-      priority: 0.7,
+      // A venue page carries the decision everything else hangs off.
+      priority:
+        getCategoryBySlug(entry.categorySlug)?.kind === "venue" ? 0.8 : 0.7,
     }));
 
   // City hubs are judged on the city's whole supply, not one category's, so a

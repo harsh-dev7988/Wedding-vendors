@@ -13,6 +13,20 @@ export function getCategories() {
   return launchCategories;
 }
 
+/**
+ * The categories the vendor directory covers — everything except venues.
+ *
+ * Venues are browsed as their own section, so a list that mixes them in is
+ * offering a choice the two things do not share.
+ */
+export function getServiceCategories() {
+  return launchCategories.filter((category) => category.kind === "service");
+}
+
+export function getVenueCategory() {
+  return launchCategories.find((category) => category.kind === "venue")!;
+}
+
 export function getMetroBySlug(slug: string) {
   return metros.find((metro) => metro.slug === slug);
 }
@@ -26,8 +40,9 @@ export function getVendorBySlug(slug: string): PublicVendor | undefined {
 }
 
 export function getAllDirectoryParams() {
+  // Venues have their own routes, so /vendors/[city]/venues is not a page.
   return metros.flatMap((metro) =>
-    launchCategories.map((category) => ({
+    getServiceCategories().map((category) => ({
       city: metro.slug,
       category: category.slug,
     })),

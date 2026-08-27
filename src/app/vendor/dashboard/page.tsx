@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { FormAlert, StatusBanner } from "@/components/ui/feedback";
+import { OnboardingProgress } from "@/components/vendor/onboarding-progress";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { launchCategories } from "@/config/categories";
 import { getCities } from "@/data/cities";
@@ -256,6 +257,23 @@ export default async function VendorDashboardPage({
           </FormAlert>
         )}
       </div>
+
+      {/* Only the first business needs walking through; after that the vendor
+          knows how this works. */}
+      {vendors.length > 0 && (
+        <OnboardingProgress
+          state={{
+            hasListing: listings.length > 0,
+            hasPublishedListing: listings.some(
+              (listing) => listing.status === "published",
+            ),
+            hasSubmittedListing: listings.some((listing) =>
+              ["pending_review", "published"].includes(listing.status),
+            ),
+            vendorStatus: vendors[0].status,
+          }}
+        />
+      )}
 
       <section aria-labelledby="businesses-heading" className="mt-10">
         <h2 className="sr-only" id="businesses-heading">

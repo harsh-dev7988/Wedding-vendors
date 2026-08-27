@@ -9,12 +9,17 @@
 const BASE = process.env.BASE ?? "http://localhost:3235";
 const PORT = 9333;
 
+// "/how-it-works" sat in this list and has never existed. A 404 has nothing to
+// overflow, so it passed every run while testing nothing — a page list is only
+// as good as its worst entry, and the run now fails loudly on a missing page.
 const PAGES = [
   "/",
+  "/venues",
+  "/venues/delhi-ncr",
   "/vendors",
-  "/vendors/delhi-ncr/venues",
+  "/vendors/delhi-ncr",
   "/vendors/mumbai/photographers",
-  "/how-it-works",
+  "/trust-and-safety",
   "/for-vendors",
   "/for-vendors/pricing",
   "/contact",
@@ -171,8 +176,19 @@ for (const width of WIDTHS) {
   });
   for (const path of PAGES) {
     checks++;
-    await cdp(ws, "Page.navigate", { url: BASE + path });
+    const nav = await cdp(ws, "Page.navigate", { url: BASE + path });
     await new Promise((r) => setTimeout(r, 900));
+    const { result: pageTitle } = await cdp(ws, "Runtime.evaluate", {
+      expression: "document.title",
+      returnByValue: true,
+    });
+    if (/404|not found/i.test(pageTitle.value ?? "") || nav.errorText) {
+      findings++;
+      console.log(
+        `  ${String(width).padEnd(5)} ${path.padEnd(30)} PAGE-MISSING  ${pageTitle.value ?? nav.errorText}`,
+      );
+      continue;
+    }
     const { result } = await cdp(ws, "Runtime.evaluate", {
       expression: DETECT,
       returnByValue: true,

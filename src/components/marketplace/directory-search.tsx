@@ -6,6 +6,10 @@ import { getCities } from "@/data/cities";
 import { getCategories } from "@/data/marketplace";
 
 type DirectorySearchProps = {
+  /** Omit the category field where the section already fixes it. */
+  readonly hideCategory?: boolean;
+  /** Where the form posts. Venues search their own section. */
+  readonly action?: string;
   readonly city?: string;
   readonly category?: string;
   readonly query?: string;
@@ -13,16 +17,32 @@ type DirectorySearchProps = {
 };
 
 export async function DirectorySearch({
+  action = "/vendors",
   city,
   category,
   query,
   compact = false,
+  hideCategory = false,
 }: DirectorySearchProps) {
+  // One column fewer when the section fixes the category, so the remaining
+  // fields fill the bar instead of leaving a gap where a control used to be.
+  // Written out in full rather than interpolated: Tailwind generates classes by
+  // scanning source for literal strings, so a name built from a template
+  // literal produces no CSS at all and the grid silently collapses to one
+  // column — a bug that type-checks, builds, and only shows up on screen.
+  const columns = hideCategory
+    ? compact
+      ? "lg:grid-cols-[1fr_1.2fr_auto]"
+      : "sm:grid-cols-[1fr_1.2fr_auto]"
+    : compact
+      ? "lg:grid-cols-[1fr_1fr_1.2fr_auto]"
+      : "sm:grid-cols-[1fr_1fr_1.2fr_auto]";
+
   return (
     <form
-      action="/vendors"
+      action={action}
       aria-labelledby="directory-search-heading"
-      className={`border-border shadow-soft grid gap-2 rounded-3xl border bg-white p-2 ${compact ? "lg:grid-cols-[1fr_1fr_1.2fr_auto]" : "sm:grid-cols-[1fr_1fr_1.2fr_auto]"}`}
+      className={`border-border shadow-soft grid gap-2 rounded-3xl border bg-white p-2 ${columns}`}
       role="search"
     >
       <h2 className="sr-only" id="directory-search-heading">
@@ -30,7 +50,9 @@ export async function DirectorySearch({
       </h2>
       {/* The padding is on the trigger, not on a wrapper, so the whole field
           is clickable rather than just the value row. */}
-      <div className="bg-muted/55 flex rounded-2xl">
+      <div
+        className={`bg-muted/55 flex rounded-2xl ${hideCategory ? "hidden" : ""}`}
+      >
         <SelectMenu
           caption="Category"
           className="min-h-14 px-4 py-2 text-sm font-semibold"

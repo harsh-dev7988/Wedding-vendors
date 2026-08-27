@@ -163,6 +163,7 @@ export async function searchLiveVendors(
 
   const { data, error } = await supabase.rpc("search_listings", {
     filter_category: search.category ?? null,
+    filter_kind: search.kind ?? null,
     filter_city: search.city ?? null,
     filter_max_price: search.maxPrice ?? null,
     filter_min_price: search.minPrice ?? null,

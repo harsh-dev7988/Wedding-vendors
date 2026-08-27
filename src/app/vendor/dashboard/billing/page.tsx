@@ -41,7 +41,9 @@ type Payment = {
   status: string;
 };
 
-export default async function BillingPage() {
+export default async function BillingPage({
+  searchParams,
+}: PageProps<"/vendor/dashboard/billing">) {
   const viewer = await requireViewer("/vendor/dashboard/billing");
   const supabase = await createClient();
 
@@ -116,6 +118,14 @@ export default async function BillingPage() {
   const payments = (paymentRows ?? []) as unknown as Payment[];
   const planById = new Map(plans.map((plan) => [plan.id, plan]));
 
+  // The requested business, if it is genuinely one of theirs. An unknown or
+  // someone else's id falls back to the first rather than erroring: the id is
+  // in a URL, and a hand-edited URL should not be able to probe for one.
+  const requested = (await searchParams).business;
+  const requestedId = Array.isArray(requested) ? requested[0] : requested;
+  const selected =
+    vendors.find((vendor) => vendor.id === requestedId) ?? vendors[0];
+
   return (
     <main className="mx-auto max-w-5xl px-5 py-12 md:px-8" id="main-content">
       <Link
@@ -140,7 +150,48 @@ export default async function BillingPage() {
         </StatusBanner>
       )}
 
-      {vendors.map((vendor) => {
+      {/* One business at a time.
+          Rendering every business stacked, each with its own plan block and its
+          own upgrade buttons, is what made a second business read as a billing
+          bug: the page looked like it was charging twice for one thing. A
+          subscription belongs to a business — two real businesses genuinely do
+          pay twice — so the fix is to show one at a time and say which.
+
+          A link rather than a client control: it works without JavaScript, the
+          selection survives a reload, and the page is already dynamic. */}
+      {vendors.length > 1 && (
+        <nav aria-label="Choose a business" className="mt-9">
+          <ul className="flex flex-wrap gap-2">
+            {vendors.map((vendor) => {
+              const active = vendor.id === selected.id;
+              return (
+                <li key={vendor.id}>
+                  <Link
+                    aria-current={active ? "page" : undefined}
+                    className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-bold transition ${
+                      active
+                        ? "border-brand-solid bg-brand-soft text-brand-text"
+                        : "border-border text-muted-foreground hover:text-foreground bg-white"
+                    }`}
+                    href={`/vendor/dashboard/billing?business=${vendor.id}`}
+                  >
+                    {vendor.business_name}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Each business carries its own plan. You are viewing{" "}
+            <strong className="text-foreground">
+              {selected.business_name}
+            </strong>
+            .
+          </p>
+        </nav>
+      )}
+
+      {[selected].map((vendor) => {
         const subscription = subsByVendor.get(vendor.id);
         const currentPlan = subscription
           ? planById.get(subscription.plan_id)
