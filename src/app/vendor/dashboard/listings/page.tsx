@@ -150,6 +150,23 @@ export default async function VendorListingsPage({
     storage_path: string;
   }>;
 
+  // Coordinates are not a readable column even for the owner — see the grants
+  // on `listings`. This is the only way to prefill the map on an edit.
+  const { data: locationRows } = await supabase.rpc(
+    "get_vendor_listing_locations",
+  );
+  const locations = new Map(
+    (
+      (locationRows ?? []) as Array<{
+        latitude: number | null;
+        listing_id: string;
+        longitude: number | null;
+        service_radius_m: number | null;
+        street_address: string | null;
+      }>
+    ).map((row) => [row.listing_id, row]),
+  );
+
   const publicUrl = mediaUrlResolver(supabase, "thumb");
 
   const notice = typeof params.notice === "string" ? params.notice : null;
@@ -270,12 +287,29 @@ export default async function VendorListingsPage({
                           citySlug: citySlugById.get(listing.primary_city_id),
                           description: listing.description,
                           id: listing.id,
+                          latitude:
+                            locations.get(listing.id)?.latitude?.toString() ??
+                            "",
                           locality: listing.locality ?? "",
+                          longitude:
+                            locations.get(listing.id)?.longitude?.toString() ??
+                            "",
                           priceFrom:
                             listing.price_from === null
                               ? ""
                               : String(listing.price_from),
                           priceUnit: listing.price_unit,
+                          serviceRadiusKm: locations.get(listing.id)
+                            ?.service_radius_m
+                            ? String(
+                                Math.round(
+                                  locations.get(listing.id)!.service_radius_m! /
+                                    1000,
+                                ),
+                              )
+                            : "",
+                          streetAddress:
+                            locations.get(listing.id)?.street_address ?? "",
                           summary: listing.summary,
                           title: listing.title,
                           vendorId: listing.vendor_id,

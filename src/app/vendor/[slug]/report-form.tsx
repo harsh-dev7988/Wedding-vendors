@@ -1,13 +1,17 @@
 "use client";
 
 import { Flag } from "lucide-react";
-import { useActionState, useId, useState } from "react";
+import { useActionState, useEffect, useId, useState } from "react";
 
 import { FieldError, FormAlert, StatusBanner } from "@/components/ui/feedback";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { idleState } from "@/lib/action-result";
+import { isSupabaseConfigured } from "@/lib/env";
+import { createClient } from "@/lib/supabase/client";
 
 import { submitListingReport } from "./report-actions";
+
+const CONFIGURED = isSupabaseConfigured();
 
 const REASONS = [
   { label: "Information is inaccurate", value: "inaccurate" },
@@ -24,11 +28,27 @@ const REASONS = [
  */
 export function ReportListingForm({
   listingId,
-  signedIn,
 }: {
   readonly listingId: string;
-  readonly signedIn: boolean;
 }) {
+  // Read in the browser, not on the server. Calling getViewer() from the page
+  // meant reading cookies, which opted every vendor page out of static
+  // rendering — all 11 prerendered pages silently became dynamic.
+  const [signedIn, setSignedIn] = useState(true);
+
+  useEffect(() => {
+    if (!CONFIGURED) return;
+    let active = true;
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => {
+        if (active) setSignedIn(Boolean(data.user));
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const [state, action] = useActionState(submitListingReport, idleState);
   const [open, setOpen] = useState(false);
   const reasonId = useId();

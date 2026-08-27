@@ -72,14 +72,3 @@ export function filterHref(
   const query = serializeFilters(filters, omit).toString();
   return query ? `${basePath}?${query}` : basePath;
 }
-
-/** True when any filter beyond city/category/keyword is applied. */
-export function hasRefinements(filters: ActiveFilters) {
-  return Boolean(
-    filters.minPrice ||
-    filters.maxPrice ||
-    filters.minRating ||
-    filters.pincode ||
-    filters.verifiedOnly,
-  );
-}

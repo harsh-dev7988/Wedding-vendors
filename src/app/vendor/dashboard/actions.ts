@@ -14,10 +14,9 @@ import {
 } from "@/lib/action-result";
 import { requireViewer } from "@/lib/auth";
 import {
-  DEFAULT_SERVICE_RADIUS_M,
   MAX_SERVICE_RADIUS_M,
   MIN_SERVICE_RADIUS_M,
-  isFixedLocationCategory,
+  defaultServiceRadiusM,
   isPlausibleIndianCoordinate,
 } from "@/lib/geo";
 import {
@@ -146,10 +145,12 @@ type GeoInput = Pick<
  * PostgREST cannot call a function in an insert payload. A trigger keeps
  * `latitude`/`longitude` in step with it.
  *
- * Returns `null` for the geo columns when no location was picked, so a vendor
- * can save a draft before they have decided where they are.
+ * Returns `null` when the submitted point is not plausible, so the caller can
+ * reject rather than store nonsense. On a create with no point at all the geo
+ * columns are simply null — a vendor can save a draft before deciding where
+ * they are.
  */
-function geoColumns(input: GeoInput) {
+function geoColumns(input: GeoInput, mode: "create" | "update") {
   const hasPoint =
     typeof input.latitude === "number" && typeof input.longitude === "number";
 
@@ -162,9 +163,18 @@ function geoColumns(input: GeoInput) {
 
   // A venue is a fixed place, so it has no service radius at all. Anything
   // mobile falls back to the 30 km default rather than being unbounded.
-  const radius = isFixedLocationCategory(input.categorySlug)
-    ? null
-    : (input.serviceRadiusKm ?? DEFAULT_SERVICE_RADIUS_M / 1000) * 1000;
+  const fallback = defaultServiceRadiusM(input.categorySlug);
+  const radius =
+    fallback === null
+      ? null
+      : (input.serviceRadiusKm ?? fallback / 1000) * 1000;
+
+  // On an edit with no point submitted, leave the stored location alone. The
+  // alternative is that saving a title change wipes the pin, which is silent
+  // data loss — and there is no UI for clearing a location deliberately.
+  if (!hasPoint && mode === "update") {
+    return { service_radius_m: radius };
+  }
 
   return {
     geo: hasPoint
@@ -239,7 +249,7 @@ export async function createListing(
     );
   }
 
-  const geo = geoColumns(parsed.data);
+  const geo = geoColumns(parsed.data, "create");
   if (!geo) {
     return invalid(
       "That location is outside India. Search for your address again.",
@@ -355,7 +365,7 @@ export async function updateListing(
     return invalid("That city or category is no longer available.", { values });
   }
 
-  const geo = geoColumns(parsed.data);
+  const geo = geoColumns(parsed.data, "update");
   if (!geo) {
     return invalid(
       "That location is outside India. Search for your address again.",

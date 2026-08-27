@@ -32,7 +32,6 @@ import {
   getVendorBySlug,
 } from "@/data/marketplace";
 import { isPreviewVendor, type PublicVendor } from "@/domain/marketplace";
-import { getViewer } from "@/lib/auth";
 import { formatServiceRadius } from "@/lib/geo";
 import { formatEventDate } from "@/lib/datetime";
 import { breadcrumbJsonLd, vendorJsonLd } from "@/lib/seo/structured-data";
@@ -101,7 +100,6 @@ export default async function VendorProfilePage({
   const category = getCategoryBySlug(vendor.categorySlug);
   const price = formatStartingPrice(vendor.startingPrice, vendor.priceUnit);
 
-  const viewer = await getViewer();
   const [related, reviews] = await Promise.all([
     preview
       ? Promise.resolve(getRelatedPreviewVendors(vendor.slug))
@@ -420,10 +418,7 @@ export default async function VendorProfilePage({
           {/* Preview fixtures are fictional, so there is nothing to report and
               nothing a moderator could act on. */}
           {!preview && vendor.listingId && (
-            <ReportListingForm
-              listingId={vendor.listingId}
-              signedIn={Boolean(viewer)}
-            />
+            <ReportListingForm listingId={vendor.listingId} />
           )}
         </div>
 

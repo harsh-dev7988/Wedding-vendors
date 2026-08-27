@@ -1,4 +1,4 @@
-export const INDIA_TIME_ZONE = "Asia/Kolkata";
+const INDIA_TIME_ZONE = "Asia/Kolkata";
 
 /**
  * Today's calendar date in India, as `YYYY-MM-DD`.

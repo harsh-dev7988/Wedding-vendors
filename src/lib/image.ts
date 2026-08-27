@@ -1,9 +1,3 @@
-export const ALLOWED_IMAGE_TYPES = new Map([
-  ["image/jpeg", "jpg"],
-  ["image/png", "png"],
-  ["image/webp", "webp"],
-] as const);
-
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 type SniffResult = { contentType: string; extension: string } | null;

@@ -39,7 +39,7 @@ You are receiving this because you have an account on ${escapeHtml(siteConfig.na
 </html>`;
 }
 
-export function escapeHtml(value: string) {
+function escapeHtml(value: string) {
   return value
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")

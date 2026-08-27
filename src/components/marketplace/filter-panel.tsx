@@ -9,8 +9,6 @@ import { SelectMenu } from "@/components/ui/select-menu";
 import { DEFAULT_SORT, filterHref, type ActiveFilters } from "@/lib/filters";
 import { formatIndianPrice } from "@/lib/format";
 
-export type { ActiveFilters };
-
 const SORTS = [
   { label: "Most recent", value: "recent" },
   { label: "Price: low to high", value: "price_asc" },
