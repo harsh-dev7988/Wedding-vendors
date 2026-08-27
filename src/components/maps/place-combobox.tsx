@@ -173,7 +173,7 @@ export function PlaceCombobox({
 
       {open && (
         <ul
-          className="border-border shadow-soft text-foreground absolute top-[calc(100%+0.5rem)] left-0 z-50 max-h-72 w-full overflow-y-auto rounded-2xl border bg-white p-1.5"
+          className="border-border shadow-soft text-foreground absolute top-[calc(100%+0.5rem)] left-0 z-[1100] max-h-72 w-full overflow-y-auto rounded-2xl border bg-white p-1.5"
           id={listId}
           role="listbox"
         >

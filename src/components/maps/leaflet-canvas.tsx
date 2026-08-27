@@ -96,8 +96,12 @@ export function LeafletCanvas({
   }, [lat, lng]);
 
   return (
+    // `isolate` is load-bearing. Leaflet gives its own panes z-index values up
+    // to 1000, which outranked the address suggestions and left them rendering
+    // invisibly behind the map — the list is directly above it. A stacking
+    // context confines those values so they cannot escape this box.
     <div
-      className="border-border h-72 w-full overflow-hidden rounded-2xl border"
+      className="border-border isolate h-72 w-full overflow-hidden rounded-2xl border"
       ref={containerRef}
     />
   );
