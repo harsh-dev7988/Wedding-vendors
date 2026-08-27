@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 
 import { launchCategories } from "@/config/categories";
-import { metros } from "@/data/seed/marketplace";
+import { getCities } from "@/data/cities";
 
 import { AccountControl } from "./account-control";
 import { CategoryMenu } from "./category-menu";
@@ -21,7 +21,7 @@ const PRIMARY_LINKS = [
   { href: "/contact", label: "Contact" },
 ] as const;
 
-export function SiteHeader() {
+export async function SiteHeader() {
   // Driven by config rather than hardcoded, so adding a category or a city
   // reaches the navbar without a code change.
   const categories = launchCategories.map((category) => ({
@@ -30,9 +30,10 @@ export function SiteHeader() {
     slug: category.slug,
     symbol: category.symbol,
   }));
-  const cities = metros.slice(0, 8).map((metro) => ({
-    name: metro.name,
-    slug: metro.slug,
+  // Eight fit the dropdown; the rest are reachable from /vendors.
+  const cities = (await getCities()).slice(0, 8).map((city) => ({
+    name: city.name,
+    slug: city.slug,
   }));
 
   return (

@@ -26,12 +26,12 @@ import {
 } from "@/data/live-marketplace";
 import {
   getCategoryBySlug,
-  getMetroBySlug,
   getPreviewVendorSlugs,
   getRelatedPreviewVendors,
   getVendorBySlug,
 } from "@/data/marketplace";
 import { isPreviewVendor, type PublicVendor } from "@/domain/marketplace";
+import { getCityBySlug } from "@/data/cities";
 import { formatServiceRadius } from "@/lib/geo";
 import { formatEventDate } from "@/lib/datetime";
 import { breadcrumbJsonLd, vendorJsonLd } from "@/lib/seo/structured-data";
@@ -96,7 +96,7 @@ export default async function VendorProfilePage({
   }
 
   const preview = isPreviewVendor(vendor);
-  const metro = getMetroBySlug(vendor.citySlug);
+  const metro = await getCityBySlug(vendor.citySlug);
   const category = getCategoryBySlug(vendor.categorySlug);
   const price = formatStartingPrice(vendor.startingPrice, vendor.priceUnit);
 

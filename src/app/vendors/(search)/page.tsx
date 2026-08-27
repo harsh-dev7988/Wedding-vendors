@@ -3,11 +3,8 @@ import type { Metadata } from "next";
 import { VendorDirectory } from "@/components/marketplace/vendor-directory";
 import { DIRECTORY_PAGE_SIZE } from "@/config/site";
 import { getListingFacets, searchLiveVendors } from "@/data/live-marketplace";
-import {
-  getCategoryBySlug,
-  getMetroBySlug,
-  searchVendors,
-} from "@/data/marketplace";
+import { getCityBySlug } from "@/data/cities";
+import { getCategoryBySlug, searchVendors } from "@/data/marketplace";
 import { parsePage } from "@/lib/pagination";
 
 export const metadata: Metadata = {
@@ -75,7 +72,10 @@ export default async function VendorsPage({
   const rawSort = first(raw.sort);
   const sort = rawSort && SORTS.has(rawSort) ? (rawSort as never) : undefined;
 
-  const metro = requestedCity ? getMetroBySlug(requestedCity) : undefined;
+  // Resolved against the database, not a hardcoded list. An unknown slug used
+  // to make getMetroBySlug return undefined, which silently dropped the city
+  // filter and returned every city instead of none.
+  const metro = await getCityBySlug(requestedCity);
   const category = requestedCategory
     ? getCategoryBySlug(requestedCategory)
     : undefined;

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { getCategories, getMetros } from "@/data/marketplace";
+import { getCities } from "@/data/cities";
+import { getCategories } from "@/data/marketplace";
 
 const POLICY_LINKS = [
   { href: "/for-vendors", label: "List your business" },
@@ -10,8 +11,8 @@ const POLICY_LINKS = [
   { href: "/contact", label: "Contact" },
 ] as const;
 
-export function SiteFooter() {
-  const metros = getMetros().slice(0, 6);
+export async function SiteFooter() {
+  const metros = (await getCities()).slice(0, 6);
   const categories = getCategories();
 
   return (

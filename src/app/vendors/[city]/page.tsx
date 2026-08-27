@@ -10,13 +10,17 @@ import {
   getDirectorySupply,
   isIndexableDirectory,
 } from "@/data/live-marketplace";
-import { getCategories, getMetroBySlug, getMetros } from "@/data/marketplace";
+import { getCities, getCityBySlug } from "@/data/cities";
+import { getCategories } from "@/data/marketplace";
 import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 
 // Same cadence as the category pages below it, so a newly published listing
 // changes the count here and the grid there at the same time.
 export const revalidate = 300;
-export const dynamicParams = false;
+// A city added in Supabase should work immediately rather than waiting for a
+// deploy. Unknown slugs still 404 — the page checks the database and calls
+// notFound(), which is what dynamicParams = false used to do for us.
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   // See the category page: database first, seed list as the fallback.
@@ -24,14 +28,14 @@ export async function generateStaticParams() {
   const slugs = [...new Set(live.map((row) => row.city))];
   return slugs.length > 0
     ? slugs.map((city) => ({ city }))
-    : getMetros().map((metro) => ({ city: metro.slug }));
+    : (await getCities()).map((metro) => ({ city: metro.slug }));
 }
 
 export async function generateMetadata({
   params,
 }: PageProps<"/vendors/[city]">): Promise<Metadata> {
   const { city } = await params;
-  const metro = getMetroBySlug(city);
+  const metro = await getCityBySlug(city);
   if (!metro) return {};
 
   const supply = await getDirectorySupply();
@@ -55,7 +59,7 @@ export default async function CityHubPage({
   params,
 }: PageProps<"/vendors/[city]">) {
   const { city } = await params;
-  const metro = getMetroBySlug(city);
+  const metro = await getCityBySlug(city);
   if (!metro) notFound();
 
   const supply = await getDirectorySupply();
@@ -142,7 +146,7 @@ export default async function CityHubPage({
 
       <h2 className="type-heading mt-14">Other cities</h2>
       <ul className="mt-5 flex flex-wrap gap-2">
-        {getMetros()
+        {(await getCities())
           .filter((other) => other.slug !== metro.slug)
           .map((other) => (
             <li key={other.slug}>

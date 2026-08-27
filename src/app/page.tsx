@@ -13,7 +13,7 @@ import {
 import { SelectMenu } from "@/components/ui/select-menu";
 import { launchCategories } from "@/config/categories";
 import { nextImageSrcSet, nextImageUrl } from "@/lib/image-url";
-import { metros } from "@/data/seed/marketplace";
+import { getCities } from "@/data/cities";
 
 const HERO_LANDSCAPE = "/images/generated/hero-full.webp";
 const HERO_PORTRAIT = "/images/generated/hero-full-portrait.webp";
@@ -60,7 +60,9 @@ const STEPS = [
   },
 ] as const;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const cities = await getCities();
+
   return (
     <main id="main-content">
       {/* ------------------------------------------------------------------
@@ -195,7 +197,7 @@ export default function HomePage() {
                 name="city"
                 options={[
                   { label: "All launch cities", value: "" },
-                  ...metros.map((metro) => ({
+                  ...cities.map((metro) => ({
                     label: metro.name,
                     value: metro.slug,
                   })),
@@ -413,7 +415,7 @@ export default function HomePage() {
         </div>
 
         <ul className="reveal-stagger mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {metros.map((metro) => (
+          {cities.map((metro) => (
             <li key={metro.slug}>
               <Link
                 className="group border-border hover:border-brand-text/40 motion-lift flex min-h-16 items-center justify-between gap-3 rounded-2xl border bg-white px-5"

@@ -2,7 +2,8 @@ import { Search } from "lucide-react";
 
 import { NearMeButton } from "@/components/marketplace/near-me-button";
 import { SelectMenu } from "@/components/ui/select-menu";
-import { getCategories, getMetros } from "@/data/marketplace";
+import { getCities } from "@/data/cities";
+import { getCategories } from "@/data/marketplace";
 
 type DirectorySearchProps = {
   readonly city?: string;
@@ -11,7 +12,7 @@ type DirectorySearchProps = {
   readonly compact?: boolean;
 };
 
-export function DirectorySearch({
+export async function DirectorySearch({
   city,
   category,
   query,
@@ -55,7 +56,7 @@ export function DirectorySearch({
           name="city"
           options={[
             { label: "All metros", value: "" },
-            ...getMetros().map((metro) => ({
+            ...(await getCities()).map((metro) => ({
               label: metro.name,
               value: metro.slug,
             })),
@@ -87,10 +88,10 @@ export function DirectorySearch({
 }
 
 /** The search form plus a location shortcut, for surfaces with room for both. */
-export function DirectorySearchWithNearMe(props: DirectorySearchProps) {
+export async function DirectorySearchWithNearMe(props: DirectorySearchProps) {
   return (
     <div className="space-y-3">
-      <DirectorySearch {...props} />
+      {await DirectorySearch(props)}
       <NearMeButton category={props.category} />
     </div>
   );

@@ -11,10 +11,10 @@ import {
   isIndexableDirectory,
   searchLiveVendors,
 } from "@/data/live-marketplace";
+import { getCityBySlug } from "@/data/cities";
 import {
   getAllDirectoryParams,
   getCategoryBySlug,
-  getMetroBySlug,
   searchVendors,
 } from "@/data/marketplace";
 import {
@@ -31,7 +31,16 @@ export const revalidate = 300;
 // params at the routing layer returns a real 404 status: with a loading
 // boundary in place, rendering one would stream a 200 shell first and only
 // then discover the route does not exist, which crawlers read as a soft 404.
-export const dynamicParams = false;
+// A city added in Supabase becomes reachable immediately rather than waiting
+// for a deploy. Unknown pairs still 404: the page resolves the slug against the
+// database and calls notFound().
+//
+// The loading boundary that used to sit beside this file had to go with it. It
+// streamed a 200 shell before the page could discover the route was invalid,
+// which turns a real 404 into a soft one — that is precisely why this was
+// `dynamicParams = false` before. The page is prerendered for known pairs and
+// resolves in a single query for new ones, so there is nothing to wait behind.
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   // Database first, so a city added in Supabase produces pages without a
@@ -46,7 +55,7 @@ export async function generateMetadata({
   params,
 }: PageProps<"/vendors/[city]/[category]">): Promise<Metadata> {
   const { city, category } = await params;
-  const metro = getMetroBySlug(city);
+  const metro = await getCityBySlug(city);
   const categoryDetails = getCategoryBySlug(category);
 
   if (!metro || !categoryDetails) return {};
@@ -85,7 +94,7 @@ export default async function CityCategoryPage({
   params,
 }: PageProps<"/vendors/[city]/[category]">) {
   const { city, category } = await params;
-  const metro = getMetroBySlug(city);
+  const metro = await getCityBySlug(city);
   const categoryDetails = getCategoryBySlug(category);
 
   if (!metro || !categoryDetails) notFound();
