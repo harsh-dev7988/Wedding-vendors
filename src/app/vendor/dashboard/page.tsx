@@ -14,7 +14,7 @@ import {
 import { FormAlert, StatusBanner } from "@/components/ui/feedback";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { launchCategories } from "@/config/categories";
-import { metros } from "@/data/seed/marketplace";
+import { getCities } from "@/data/cities";
 import { requireViewer } from "@/lib/auth";
 import { formatEventDate, formatIndiaDateTime } from "@/lib/datetime";
 import { createClient } from "@/lib/supabase/server";
@@ -209,7 +209,7 @@ export default async function VendorDashboardPage({
     name: category.name,
     slug: category.slug,
   }));
-  const cityOptions = metros.map((metro) => ({
+  const cityOptions = (await getCities()).map((metro) => ({
     name: metro.name,
     slug: metro.slug,
   }));

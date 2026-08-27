@@ -97,6 +97,12 @@ export function ListingForm({
     defaults?.categorySlug ?? categories[0]?.slug ?? "",
   );
   const [locality, setLocality] = useState(defaults?.locality ?? "");
+  const [citySlug, setCitySlug] = useState(
+    defaults?.citySlug ?? cities[0]?.slug ?? "",
+  );
+  // Set when the address resolves to a different city than the one showing, so
+  // the vendor is told rather than silently overridden.
+  const [cityChangedTo, setCityChangedTo] = useState<string | null>(null);
   const fixedLocation = isFixedLocationCategory(categorySlug);
   const value = (key: keyof ListingDefaults) =>
     state.values?.[key] ?? defaults?.[key] ?? "";
@@ -164,10 +170,14 @@ export function ListingForm({
           Primary city
           <select
             className="border-border select-field min-h-12 rounded-xl border px-3 font-medium"
-            defaultValue={value("citySlug")}
             id={`${prefix}-citySlug`}
             name="citySlug"
+            onChange={(event) => {
+              setCitySlug(event.currentTarget.value);
+              setCityChangedTo(null);
+            }}
             required
+            value={citySlug}
           >
             {cities.map((city) => (
               <option key={city.slug} value={city.slug}>
@@ -212,11 +222,32 @@ export function ListingForm({
           defaultValue={location}
           onChange={(next) => {
             setLocation(next);
-            // Prefill the public label, still editable — Places sometimes
-            // returns a ward name where the vendor would write a landmark.
+            // Prefill the public label, still editable — the geocoder
+            // sometimes returns a ward name where the vendor would write a
+            // landmark.
             if (next?.locality) setLocality(next.locality);
+
+            // The address already answers "which city", so asking again is a
+            // question the vendor has to get right twice. Set it from the
+            // address and say so; they can still override.
+            if (next?.citySlug && next.citySlug !== citySlug) {
+              const matched = cities.find(
+                (city) => city.slug === next.citySlug,
+              );
+              if (matched) {
+                setCitySlug(matched.slug);
+                setCityChangedTo(matched.name);
+              }
+            }
           }}
         />
+
+        {cityChangedTo && (
+          <p className="text-brand-text text-xs font-semibold">
+            City set to {cityChangedTo} from your address. Change it above if
+            that is wrong.
+          </p>
+        )}
 
         <label
           className="grid gap-1.5 text-sm font-bold"

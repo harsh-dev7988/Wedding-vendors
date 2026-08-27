@@ -140,7 +140,7 @@ export default async function HomePage() {
 
         <div className="mx-auto w-full max-w-7xl px-5 pt-28 pb-14 md:px-8 md:pb-20">
           <p className="eyebrow text-accent-gold">
-            Wedding vendors · 8 Indian metros
+            Wedding vendors · {cities.length} Indian metros
           </p>
 
           <h1 className="type-display mt-5 max-w-4xl">
@@ -406,7 +406,7 @@ export default async function HomePage() {
         <div className="reveal">
           <p className="eyebrow text-brand-text">Where we have launched</p>
           <h2 className="type-title mt-4 max-w-2xl" id="cities-heading">
-            Eight metros, and the neighbourhoods inside them.
+            Every metro we serve, and the neighbourhoods inside them.
           </h2>
           <p className="text-muted-foreground mt-4 max-w-2xl leading-7">
             Search by pincode to find businesses that actually serve your venue,

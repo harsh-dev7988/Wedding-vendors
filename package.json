@@ -24,14 +24,15 @@
     "db:pincodes": "node scripts/import-pincodes.mjs"
   },
   "dependencies": {
-    "@react-google-maps/api": "^2.20.8",
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.112.4",
     "clsx": "^2.1.1",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.34.0",
     "next": "16.3.2",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-leaflet": "^5.0.0",
     "resend": "^6.22.1",
     "sharp": "^0.35.3",
     "tailwind-merge": "^3.6.0",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^26.2.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",

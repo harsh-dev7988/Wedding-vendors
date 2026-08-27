@@ -6,7 +6,7 @@ import { ClipboardList, Plus, Trash2 } from "lucide-react";
 import { FormAlert, StatusBanner } from "@/components/ui/feedback";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { launchCategories } from "@/config/categories";
-import { metros } from "@/data/seed/marketplace";
+import { getCities } from "@/data/cities";
 import { requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { mediaUrlResolver } from "@/lib/supabase/media";
@@ -176,7 +176,10 @@ export default async function VendorListingsPage({
     name: c.name,
     slug: c.slug,
   }));
-  const cityOptions = metros.map((m) => ({ name: m.name, slug: m.slug }));
+  const cityOptions = (await getCities()).map((c) => ({
+    name: c.name,
+    slug: c.slug,
+  }));
 
   return (
     <main className="mx-auto max-w-7xl px-5 py-10 md:px-8" id="main-content">
