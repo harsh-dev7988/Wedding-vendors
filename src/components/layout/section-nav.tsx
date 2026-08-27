@@ -16,8 +16,15 @@ export type SectionLink = {
  *
  * Before this, every account and vendor page was reachable only by typing the
  * URL — there was no way to discover settings, alerts or billing from inside
- * the product. It scrolls horizontally on narrow screens rather than wrapping,
- * so the row height stays predictable.
+ * the product.
+ *
+ * It used to scroll horizontally rather than wrap, to keep the row height
+ * predictable. That traded a predictable height for invisible navigation: with
+ * `scrollbar-none` there was no scrollbar, no fade and no arrow, so below about
+ * 640px the last two tabs — Business settings and Billing — simply were not
+ * there. Measured at a 460px strip, 80px of tabs sat past the edge with nothing
+ * indicating they existed, which is indistinguishable from the pages not being
+ * built. It wraps now; a taller row is a much smaller cost than a hidden one.
  */
 export function SectionNav({
   label,
@@ -33,7 +40,7 @@ export function SectionNav({
 
   return (
     <nav aria-label={label} className="border-border border-b">
-      <ul className="-mb-px flex scrollbar-none gap-1 overflow-x-auto">
+      <ul className="-mb-px flex flex-wrap gap-x-1 gap-y-0.5">
         {links.map((link) => {
           const active = isActive(link);
           return (

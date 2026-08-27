@@ -28,12 +28,12 @@ export async function DirectorySearch({
       <h2 className="sr-only" id="directory-search-heading">
         Search wedding vendors
       </h2>
-      <div className="bg-muted/55 rounded-2xl px-4 py-3">
-        <span className="text-muted-foreground block text-[0.68rem] font-bold tracking-widest uppercase">
-          Category
-        </span>
+      {/* The padding is on the trigger, not on a wrapper, so the whole field
+          is clickable rather than just the value row. */}
+      <div className="bg-muted/55 flex rounded-2xl">
         <SelectMenu
-          className="mt-1 min-h-8 text-sm font-semibold"
+          caption="Category"
+          className="min-h-14 px-4 py-2 text-sm font-semibold"
           label="Category"
           name="category"
           options={[
@@ -46,12 +46,10 @@ export async function DirectorySearch({
           value={category ?? ""}
         />
       </div>
-      <div className="bg-muted/55 rounded-2xl px-4 py-3">
-        <span className="text-muted-foreground block text-[0.68rem] font-bold tracking-widest uppercase">
-          City
-        </span>
+      <div className="bg-muted/55 flex rounded-2xl">
         <SelectMenu
-          className="mt-1 min-h-8 text-sm font-semibold"
+          caption="City"
+          className="min-h-14 px-4 py-2 text-sm font-semibold"
           label="City"
           name="city"
           options={[
@@ -64,12 +62,12 @@ export async function DirectorySearch({
           value={city ?? ""}
         />
       </div>
-      <label className="bg-muted/55 rounded-2xl px-4 py-3">
+      <label className="bg-muted/55 flex min-h-14 flex-col justify-center rounded-2xl px-4 py-2">
         <span className="text-muted-foreground block text-[0.68rem] font-bold tracking-widest uppercase">
           Keywords
         </span>
         <input
-          className="mt-1 min-h-8 w-full bg-transparent text-sm font-semibold placeholder:font-medium"
+          className="mt-1 w-full bg-transparent text-sm font-semibold placeholder:font-medium"
           defaultValue={query}
           maxLength={80}
           name="q"

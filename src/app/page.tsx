@@ -172,7 +172,7 @@ export default async function HomePage() {
                 size={19}
               />
               <SelectMenu
-                className="text-foreground text-sm font-semibold"
+                className="text-foreground text-sm font-semibold before:absolute before:inset-y-0 before:right-0 before:-left-9 before:content-['']"
                 label="Vendor category"
                 name="category"
                 options={[
@@ -192,7 +192,7 @@ export default async function HomePage() {
                 size={19}
               />
               <SelectMenu
-                className="text-foreground text-sm font-semibold"
+                className="text-foreground text-sm font-semibold before:absolute before:inset-y-0 before:right-0 before:-left-9 before:content-['']"
                 label="City"
                 name="city"
                 options={[
@@ -314,12 +314,6 @@ export default async function HomePage() {
                   }
                   src={category.image}
                 />
-                <span
-                  aria-hidden="true"
-                  className="absolute top-4 left-4 rounded-full bg-white/90 p-2 text-xl shadow-sm backdrop-blur"
-                >
-                  {category.symbol}
-                </span>
               </div>
               <div className="p-6">
                 <h3 className="type-heading">{category.name}</h3>

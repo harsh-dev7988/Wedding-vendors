@@ -40,6 +40,29 @@ const DETECT = `(() => {
     }
     return null;
   };
+  // A scroller that hides content behind a hidden scrollbar is navigation the
+  // visitor cannot know exists. This is how "Business settings" disappeared
+  // below 640px: overflow-x-auto plus scrollbar-none, no fade, no arrow.
+  for (const el of document.querySelectorAll("*")) {
+    const cs = getComputedStyle(el);
+    const scrolls = cs.overflowX === "auto" || cs.overflowX === "scroll";
+    if (!scrolls) continue;
+    const hidden = el.scrollWidth - el.clientWidth;
+    if (hidden <= 1) continue;
+    // A native scrollbar is an affordance; suppressing it removes the only cue.
+    const suppressed =
+      cs.scrollbarWidth === "none" || el.offsetHeight === el.clientHeight;
+    const links = el.querySelectorAll("a, button").length;
+    if (suppressed && links > 0) {
+      out.push({
+        kind: "scroller-hides-links-with-no-scrollbar",
+        detail: hidden + "px hidden, " + links + " interactive",
+        tag: el.tagName.toLowerCase(),
+        name: (el.getAttribute("aria-label") || el.className || "").slice(0, 40),
+      });
+    }
+  }
+
   for (const el of document.querySelectorAll("input, select, textarea, button, a")) {
     const cs = getComputedStyle(el);
     if (cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed") continue;
@@ -58,6 +81,53 @@ const DETECT = `(() => {
         detail: over + "px",
         tag: el.tagName.toLowerCase() + (el.type ? "[" + el.type + "]" : ""),
         name: el.name || el.id || (el.textContent || "").trim().slice(0, 30),
+      });
+    }
+
+    // 44px is the WCAG 2.2 target-size minimum, with the exemptions that
+    // standard allows -- otherwise the check drowns in noise and stops being
+    // read, which is worse than not having it.
+    //
+    //  - an inline link inside a sentence is sized by its text
+    //  - a control wrapped in a label is activated by the whole label
+    //  - a card whose image is a stretched link already has a large target
+    const inline =
+      el.tagName === "A" &&
+      cs.display.startsWith("inline") &&
+      el.parentElement &&
+      (el.parentElement.textContent || "").trim().length >
+        (el.textContent || "").trim().length;
+    const labelBox = el.closest("label")?.getBoundingClientRect();
+    const labelCovers = Boolean(labelBox && labelBox.height >= 44);
+    const cardCovers = Boolean(
+      el.closest("article")?.querySelector("a.absolute.inset-0"),
+    );
+    // A stretched pseudo-element is the other way a small link owns a big
+    // target -- \`after:absolute after:inset-0\` over a positioned card. It has
+    // no box of its own to measure, so ask the computed style.
+    const pseudoCovers = ["::before", "::after"].some((pseudo) => {
+      const ps = getComputedStyle(el, pseudo);
+      return (
+        ps.content !== "none" &&
+        ps.position === "absolute" &&
+        ["top", "right", "bottom", "left"].every(
+          (side) => parseFloat(ps[side]) <= 0,
+        )
+      );
+    });
+    if (
+      !inline &&
+      !labelCovers &&
+      !cardCovers &&
+      !pseudoCovers &&
+      (r.height < 44 || r.width < 24)
+    ) {
+      out.push({
+        kind: "tap-target-under-44px",
+        detail: Math.round(r.width) + "x" + Math.round(r.height),
+        tag: el.tagName.toLowerCase(),
+        name: el.name || el.id || (el.textContent || "").trim().slice(0, 30) ||
+          el.getAttribute("aria-label") || "",
       });
     }
   }

@@ -34,6 +34,7 @@ export type SelectOption = {
  * and typing a letter jumps to the next option starting with it.
  */
 export function SelectMenu({
+  caption,
   className,
   id,
   label,
@@ -42,6 +43,16 @@ export function SelectMenu({
   placeholder,
   value: initialValue = "",
 }: {
+  /**
+   * The visible field caption, rendered *inside* the trigger.
+   *
+   * It used to be a sibling `<span>` above the button, with the padding on a
+   * wrapping div. That made the field look like a 74px control while only the
+   * 32px value row responded to a click — the caption and every pixel of
+   * padding were dead. Putting it in the button makes the visible box and the
+   * hit area the same shape, which is what a field is supposed to be.
+   */
+  readonly caption?: string;
   readonly className?: string;
   readonly id?: string;
   /** Accessible name. Rendered visually hidden when the field has no visible label. */
@@ -182,7 +193,9 @@ export function SelectMenu({
   };
 
   return (
-    <div className="relative min-w-0 flex-1" ref={containerRef}>
+    // `self-stretch` so a trigger inside a flex row fills the row's height
+    // rather than sitting 24px tall in the middle of a 56px field.
+    <div className="relative min-w-0 flex-1 self-stretch" ref={containerRef}>
       {/* Without JavaScript the button below does nothing, and these are plain
           GET forms that are supposed to work regardless. A browser only parses
           `<noscript>` contents into the DOM when scripting is off, so exactly
@@ -215,7 +228,7 @@ export function SelectMenu({
         aria-haspopup="listbox"
         aria-label={label}
         className={cn(
-          "flex w-full items-center justify-between gap-2 text-left",
+          "flex h-full w-full items-center justify-between gap-2 text-left",
           className,
         )}
         id={buttonId}
@@ -224,9 +237,24 @@ export function SelectMenu({
         ref={buttonRef}
         type="button"
       >
-        <span className={cn("truncate", !selected && "text-muted-foreground")}>
-          {displayText}
-        </span>
+        {caption ? (
+          <span className="grid min-w-0 gap-1">
+            <span className="text-muted-foreground text-[0.68rem] font-bold tracking-widest uppercase">
+              {caption}
+            </span>
+            <span
+              className={cn("truncate", !selected && "text-muted-foreground")}
+            >
+              {displayText}
+            </span>
+          </span>
+        ) : (
+          <span
+            className={cn("truncate", !selected && "text-muted-foreground")}
+          >
+            {displayText}
+          </span>
+        )}
         <ChevronDown
           aria-hidden="true"
           className={cn(

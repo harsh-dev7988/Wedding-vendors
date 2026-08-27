@@ -50,7 +50,7 @@ const CUSTOMER: readonly Item[] = [
   { href: "/account", icon: MessageSquareText, label: "My enquiries" },
   { href: "/shortlist", icon: Heart, label: "Shortlist" },
   { href: "/account/reviews", icon: Star, label: "My reviews" },
-  { href: "/account/settings", icon: Settings, label: "Settings" },
+  { href: "/account/settings", icon: Settings, label: "Account settings" },
 ];
 
 const VENDOR: readonly Item[] = [
@@ -65,6 +65,13 @@ const VENDOR: readonly Item[] = [
     label: "My listings",
   },
   { href: "/vendor/dashboard/leads", icon: MessageSquareText, label: "Leads" },
+  // Named in full because "Settings" alone is ambiguous for someone who is
+  // both a customer and a vendor — which the data model explicitly allows.
+  {
+    href: "/vendor/dashboard/settings",
+    icon: Settings,
+    label: "Business settings",
+  },
 ];
 
 const ADMIN: readonly Item[] = [
