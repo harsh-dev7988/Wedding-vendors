@@ -63,6 +63,12 @@ export function describeDatabaseError(
   const message = error.message ?? "";
 
   if (error.code === "P0001") {
+    // The trigger writes the plan name and the allowance into the message
+    // precisely so it can be shown as-is, rather than flattened to "that could
+    // not be saved".
+    if (message.includes("plan includes")) {
+      return message;
+    }
     if (message.includes("Daily enquiry limit")) {
       return "You have reached the limit of five new enquiries in 24 hours. Please try again tomorrow.";
     }
