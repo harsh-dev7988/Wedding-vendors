@@ -74,13 +74,8 @@ export async function SiteHeader() {
           </Link>
           <NotificationBell />
           <AccountControl />
-          <Link
-            className="bg-brand-solid hover:bg-brand-solid-hover inline-flex h-11 items-center rounded-full px-3 text-sm font-bold whitespace-nowrap text-white transition sm:px-4"
-            href="/for-vendors/apply"
-          >
-            <span className="sm:hidden">List</span>
-            <span className="hidden sm:inline">List your business</span>
-          </Link>
+          {/* The call to action is rendered by AccountControl, which knows
+              whether the viewer is already a vendor. */}
           <MobileMenu categories={categories} />
         </div>
       </div>

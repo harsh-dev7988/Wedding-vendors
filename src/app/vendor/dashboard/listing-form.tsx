@@ -119,7 +119,7 @@ export function ListingForm({
       {state.status === "error" && <FormAlert>{state.message}</FormAlert>}
 
       <label
-        className="grid gap-1.5 text-sm font-bold"
+        className={`grid gap-1.5 text-sm font-bold ${vendors.length > 1 ? "" : "sr-only"}`}
         htmlFor={`${prefix}-vendorId`}
       >
         Business

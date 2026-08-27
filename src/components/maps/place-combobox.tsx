@@ -91,8 +91,16 @@ export function PlaceCombobox({
     };
   }, [provider, query]);
 
-  const open =
-    !dismissed && suggestions.length > 0 && query.trim().length >= MIN_QUERY;
+  const longEnough = query.trim().length >= MIN_QUERY;
+  const open = !dismissed && suggestions.length > 0 && longEnough;
+  // Distinguishable from "still typing" and from "search is down": the query
+  // ran and matched nothing.
+  const empty =
+    !dismissed &&
+    !searching &&
+    !failed &&
+    longEnough &&
+    suggestions.length === 0;
 
   useEffect(() => {
     if (!open) return;
@@ -163,6 +171,12 @@ export function PlaceCombobox({
           />
         )}
       </div>
+
+      {empty && (
+        <p className="text-muted-foreground mt-2 text-xs">
+          No addresses match that. Try a nearby landmark, road or neighbourhood.
+        </p>
+      )}
 
       {failed && (
         <p className="text-muted-foreground mt-2 text-xs">

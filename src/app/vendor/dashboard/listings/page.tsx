@@ -152,6 +152,19 @@ export default async function VendorListingsPage({
 
   // Coordinates are not a readable column even for the owner — see the grants
   // on `listings`. This is the only way to prefill the map on an edit.
+  // Told up front rather than discovered by hitting the trigger. A limit that
+  // only announces itself on failure reads as a bug.
+  const allowances = await Promise.all(
+    vendorIds.map(async (id) => {
+      const { data } = await supabase.rpc("vendor_listing_allowance", {
+        requested_vendor_id: id,
+      });
+      const row = Array.isArray(data) ? data[0] : null;
+      return [id, row] as const;
+    }),
+  );
+  const allowanceByVendor = new Map(allowances);
+
   const { data: locationRows } = await supabase.rpc(
     "get_vendor_listing_locations",
   );
@@ -221,6 +234,39 @@ export default async function VendorListingsPage({
           <h2 className="type-heading" id="existing-heading">
             Your listings ({listings.length})
           </h2>
+          <ul className="mt-3 space-y-1">
+            {vendors.map((vendor) => {
+              const allowance = allowanceByVendor.get(vendor.id) as
+                | { allowed: number | null; plan_name: string; used: number }
+                | null
+                | undefined;
+              if (!allowance) return null;
+              const full =
+                allowance.allowed !== null &&
+                allowance.used >= allowance.allowed;
+              return (
+                <li
+                  className={`text-sm ${full ? "text-brand-text font-semibold" : "text-muted-foreground"}`}
+                  key={vendor.id}
+                >
+                  {vendors.length > 1 ? `${vendor.business_name}: ` : ""}
+                  {allowance.used} of {allowance.allowed ?? "unlimited"}{" "}
+                  listings used on {allowance.plan_name}
+                  {full && (
+                    <>
+                      {" · "}
+                      <Link
+                        className="link-underline font-bold"
+                        href="/vendor/dashboard/billing"
+                      >
+                        upgrade to add more
+                      </Link>
+                    </>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
 
           <div className="mt-5 space-y-4">
             {listings.length === 0 && (
