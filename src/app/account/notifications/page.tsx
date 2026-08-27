@@ -36,6 +36,7 @@ const KIND_LABELS: Record<string, string> = {
   payment_captured: "Payment",
   review_published: "Review published",
   vendor_approved: "Business approved",
+  vendor_suspended: "Business suspended",
 };
 
 export default async function NotificationsPage({

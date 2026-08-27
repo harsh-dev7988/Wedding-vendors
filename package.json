@@ -22,6 +22,7 @@
     "media:backfill": "node scripts/media-backfill.mjs",
     "email:test": "node scripts/email-test.mjs",
     "audit:layout": "node scripts/layout-audit.mjs",
+    "db:notifications-test": "node scripts/db-notifications-test.mjs",
     "db:pincodes": "node scripts/import-pincodes.mjs"
   },
   "dependencies": {
