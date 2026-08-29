@@ -26,6 +26,21 @@ import { createClient as createSessionClient } from "@/lib/supabase/server";
  * site with no navigation at all.
  */
 
+/**
+ * Slugs that moved, and where they moved to.
+ *
+ * `planners-decorators` was one category where the market has two: a planner
+ * runs the day and a decorator builds the set, and vendors rarely do both well.
+ * It held no listings when it was split, so the split cost nothing — but its
+ * directory URLs were indexable, so they redirect rather than 404.
+ *
+ * A constant rather than a column: this list changes when a human decides a
+ * category was wrong, which is not often, and the proxy cannot query anyway.
+ */
+export const SUPERSEDED_CATEGORIES: Readonly<Record<string, string>> = {
+  "planners-decorators": "wedding-planners",
+};
+
 export type PriceUnit =
   | "per_plate"
   | "per_event"
@@ -207,7 +222,12 @@ export const getListableCategories = cache(
     // anon policy would have returned anyway.
     if (error || !data || data.length === 0) return getCategories();
 
-    return (data as unknown as Row[]).map(decorate);
+    // A superseded category is readable — its slug still has to resolve so the
+    // redirect works — but it must never be offered. Filing a new listing under
+    // one would put it in a category whose every page redirects somewhere else.
+    return (data as unknown as Row[])
+      .map(decorate)
+      .filter((category) => !(category.slug in SUPERSEDED_CATEGORIES));
   },
 );
 
@@ -247,18 +267,3 @@ export async function getCategoryGroups(kind?: "venue" | "service") {
   );
   return groupCategories(categories);
 }
-
-/**
- * Slugs that moved, and where they moved to.
- *
- * `planners-decorators` was one category where the market has two: a planner
- * runs the day and a decorator builds the set, and vendors rarely do both well.
- * It held no listings when it was split, so the split cost nothing — but its
- * directory URLs were indexable, so they redirect rather than 404.
- *
- * A constant rather than a column: this list changes when a human decides a
- * category was wrong, which is not often, and the proxy cannot query anyway.
- */
-export const SUPERSEDED_CATEGORIES: Readonly<Record<string, string>> = {
-  "planners-decorators": "wedding-planners",
-};
