@@ -106,6 +106,11 @@ export const CATEGORY_MEDIA: Readonly<Record<string, CategoryMedia>> = {
     image: "/images/generated/category-mehendi-artists.webp",
     imageAlt: "A mehendi artist applying intricate henna to a bride's hands",
   },
+  pandits: {
+    image: "/images/generated/category-pandits.webp",
+    imageAlt:
+      "A wedding priest offering rice over a sacred fire surrounded by brass vessels",
+  },
   photographers: {
     image: "/images/generated/category-photographers.webp",
     imageAlt:
