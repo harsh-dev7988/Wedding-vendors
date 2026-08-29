@@ -45,9 +45,11 @@ export type SelectOption = {
 export function SelectMenu({
   caption,
   className,
+  disabled = false,
   id,
   label,
   name,
+  onValueChange,
   options,
   placeholder,
   value: initialValue = "",
@@ -63,10 +65,14 @@ export function SelectMenu({
    */
   readonly caption?: string;
   readonly className?: string;
+  /** Renders the trigger inert, for a field that is fixed after creation. */
+  readonly disabled?: boolean;
   readonly id?: string;
   /** Accessible name. Rendered visually hidden when the field has no visible label. */
   readonly label: string;
   readonly name: string;
+  /** Told on every change, for a field that drives another one. */
+  readonly onValueChange?: (value: string) => void;
   readonly options: readonly SelectOption[];
   readonly placeholder?: string;
   readonly value?: string;
@@ -161,6 +167,7 @@ export function SelectMenu({
     const option = options[index];
     if (!option || option.disabled) return;
     setValue(option.value);
+    onValueChange?.(option.value);
     setOpen(false);
     buttonRef.current?.focus();
   };
@@ -265,8 +272,10 @@ export function SelectMenu({
         aria-label={label}
         className={cn(
           "flex h-full w-full items-center justify-between gap-2 text-left",
+          disabled && "cursor-not-allowed opacity-60",
           className,
         )}
+        disabled={disabled}
         id={buttonId}
         onClick={() => (open ? setOpen(false) : openAt(0))}
         onKeyDown={onKeyDown}
@@ -305,7 +314,7 @@ export function SelectMenu({
         <ul
           aria-label={label}
           className={cn(
-            "border-border shadow-soft text-foreground absolute left-0 z-50 max-h-72 w-full min-w-56 overflow-y-auto rounded-2xl border bg-white p-1.5",
+            "border-border shadow-soft text-foreground scrollbar-slim absolute left-0 z-50 max-h-72 w-full min-w-56 overflow-y-auto rounded-2xl border bg-white p-1.5",
             dropUp ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]",
           )}
           id={listId}

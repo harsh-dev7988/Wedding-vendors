@@ -13,6 +13,7 @@ import {
 
 import { FormAlert, StatusBanner } from "@/components/ui/feedback";
 import { OnboardingProgress } from "@/components/vendor/onboarding-progress";
+import { SelectMenu } from "@/components/ui/select-menu";
 import { SubmitButton } from "@/components/ui/submit-button";
 
 import { getListableCategories } from "@/data/categories";
@@ -106,6 +107,10 @@ const LISTING_STATUS_COPY: Record<string, string> = {
   rejected: "Returned for changes",
   suspended: "Suspended by a moderator",
 };
+
+/** Shared so both places a lead status is set look identical. */
+const LEAD_STATUS_CLASS =
+  "border-border focus-within:border-brand-text min-h-11 w-full rounded-xl border bg-white px-3 text-sm font-medium transition";
 
 const LEAD_STATUSES = [
   { label: "Viewed", value: "viewed" },
@@ -534,20 +539,17 @@ export default async function VendorDashboardPage({
                       htmlFor={`lead-status-${lead.id}`}
                     >
                       Lead status
-                      <select
-                        className="border-border select-field min-h-11 rounded-xl border px-3 text-sm font-medium"
-                        defaultValue={
-                          lead.status === "new" ? "viewed" : lead.status
-                        }
+                      <SelectMenu
+                        className={LEAD_STATUS_CLASS}
                         id={`lead-status-${lead.id}`}
+                        label="Lead status"
                         name="status"
-                      >
-                        {LEAD_STATUSES.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                        options={LEAD_STATUSES.map((option) => ({
+                          label: option.label,
+                          value: option.value,
+                        }))}
+                        value={lead.status === "new" ? "viewed" : lead.status}
+                      />
                     </label>
                     <SubmitButton
                       className="bg-foreground hover:bg-brand-solid-hover min-h-11 rounded-xl px-4 text-sm text-white"

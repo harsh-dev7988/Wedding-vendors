@@ -4,6 +4,7 @@ import { Flag } from "lucide-react";
 import { useActionState, useEffect, useId, useState } from "react";
 
 import { FieldError, FormAlert, StatusBanner } from "@/components/ui/feedback";
+import { SelectMenu } from "@/components/ui/select-menu";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { idleState } from "@/lib/action-result";
 import { isSupabaseConfigured } from "@/lib/env";
@@ -26,6 +27,10 @@ const REASONS = [
  * Collapsed by default. A report control is needed on every listing but it is
  * not what the page is for, so it stays out of the way until asked for.
  */
+/** Matches the text inputs beside it. */
+const FIELD_CLASS =
+  "border-border focus-within:border-brand-text min-h-11 w-full rounded-xl border bg-white px-3 text-sm font-semibold transition";
+
 export function ReportListingForm({
   listingId,
 }: {
@@ -95,22 +100,18 @@ export function ReportListingForm({
 
       <label className="mt-4 grid gap-1.5 text-xs font-bold" htmlFor={reasonId}>
         What is wrong?
-        <select
-          className="border-border select-field min-h-11 rounded-xl border bg-white px-3 text-sm font-semibold"
-          defaultValue={state.values?.reason ?? ""}
+        <SelectMenu
+          className={FIELD_CLASS}
           id={reasonId}
+          label="Reason"
           name="reason"
-          required
-        >
-          <option disabled value="">
-            Choose a reason
-          </option>
-          {REASONS.map((item) => (
-            <option key={item.value} value={item.value}>
-              {item.label}
-            </option>
-          ))}
-        </select>
+          options={REASONS.map((item) => ({
+            label: item.label,
+            value: item.value,
+          }))}
+          placeholder="Choose a reason"
+          value={state.values?.reason ?? ""}
+        />
       </label>
 
       <label className="mt-4 grid gap-1.5 text-xs font-bold" htmlFor={detailId}>

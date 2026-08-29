@@ -524,3 +524,43 @@ header[data-transparent] .header-pill:hover {
     transform: none !important;
   }
 }
+
+/* A scrollbar that belongs to this design rather than to the platform.
+ *
+ * Any list long enough to scroll — a category dropdown with eighteen entries, a
+ * city list, a long option set — otherwise shows a grey Windows or macOS bar
+ * against warm ivory, which is the one piece of chrome that gives away that a
+ * styled control is sitting on a default one. Firefox gets the two-value
+ * `scrollbar-color`; WebKit gets the pseudo-elements.
+ *
+ * Deliberately thin and low-contrast: it is an affordance, not a feature, and
+ * the thing it must never do is compete with the option under the cursor. */
+.scrollbar-slim {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--brand-text) 28%, transparent)
+    transparent;
+}
+
+.scrollbar-slim::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.scrollbar-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-slim::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--brand-text) 26%, transparent);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  /* Padding the thumb in from the edge, so it reads as floating inside the
+   * rounded panel instead of butting against its border. */
+  background-clip: content-box;
+}
+
+.scrollbar-slim:hover::-webkit-scrollbar-thumb,
+.scrollbar-slim::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--brand-text) 45%, transparent);
+  background-clip: content-box;
+}

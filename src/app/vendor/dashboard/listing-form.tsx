@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useActionState, useState } from "react";
 
 import { FieldError, FormAlert } from "@/components/ui/feedback";
+import { SelectMenu } from "@/components/ui/select-menu";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { idleState } from "@/lib/action-result";
 import { DEFAULT_SERVICE_RADIUS_M, isFixedLocationCategory } from "@/lib/geo";
@@ -58,6 +59,10 @@ export type ListingDefaults = {
   readonly vendorId?: string;
   readonly yearsExperience?: string;
 };
+
+/** The form's field styling, shared so every control matches. */
+const FIELD_CLASS =
+  "border-border focus-within:border-brand-text min-h-12 w-full rounded-xl border bg-white px-3 text-sm font-medium transition";
 
 const PRICE_UNITS = [
   { label: "On request", value: "on_request" },
@@ -120,18 +125,6 @@ export function ListingForm({
   const [cityChangedTo, setCityChangedTo] = useState<string | null>(null);
   const fixedLocation = isFixedLocationCategory(categorySlug);
 
-  // Preserves the order the options arrive in, so the groups follow the
-  // taxonomy's own ordering rather than being re-sorted alphabetically here.
-  const categoryGroups = Array.from(
-    categories.reduce((groups, option) => {
-      const key = option.group ?? "";
-      const existing = groups.get(key);
-      if (existing) existing.push(option);
-      else groups.set(key, [option]);
-      return groups;
-    }, new Map<string, Option[]>()),
-  );
-
   // Narrowed to what the chosen category actually prices in. A category with
   // no list configured keeps every unit rather than losing them all — an empty
   // dropdown is a worse failure than an over-generous one.
@@ -160,20 +153,18 @@ export function ListingForm({
         htmlFor={`${prefix}-vendorId`}
       >
         Business
-        <select
-          className="border-border select-field min-h-12 rounded-xl border px-3 font-medium"
-          defaultValue={value("vendorId")}
+        <SelectMenu
+          className={FIELD_CLASS}
           disabled={mode === "edit"}
           id={`${prefix}-vendorId`}
+          label="Business"
           name="vendorId"
-          required
-        >
-          {vendors.map((vendor) => (
-            <option key={vendor.id} value={vendor.id}>
-              {vendor.business_name}
-            </option>
-          ))}
-        </select>
+          options={vendors.map((vendor) => ({
+            label: vendor.business_name,
+            value: vendor.id,
+          }))}
+          value={value("vendorId") || vendors[0]?.id}
+        />
         {mode === "edit" && (
           <input name="vendorId" type="hidden" value={value("vendorId")} />
         )}
@@ -185,59 +176,44 @@ export function ListingForm({
           htmlFor={`${prefix}-categorySlug`}
         >
           Category
-          <select
-            className="border-border select-field min-h-12 rounded-xl border px-3 font-medium"
-            defaultValue={value("categorySlug")}
+          {/* Grouped, because the list is thirty-two long. A vendor scanning a
+              flat list of that size picks the wrong category, and a wrong
+              category is a listing filed in a directory nobody looking for it
+              will open. */}
+          <SelectMenu
+            className={FIELD_CLASS}
             id={`${prefix}-categorySlug`}
+            label="Category"
             name="categorySlug"
-            onChange={(event) => setCategorySlug(event.currentTarget.value)}
-            required
-          >
-            {/* Grouped, because the list is thirty-two long. A vendor
-                scanning a flat list of that size picks the wrong category, and
-                a wrong category is a listing filed in a directory nobody
-                looking for it will open. */}
-            {categoryGroups.map(([group, options]) =>
-              group ? (
-                <optgroup key={group} label={group}>
-                  {options.map((category) => (
-                    <option key={category.slug} value={category.slug}>
-                      {category.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ) : (
-                options.map((category) => (
-                  <option key={category.slug} value={category.slug}>
-                    {category.name}
-                  </option>
-                ))
-              ),
-            )}
-          </select>
+            onValueChange={setCategorySlug}
+            options={categories.map((category) => ({
+              group: category.group,
+              label: category.name,
+              value: category.slug,
+            }))}
+            value={categorySlug}
+          />
         </label>
         <label
           className="grid gap-1.5 text-sm font-bold"
           htmlFor={`${prefix}-citySlug`}
         >
           Primary city
-          <select
-            className="border-border select-field min-h-12 rounded-xl border px-3 font-medium"
+          <SelectMenu
+            className={FIELD_CLASS}
             id={`${prefix}-citySlug`}
+            label="Primary city"
             name="citySlug"
-            onChange={(event) => {
-              setCitySlug(event.currentTarget.value);
+            onValueChange={(next) => {
+              setCitySlug(next);
               setCityChangedTo(null);
             }}
-            required
+            options={cities.map((city) => ({
+              label: city.name,
+              value: city.slug,
+            }))}
             value={citySlug}
-          >
-            {cities.map((city) => (
-              <option key={city.slug} value={city.slug}>
-                {city.name}
-              </option>
-            ))}
-          </select>
+          />
         </label>
       </div>
 
@@ -431,18 +407,17 @@ export function ListingForm({
           htmlFor={`${prefix}-priceUnit`}
         >
           Price unit
-          <select
-            className="border-border select-field min-h-12 rounded-xl border px-3 font-medium"
-            defaultValue={value("priceUnit") || "on_request"}
+          <SelectMenu
+            className={FIELD_CLASS}
             id={`${prefix}-priceUnit`}
+            label="Price unit"
             name="priceUnit"
-          >
-            {priceUnits.map((unit) => (
-              <option key={unit.value} value={unit.value}>
-                {unit.label}
-              </option>
-            ))}
-          </select>
+            options={priceUnits.map((unit) => ({
+              label: unit.label,
+              value: unit.value,
+            }))}
+            value={value("priceUnit") || "on_request"}
+          />
         </label>
         <label
           className="grid gap-1.5 text-sm font-bold"

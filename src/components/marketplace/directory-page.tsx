@@ -4,8 +4,12 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { RememberCity } from "@/components/location/remember-city";
 import { VendorDirectory } from "@/components/marketplace/vendor-directory";
 import { DIRECTORY_PAGE_SIZE } from "@/config/site";
-import { getListingFacets, searchLiveVendors } from "@/data/live-marketplace";
-import { getCityBySlug } from "@/data/cities";
+import {
+  getDirectorySupply,
+  getListingFacets,
+  searchLiveVendors,
+} from "@/data/live-marketplace";
+import { getCities, getCityBySlug } from "@/data/cities";
 import { getCategoryBySlug, getCategoryMap } from "@/data/categories";
 import { searchVendors } from "@/data/marketplace";
 import { breadcrumbJsonLd, directoryJsonLd } from "@/lib/seo/structured-data";
@@ -22,6 +26,8 @@ import { breadcrumbJsonLd, directoryJsonLd } from "@/lib/seo/structured-data";
  * are real routes: reading a query string opts the route into dynamic
  * rendering, and these are the pages that most need to be cached and indexed.
  */
+type Suggestion = { href: string; name: string; total: number };
+
 export async function DirectoryPage({
   categorySlug,
   citySlug,
@@ -98,6 +104,56 @@ export async function DirectoryPage({
 
   const allVendors = [...live.vendors, ...previewVendors];
 
+  // Where this category *does* exist, for a directory that is empty. Only
+  // computed when there is nothing to show, so a busy page pays nothing.
+  const cityNames = new Map(
+    (await getCities()).map((city) => [city.slug, city.name]),
+  );
+  const elsewhere =
+    allVendors.length === 0 ? await suggestCities() : ([] as Suggestion[]);
+
+  /**
+   * Cities that do have what this page is showing.
+   *
+   * A subtype page asks about its own category. A *section* page has no
+   * category to ask about — `/venues/pune` covers ten of them — so it asks
+   * about the kind instead and totals a city across all of them. Without that
+   * split the suggestion would only ever appear on subtype pages, which is the
+   * half of the site least likely to be someone's first stop.
+   */
+  async function suggestCities(): Promise<Suggestion[]> {
+    // Captured because `notFound()` narrowing does not reach into a closure.
+    const citySlug = metro!.slug;
+    const [supply, categories] = await Promise.all([
+      getDirectorySupply(),
+      getCategoryMap(),
+    ]);
+
+    const totals = new Map<string, number>();
+    for (const row of supply) {
+      if (row.citySlug === citySlug || row.total <= 0) continue;
+      if (category) {
+        if (row.categorySlug !== category.slug) continue;
+      } else if (categories.get(row.categorySlug)?.kind !== kind) {
+        continue;
+      }
+      totals.set(row.citySlug, (totals.get(row.citySlug) ?? 0) + row.total);
+    }
+
+    return [...totals]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([slug, total]) => ({
+        href: venueSection
+          ? category
+            ? `/venues/${slug}/${category.slug}`
+            : `/venues/${slug}`
+          : `/vendors/${slug}/${category?.slug}`,
+        name: cityNames.get(slug) ?? slug,
+        total,
+      }));
+  }
+
   return (
     <>
       {/* Learned from the page being viewed, not asked for. */}
@@ -150,6 +206,7 @@ export async function DirectoryPage({
           target === 1 ? canonical : `${canonical}/page/${target}`
         }
         pageSize={DIRECTORY_PAGE_SIZE}
+        elsewhere={elsewhere}
         subtypes={subtypes}
         subtypeBasePath={`/venues/${metro.slug}`}
         title={title(metro.name, category?.name ?? "Venues")}

@@ -4,10 +4,15 @@ import { Star } from "lucide-react";
 import { useActionState } from "react";
 
 import { FieldError, FormAlert } from "@/components/ui/feedback";
+import { SelectMenu } from "@/components/ui/select-menu";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { idleState } from "@/lib/action-result";
 
 import { submitReview } from "./actions";
+
+/** Matches the text inputs beside it. */
+const FIELD_CLASS =
+  "border-border focus-within:border-brand-text min-h-11 w-full rounded-xl border bg-white px-3 text-sm font-semibold transition";
 
 export function ReviewForm({
   leadId,
@@ -38,19 +43,20 @@ export function ReviewForm({
       <div className="grid gap-3 sm:grid-cols-[9rem_1fr]">
         <label className="grid gap-1.5 text-sm font-bold" htmlFor={ratingId}>
           Rating
-          <select
-            className="border-border select-field min-h-11 rounded-xl border px-3 font-medium"
-            defaultValue={state.values?.rating ?? "5"}
+          <SelectMenu
+            className={FIELD_CLASS}
             id={ratingId}
+            label="Rating"
             name="rating"
-            required
-          >
-            <option value="5">5 — Excellent</option>
-            <option value="4">4 — Very good</option>
-            <option value="3">3 — Fine</option>
-            <option value="2">2 — Poor</option>
-            <option value="1">1 — Very poor</option>
-          </select>
+            options={[
+              { label: "5 — Excellent", value: "5" },
+              { label: "4 — Very good", value: "4" },
+              { label: "3 — Fine", value: "3" },
+              { label: "2 — Poor", value: "2" },
+              { label: "1 — Very poor", value: "1" },
+            ]}
+            value={state.values?.rating ?? "5"}
+          />
         </label>
         <label className="grid gap-1.5 text-sm font-bold" htmlFor={bodyId}>
           Your review

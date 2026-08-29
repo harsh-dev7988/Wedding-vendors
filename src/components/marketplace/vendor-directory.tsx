@@ -40,6 +40,14 @@ type VendorDirectoryProps = {
   /** Path-based paging, for prerendered directories. */
   readonly pageHref?: (page: number) => string;
   /**
+   * Cities that do have this category, for when this one does not.
+   *
+   * "Nothing here" is a dead end. "Nothing here, but there are eleven in
+   * Mumbai" is a route forward, and it is the difference between a directory
+   * that looks abandoned and one that is honest about where it has reached.
+   */
+  readonly elsewhere?: readonly { href: string; name: string; total: number }[];
+  /**
    * Sibling subtypes offered above the results.
    *
    * A venue section is one page covering nine kinds of place, and "banquet
@@ -68,6 +76,7 @@ export function VendorDirectory({
   pageSize,
   basePath,
   filterBasePath,
+  elsewhere,
   hideCategoryControl,
   pageHref,
   subtypes,
@@ -241,9 +250,29 @@ export function VendorDirectory({
               <div className="border-border bg-muted/45 mt-8 rounded-3xl border border-dashed px-6 py-16 text-center">
                 <h2 className="type-heading">No matching listings yet</h2>
                 <p className="text-muted-foreground mx-auto mt-3 max-w-lg leading-7">
-                  Try another city, category, or keyword. Real vendor supply is
-                  still being onboarded city by city.
+                  {elsewhere && elsewhere.length > 0
+                    ? "Nothing here yet — but these cities have them."
+                    : "Try another city, category, or keyword. Real vendor supply is still being onboarded city by city."}
                 </p>
+
+                {elsewhere && elsewhere.length > 0 && (
+                  <ul className="mt-6 flex flex-wrap justify-center gap-2">
+                    {elsewhere.map((option) => (
+                      <li key={option.href}>
+                        <Link
+                          className="border-border hover:border-brand-text/50 hover:text-brand-text inline-flex min-h-11 items-center gap-2 rounded-full border bg-white px-4 text-sm font-semibold transition"
+                          href={option.href}
+                        >
+                          {option.name}
+                          <span className="text-muted-foreground text-xs">
+                            {option.total}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
                 <Link
                   className="bg-brand-solid hover:bg-brand-solid-hover mt-6 inline-flex min-h-11 items-center gap-2 rounded-full px-5 text-sm font-bold text-white transition"
                   href={basePath}
