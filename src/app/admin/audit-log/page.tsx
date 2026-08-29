@@ -95,7 +95,7 @@ export default async function AdminAuditLogPage({
   return (
     <main className="mx-auto max-w-5xl px-5 py-12 md:px-8" id="main-content">
       <p className="text-brand-text eyebrow">Operations</p>
-      <h1 className="type-display mt-2 flex items-center gap-3">
+      <h1 className="type-page mt-2 flex items-center gap-3">
         <ScrollText aria-hidden="true" className="text-brand-text" size={34} />
         Audit log
       </h1>

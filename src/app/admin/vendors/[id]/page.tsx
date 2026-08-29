@@ -172,7 +172,7 @@ export default async function AdminVendorDetailPage({
       <p className="text-brand-text eyebrow mt-6">
         {vendor.status.replaceAll("_", " ")}
       </p>
-      <h1 className="type-title mt-2 md:text-5xl">{vendor.business_name}</h1>
+      <h1 className="type-page mt-2">{vendor.business_name}</h1>
       {vendor.legal_name && (
         <p className="text-muted-foreground mt-2">
           Registered as {vendor.legal_name}

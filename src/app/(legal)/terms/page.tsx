@@ -13,7 +13,7 @@ export default function TermsPage() {
   return (
     <article>
       <p className="text-brand-text eyebrow">Policies</p>
-      <h1 className="type-title mt-2 md:text-5xl">Terms of use</h1>
+      <h1 className="type-page mt-2">Terms of use</h1>
       <p className="text-muted-foreground mt-3 text-sm">
         Last updated 25 August 2026.
       </p>

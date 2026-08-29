@@ -48,7 +48,7 @@ export default async function SignInPage({
     >
       <div>
         <p className="text-brand-text eyebrow">Private by design</p>
-        <h1 className="type-display mt-3">Sign in before you enquire.</h1>
+        <h1 className="type-page mt-3">Sign in before you enquire.</h1>
         <p className="text-muted-foreground mt-5 max-w-xl text-lg leading-8">
           {googleEnabled
             ? "Sign in with Google or a secure email link. Either way there is no password here to leak."

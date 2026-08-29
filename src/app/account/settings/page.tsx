@@ -52,7 +52,7 @@ export default async function AccountSettingsPage() {
       </Link>
 
       <p className="text-brand-text eyebrow mt-6">Account</p>
-      <h1 className="type-display mt-2">Settings</h1>
+      <h1 className="type-page mt-2">Settings</h1>
       <p className="text-muted-foreground mt-3 text-sm">
         Signed in as {viewer.email ?? "verified customer"}
       </p>

@@ -86,7 +86,7 @@ export default async function VendorSettingsPage() {
       </Link>
 
       <p className="text-brand-text eyebrow mt-6">Business settings</p>
-      <h1 className="type-display mt-2">Your business details</h1>
+      <h1 className="type-page mt-2">Your business details</h1>
 
       {vendors.length === 0 ? (
         <p className="text-muted-foreground mt-6 leading-7">

@@ -110,7 +110,7 @@ export default async function ShortlistPage({
       id="main-content"
     >
       <p className="text-brand-text eyebrow">Customer shortlist</p>
-      <h1 className="type-display mt-3">Your saved vendors</h1>
+      <h1 className="type-page mt-3">Your saved vendors</h1>
 
       <div className="mt-6 space-y-3">
         {flag && MESSAGES[flag] && (

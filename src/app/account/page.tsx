@@ -68,7 +68,7 @@ export default async function AccountPage({
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
           <p className="text-brand-text eyebrow">Customer account</p>
-          <h1 className="type-display mt-2">Your wedding enquiries</h1>
+          <h1 className="type-page mt-2">Your wedding enquiries</h1>
           <p className="text-muted-foreground mt-3 text-sm">
             Signed in as {viewer.email ?? "verified customer"}
           </p>

@@ -103,7 +103,7 @@ export function VendorDirectory({
               ? "Wedding venues across India"
               : "Wedding professionals across India"}
           </p>
-          <h1 className="type-title mt-3 max-w-4xl md:text-5xl">{title}</h1>
+          <h1 className="type-page mt-3 max-w-4xl">{title}</h1>
           <p className="text-muted-foreground mt-4 max-w-3xl leading-7">
             {description}
           </p>

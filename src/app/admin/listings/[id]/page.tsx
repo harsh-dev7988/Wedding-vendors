@@ -154,7 +154,7 @@ export default async function AdminListingDetailPage({
       <p className="text-brand-text eyebrow mt-6">
         {listing.status.replaceAll("_", " ")}
       </p>
-      <h1 className="type-title mt-2 md:text-5xl">{listing.title}</h1>
+      <h1 className="type-page mt-2">{listing.title}</h1>
       <p className="text-muted-foreground mt-3">
         <Link
           className="hover:text-foreground font-bold"

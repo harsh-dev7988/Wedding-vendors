@@ -136,7 +136,7 @@ export default async function BillingPage({
       </Link>
 
       <p className="text-brand-text eyebrow mt-6">Billing</p>
-      <h1 className="type-display mt-2">Plans and payments</h1>
+      <h1 className="type-page mt-2">Plans and payments</h1>
       <p className="text-muted-foreground mt-4 max-w-2xl leading-7">
         Every business starts on the free plan and can receive enquiries without
         paying. Pro adds reach and performance data. Payments are processed by

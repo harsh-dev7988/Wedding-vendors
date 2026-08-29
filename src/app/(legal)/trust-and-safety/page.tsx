@@ -36,7 +36,7 @@ export default function TrustAndSafetyPage() {
   return (
     <article>
       <p className="text-brand-text eyebrow">Policies</p>
-      <h1 className="type-title mt-2 md:text-5xl">Trust and safety</h1>
+      <h1 className="type-page mt-2">Trust and safety</h1>
       <p className="mt-4 leading-7">
         A marketplace is only useful if you can believe what it tells you. This
         page explains exactly what our badges mean, and what they do not.

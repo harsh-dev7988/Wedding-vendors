@@ -12,7 +12,7 @@ export default function ContactPage() {
   return (
     <article>
       <p className="text-brand-text eyebrow">Support</p>
-      <h1 className="type-title mt-2 md:text-5xl">Contact us</h1>
+      <h1 className="type-page mt-2">Contact us</h1>
 
       <p className="border-brand-text/25 bg-brand-soft text-brand-text mt-6 rounded-2xl border p-4 text-sm font-semibold">
         Replace the bracketed placeholders with real, monitored addresses before

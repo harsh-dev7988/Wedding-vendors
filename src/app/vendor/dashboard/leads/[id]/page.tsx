@@ -80,7 +80,7 @@ export default async function VendorLeadPage({
       </Link>
 
       <p className="text-brand-text eyebrow mt-6">Enquiry · {lead.status}</p>
-      <h1 className="type-title mt-2 md:text-5xl">
+      <h1 className="type-page mt-2">
         {lead.listings?.title ?? "Listing enquiry"}
       </h1>
 

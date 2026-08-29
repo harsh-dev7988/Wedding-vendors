@@ -77,7 +77,7 @@ export default async function EnquiryDetailPage({
       )}
 
       <p className="text-brand-text eyebrow mt-9">Private contact</p>
-      <h1 className="type-display mt-3">
+      <h1 className="type-page mt-3">
         {lead.listings?.title ?? "Vendor contact"}
       </h1>
       <p className="text-muted-foreground mt-4">

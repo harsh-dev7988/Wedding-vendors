@@ -233,7 +233,7 @@ export default async function VendorDashboardPage({
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
           <p className="text-brand-text eyebrow">Vendor workspace</p>
-          <h1 className="type-display mt-2">Manage listings and leads</h1>
+          <h1 className="type-page mt-2">Manage listings and leads</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link

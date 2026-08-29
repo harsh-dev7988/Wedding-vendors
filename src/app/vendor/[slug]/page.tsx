@@ -32,7 +32,7 @@ import {
 } from "@/data/marketplace";
 import { isPreviewVendor, type PublicVendor } from "@/domain/marketplace";
 import { getCityBySlug } from "@/data/cities";
-import { formatServiceRadius } from "@/lib/geo";
+import { formatServiceRadius, isFixedLocationCategory } from "@/lib/geo";
 import { formatEventDate } from "@/lib/datetime";
 import { breadcrumbJsonLd, vendorJsonLd } from "@/lib/seo/structured-data";
 
@@ -130,6 +130,11 @@ export default async function VendorProfilePage({
    * which is the kind of thing Search Console reports and nobody reads.
    */
   const venueTrail = category?.kind === "venue";
+  const fixedLocation = isFixedLocationCategory(vendor.categorySlug);
+  const priceLabel = formatStartingPrice(
+    vendor.startingPrice,
+    vendor.priceUnit,
+  );
   const sectionCrumb = venueTrail
     ? { name: "Venues", path: "/venues" }
     : { name: "Vendors", path: "/vendors" };
@@ -226,92 +231,108 @@ export default async function VendorProfilePage({
         </div>
       )}
 
-      <section className="mx-auto max-w-7xl px-5 pt-5 md:px-8">
-        <h2 className="sr-only">Portfolio</h2>
-        <div
-          className={`grid gap-3 overflow-hidden rounded-[2rem] ${rest.length ? "md:grid-cols-[1.5fr_0.5fr]" : ""}`}
-        >
-          <div className="bg-muted relative min-h-[25rem] overflow-hidden md:min-h-[34rem]">
-            <Image
-              alt={cover.alt}
-              className="object-cover"
-              fill
-              priority
-              sizes="(min-width: 768px) 72vw, 100vw"
-              src={cover.url}
-            />
-          </div>
-          {rest.length > 0 && (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-1">
-              {rest.slice(0, 2).map((item) => (
-                <div
-                  className="bg-muted relative min-h-44 overflow-hidden"
-                  key={item.url}
-                >
-                  <Image
-                    alt={item.alt}
-                    className="object-cover"
-                    fill
-                    sizes="(min-width: 768px) 25vw, 50vw"
-                    src={item.url}
-                  />
-                </div>
-              ))}
+      {/* Identity first, then the evidence for it.
+
+          This sat below a full-width photograph, so a visitor met the room
+          before they met the business and the enquiry card started below the
+          fold. A listing page should answer "who is this" in its first screen
+          and only then show the work. */}
+      <section className="mx-auto max-w-7xl px-5 pt-6 md:px-8">
+        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="type-page">{vendor.name}</h1>
+              {vendor.verified && (
+                <span className="text-success inline-flex items-center gap-1 rounded-full bg-[color:var(--success-soft)] px-3 py-1 text-xs font-bold">
+                  <BadgeCheck aria-hidden="true" size={15} /> Verified business
+                </span>
+              )}
             </div>
+            <p className="text-muted-foreground mt-3 inline-flex items-center gap-2">
+              <MapPin aria-hidden="true" size={17} /> {vendor.locality}
+              {metro ? `, ${metro.name}` : ""}
+            </p>
+          </div>
+          {vendor.listingId ? (
+            <ShortlistButton
+              listingId={vendor.listingId}
+              returnTo={`/vendor/${vendor.slug}`}
+              variant="full"
+              vendorName={vendor.name}
+            />
+          ) : (
+            <p className="border-border text-muted-foreground w-fit rounded-full border border-dashed px-4 py-2.5 text-sm font-semibold">
+              Preview listings cannot be shortlisted
+            </p>
           )}
         </div>
-        {rest.length > 2 && (
-          <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-            {rest.slice(2).map((item) => (
-              <div
-                className="bg-muted relative aspect-square overflow-hidden rounded-2xl"
-                key={item.url}
-              >
-                <Image
-                  alt={item.alt}
-                  className="object-cover"
-                  fill
-                  sizes="(min-width: 1024px) 16vw, 33vw"
-                  src={item.url}
-                />
-              </div>
-            ))}
-          </div>
-        )}
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-10 md:px-8 lg:grid-cols-[1fr_22rem]">
         <div>
-          <div className="border-border flex flex-col justify-between gap-5 border-b pb-8 sm:flex-row sm:items-start">
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="type-title md:text-5xl">{vendor.name}</h1>
-                {vendor.verified && (
-                  <span className="text-success inline-flex items-center gap-1 rounded-full bg-[color:var(--success-soft)] px-3 py-1 text-xs font-bold">
-                    <BadgeCheck aria-hidden="true" size={15} /> Verified
-                    business
-                  </span>
-                )}
+          <div className="pb-2">
+            <h2 className="sr-only">Portfolio</h2>
+            <div
+              className={`grid gap-3 overflow-hidden rounded-[2rem] ${rest.length ? "md:grid-cols-[1.5fr_0.5fr]" : ""}`}
+            >
+              <div
+                className={`bg-muted relative overflow-hidden ${
+                  // One photograph is a frame, not a billboard. At 34rem tall and
+                  // full width it filled the entire first screen, so the name, the
+                  // price and the enquire button all began below the fold — on the
+                  // one page whose job is to turn a visitor into an enquiry.
+                  rest.length
+                    ? "min-h-[20rem] md:min-h-[26rem]"
+                    : "aspect-[16/9] max-h-[26rem]"
+                }`}
+              >
+                <Image
+                  alt={cover.alt}
+                  className="object-cover"
+                  fill
+                  priority
+                  sizes="(min-width: 768px) 72vw, 100vw"
+                  src={cover.url}
+                />
               </div>
-              <p className="text-muted-foreground mt-3 inline-flex items-center gap-2">
-                <MapPin aria-hidden="true" size={17} /> {vendor.locality}
-                {metro ? `, ${metro.name}` : ""}
-              </p>
+              {rest.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-1">
+                  {rest.slice(0, 2).map((item) => (
+                    <div
+                      className="bg-muted relative min-h-[9.5rem] overflow-hidden"
+                      key={item.url}
+                    >
+                      <Image
+                        alt={item.alt}
+                        className="object-cover"
+                        fill
+                        sizes="(min-width: 768px) 25vw, 50vw"
+                        src={item.url}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            {vendor.listingId ? (
-              <ShortlistButton
-                listingId={vendor.listingId}
-                returnTo={`/vendor/${vendor.slug}`}
-                variant="full"
-                vendorName={vendor.name}
-              />
-            ) : (
-              <p className="border-border text-muted-foreground w-fit rounded-full border border-dashed px-4 py-2.5 text-sm font-semibold">
-                Preview listings cannot be shortlisted
-              </p>
+            {rest.length > 2 && (
+              <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+                {rest.slice(2).map((item) => (
+                  <div
+                    className="bg-muted relative aspect-square overflow-hidden rounded-2xl"
+                    key={item.url}
+                  >
+                    <Image
+                      alt={item.alt}
+                      className="object-cover"
+                      fill
+                      sizes="(min-width: 1024px) 16vw, 33vw"
+                      src={item.url}
+                    />
+                  </div>
+                ))}
+              </div>
             )}
           </div>
-
           <div className="border-border grid gap-5 border-b py-7 sm:grid-cols-3">
             <div>
               <h2 className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
@@ -345,11 +366,57 @@ export default async function VendorProfilePage({
                 </p>
               </div>
             )}
+
+            {/* Facts the database already held and the page never showed.
+                A listing that says only "10 years" and "no reviews yet" gives
+                somebody nothing to decide on; where it is, how far it travels
+                and what its price is quoted against are the questions people
+                actually arrive with. */}
+            <div>
+              <h2 className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
+                {fixedLocation ? "Where" : "Travels"}
+              </h2>
+              <p className="mt-2 inline-flex items-center gap-2 text-sm font-bold">
+                <MapPin aria-hidden="true" size={17} />
+                {fixedLocation
+                  ? `${vendor.locality}${metro ? `, ${metro.name}` : ""}`
+                  : (formatServiceRadius(vendor.serviceRadiusM ?? null) ??
+                    "Ask for their service area")}
+              </p>
+            </div>
+
+            {category && (
+              <div>
+                <h2 className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
+                  Category
+                </h2>
+                <p className="mt-2 text-sm font-bold">{category.name}</p>
+              </div>
+            )}
+
+            {priceLabel.unit && (
+              <div>
+                <h2 className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
+                  Priced
+                </h2>
+                <p className="mt-2 text-sm font-bold">
+                  {priceLabel.amount}
+                  {priceLabel.unit ? (
+                    <span className="text-muted-foreground font-medium">
+                      {" "}
+                      {priceLabel.unit.replaceAll("_", " ")}
+                    </span>
+                  ) : null}
+                </p>
+              </div>
+            )}
           </div>
 
           <article className="py-9">
             <p className="text-brand-text eyebrow">About</p>
-            <h2 className="type-title mt-2">A closer look at {vendor.name}</h2>
+            <h2 className="type-heading mt-2">
+              A closer look at {vendor.name}
+            </h2>
             <p className="text-muted-foreground mt-5 max-w-3xl leading-8 whitespace-pre-wrap">
               {vendor.description}
             </p>
@@ -377,7 +444,7 @@ export default async function VendorProfilePage({
               aria-labelledby="reviews-heading"
               className="border-border border-t py-9"
             >
-              <h2 className="type-title" id="reviews-heading">
+              <h2 className="type-heading" id="reviews-heading">
                 Reviews
               </h2>
               {reviews.length === 0 ? (
@@ -489,7 +556,7 @@ export default async function VendorProfilePage({
       {related.length > 0 && (
         <section className="border-border bg-muted/45 border-t">
           <div className="mx-auto max-w-7xl px-5 py-16 md:px-8">
-            <h2 className="type-title">You may also like</h2>
+            <h2 className="type-heading">You may also like</h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {related.map((item) => (
                 <VendorCard headingLevel="h3" key={item.slug} vendor={item} />

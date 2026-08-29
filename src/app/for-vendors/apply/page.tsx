@@ -54,7 +54,7 @@ export default async function VendorApplicationPage() {
     return (
       <main className="mx-auto max-w-3xl px-5 py-16 md:px-8" id="main-content">
         <p className="text-brand-text eyebrow">Vendor application</p>
-        <h1 className="type-display mt-3">We are reviewing your business.</h1>
+        <h1 className="type-page mt-3">We are reviewing your business.</h1>
         <div className="border-border shadow-soft mt-8 rounded-[2rem] border bg-white p-7">
           <p className="flex items-center gap-2.5 text-sm font-bold">
             <Clock aria-hidden="true" className="text-brand-text" size={18} />
@@ -84,7 +84,7 @@ export default async function VendorApplicationPage() {
   return (
     <main className="mx-auto max-w-3xl px-5 py-16 md:px-8" id="main-content">
       <p className="text-brand-text eyebrow">Vendor application</p>
-      <h1 className="type-display mt-3">Tell us about your business.</h1>
+      <h1 className="type-page mt-3">Tell us about your business.</h1>
       <p className="text-muted-foreground mt-5 max-w-2xl leading-7">
         This creates a private vendor workspace. One business can hold several
         listings, so you only do this once — afterwards you add listings from

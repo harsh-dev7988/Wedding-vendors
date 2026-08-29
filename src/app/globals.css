@@ -131,6 +131,23 @@ p {
   font-weight: 600;
 }
 
+/**
+ * A functional page title — a directory, a dashboard, a form.
+ *
+ * `type-display` was doing this job as well as its own, so "Wedding vendors in
+ * Delhi NCR" rendered at the same size as the home page's opening statement:
+ * two lines, two hundred pixels tall, and the largest element in the app
+ * carrying the least information in it. A heading should be sized by what it
+ * is, not by which page it happens to sit on.
+ *
+ * Display stays for statements. This is for labels that happen to be titles.
+ */
+.type-page {
+  font-size: clamp(1.875rem, 1.35rem + 1.7vw, 2.5rem);
+  line-height: 1.1;
+  font-weight: 600;
+}
+
 .type-title {
   font-size: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
   line-height: 1.06;

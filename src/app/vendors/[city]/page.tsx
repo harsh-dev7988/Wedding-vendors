@@ -127,7 +127,7 @@ export default async function CityHubPage({
         </ol>
       </nav>
 
-      <h1 className="type-display mt-5 flex items-center gap-3">
+      <h1 className="type-page mt-5 flex items-center gap-3">
         <MapPin aria-hidden="true" className="text-brand-text" size={36} />
         Wedding vendors in {metro.name}
       </h1>

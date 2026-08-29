@@ -131,7 +131,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   return (
     <main className="mx-auto max-w-7xl px-5 py-12 md:px-8" id="main-content">
       <p className="text-brand-text eyebrow">Operations</p>
-      <h1 className="type-display mt-2">Marketplace moderation</h1>
+      <h1 className="type-page mt-2">Marketplace moderation</h1>
       <p className="text-muted-foreground mt-4 max-w-2xl leading-7">
         Approve identity-checked businesses, inspect complete listings, and
         publish only eligible reviews. Every control passes through a

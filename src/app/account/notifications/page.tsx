@@ -68,7 +68,7 @@ export default async function NotificationsPage({
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-brand-text eyebrow">Account</p>
-          <h1 className="type-display mt-2">Notifications</h1>
+          <h1 className="type-page mt-2">Notifications</h1>
         </div>
         {unread > 0 && (
           <form action={markAllRead}>
