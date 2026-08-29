@@ -11,6 +11,16 @@
  */
 const BASE = process.env.BASE ?? "http://localhost:3235";
 const MAX_PAGES = Number(process.env.MAX_PAGES ?? 400);
+/**
+ * Crawl as somebody with a city remembered.
+ *
+ * The city context personalises where some links point, which introduces
+ * exactly one new way to break: a personalised destination that does not
+ * exist. Running the whole crawl with `CITY=mumbai` is how that gets caught,
+ * and it has to stay clean alongside the unset run — an explicit URL must
+ * still win, so both passes should reach the same set of pages.
+ */
+const CITY = process.env.CITY ?? "";
 
 /** Signed-in areas answer 307 to sign-in, which is correct, not a break. */
 const AUTH_PREFIXES = [
@@ -40,7 +50,10 @@ function normalise(href) {
 }
 
 async function visit(path) {
-  const response = await fetch(BASE + path, { redirect: "manual" });
+  const response = await fetch(BASE + path, {
+    headers: CITY ? { cookie: `wv_city=${CITY}` } : {},
+    redirect: "manual",
+  });
   const status = response.status;
   // Next sometimes emits `location` twice with the same value on a redirect
   // rendered on demand. Browsers and fetch-with-follow both take the first and

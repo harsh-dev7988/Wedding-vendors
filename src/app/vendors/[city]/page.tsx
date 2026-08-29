@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import { DirectorySearchWithNearMe } from "@/components/marketplace/directory-search";
 import { JsonLd } from "@/components/seo/json-ld";
+import { RememberCity } from "@/components/location/remember-city";
 import {
   getDirectoryParams,
   getDirectorySupply,
@@ -103,6 +104,7 @@ export default async function CityHubPage({
   return (
     <main className="mx-auto max-w-7xl px-5 py-12 md:px-8" id="main-content">
       <JsonLd data={breadcrumbs} />
+      <RememberCity slug={metro.slug} />
 
       <nav aria-label="Breadcrumb">
         <ol className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-sm">

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
+import { RememberCity } from "@/components/location/remember-city";
 import { VendorDirectory } from "@/components/marketplace/vendor-directory";
 import { DIRECTORY_PAGE_SIZE } from "@/config/site";
 import { getListingFacets, searchLiveVendors } from "@/data/live-marketplace";
@@ -99,6 +100,8 @@ export async function DirectoryPage({
 
   return (
     <>
+      {/* Learned from the page being viewed, not asked for. */}
+      <RememberCity slug={metro.slug} />
       <JsonLd
         data={directoryJsonLd({
           categoryName: category?.name ?? "Venues",

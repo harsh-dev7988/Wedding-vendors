@@ -18,6 +18,7 @@ import {
   getVenueCategory,
 } from "@/data/categories";
 import { nextImageSrcSet, nextImageUrl } from "@/lib/image-url";
+import { CityPrompt } from "@/components/location/city-prompt";
 import { getCities } from "@/data/cities";
 import { getDirectorySupply } from "@/data/live-marketplace";
 
@@ -280,6 +281,12 @@ export default async function HomePage() {
           </ul>
         </div>
       </section>
+
+      {/* Directly beneath the hero. A prompt about where you are is only
+          useful next to the search it changes; below the fold it is furniture.
+          It renders nothing until hydration and nothing at all once a city is
+          known, so the prerendered page is unaffected either way. */}
+      <CityPrompt cities={cities} />
 
       {/* ------------------------------------------------------------------
           How it works

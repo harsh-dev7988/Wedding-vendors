@@ -17,23 +17,145 @@ export type CategoryMedia = {
 };
 
 export const CATEGORY_MEDIA: Readonly<Record<string, CategoryMedia>> = {
+  accessories: {
+    image: "/images/generated/category-accessories.webp",
+    imageAlt:
+      "A stylist arranging embroidered clutches, juttis, kalire, and dupattas",
+  },
+  "banquet-halls": {
+    image: "/images/generated/category-banquet-halls.webp",
+    imageAlt:
+      "An indoor wedding banquet hall dressed with warm lights and flowers",
+  },
+  bartenders: {
+    image: "/images/generated/category-bartenders.webp",
+    imageAlt: "A mixologist pouring a drink at a warmly lit wedding bar",
+  },
+  "beauty-and-wellness": {
+    image: "/images/generated/category-beauty-and-wellness.webp",
+    imageAlt:
+      "A calm treatment room with warm linen, brass bowls, and soft daylight",
+  },
+  "bridal-wear": {
+    image: "/images/generated/category-bridal-wear.webp",
+    imageAlt: "Hands inspecting embroidered bridal lehengas on a boutique rail",
+  },
   caterers: {
     image: "/images/generated/category-catering.webp",
     imageAlt: "A wedding chef plating a contemporary Indian dish",
   },
+  decorators: {
+    image: "/images/generated/category-decorators.webp",
+    imageAlt:
+      "Decorators fixing floral garlands and drapes onto a wedding mandap",
+  },
+  "destination-venues": {
+    image: "/images/generated/category-destination-venues.webp",
+    imageAlt:
+      "A hilltop palace courtyard being prepared for a wedding at sunset",
+  },
+  djs: {
+    image: "/images/generated/category-djs.webp",
+    imageAlt: "Wedding guests dancing beneath amber lights at a sangeet",
+  },
+  "family-makeup": {
+    image: "/images/generated/category-family-makeup.webp",
+    imageAlt:
+      "Family members being readied together by makeup artists at mirrors",
+  },
+  farmhouses: {
+    image: "/images/generated/category-farmhouses.webp",
+    imageAlt:
+      "A private farmhouse lawn set with string lights for an evening wedding",
+  },
+  "groom-wear": {
+    image: "/images/generated/category-groom-wear.webp",
+    imageAlt:
+      "A tailor adjusting an embroidered sherwani cuff beside a boutique rail",
+  },
+  invitations: {
+    image: "/images/generated/category-invitations.webp",
+    imageAlt:
+      "Hands holding blank gold-foiled wedding invitations beside marigolds",
+  },
+  jewellery: {
+    image: "/images/generated/category-jewellery.webp",
+    imageAlt:
+      "A jeweller arranging polki and gold bridal jewellery on folded silk",
+  },
+  "kalyana-mandapams": {
+    image: "/images/generated/category-kalyana-mandapams.webp",
+    imageAlt:
+      "A pillared South Indian wedding hall decorated with garlands and banana leaves",
+  },
+  "luxury-hotels": {
+    image: "/images/generated/category-luxury-hotels.webp",
+    imageAlt:
+      "A formal wedding ballroom glowing beneath rows of crystal chandeliers",
+  },
   "makeup-artists": {
     image: "/images/generated/category-makeup.webp",
     imageAlt: "A makeup artist applying the finishing touch to a bride",
+  },
+  "marriage-lawns": {
+    image: "/images/generated/category-marriage-lawns.webp",
+    imageAlt:
+      "An open-air wedding lawn illuminated by string lights at blue hour",
+  },
+  "mehendi-artists": {
+    image: "/images/generated/category-mehendi-artists.webp",
+    imageAlt: "A mehendi artist applying intricate henna to a bride's hands",
   },
   photographers: {
     image: "/images/generated/category-photographers.webp",
     imageAlt:
       "A wedding photographer capturing a laughing couple at golden hour",
   },
+  "pre-wedding-photographers": {
+    image: "/images/generated/category-pre-wedding-photographers.webp",
+    imageAlt:
+      "A photographer capturing a couple against a lake and hills at golden hour",
+  },
+  "sangeet-choreographers": {
+    image: "/images/generated/category-sangeet-choreographers.webp",
+    imageAlt: "A family rehearsing a sangeet dance with their choreographer",
+  },
+  "small-function-halls": {
+    image: "/images/generated/category-small-function-halls.webp",
+    imageAlt:
+      "An intimate function room prepared with floor seating and marigold garlands",
+  },
+  "trousseau-packers": {
+    image: "/images/generated/category-trousseau-packers.webp",
+    imageAlt: "Folded silk saris being arranged in a decorated trousseau tray",
+  },
   "wedding-planners": {
     image: "/images/generated/category-planning-decor.webp",
     imageAlt:
       "Wedding planners preparing an ivory and marigold ceremony setting",
+  },
+  "wedding-cakes": {
+    image: "/images/generated/category-wedding-cakes.webp",
+    imageAlt:
+      "A pastry chef adding flowers to an ivory and gold tiered wedding cake",
+  },
+  "wedding-entertainment": {
+    image: "/images/generated/category-wedding-entertainment.webp",
+    imageAlt: "Dhol players performing for wedding guests in golden light",
+  },
+  "wedding-favours": {
+    image: "/images/generated/category-wedding-favours.webp",
+    imageAlt: "Hands arranging marigold-topped wedding favour boxes on a table",
+  },
+  "wedding-hotels": {
+    image: "/images/generated/category-wedding-hotels.webp",
+    imageAlt:
+      "A hotel ballroom prepared with a draped stage and reception tables",
+  },
+  "wedding-resorts": {
+    image: "/images/generated/category-wedding-resorts.webp",
+    imageAlt:
+      "A resort courtyard set with a floral mandap beside reflecting pools",
   },
   venues: {
     image: "/images/generated/category-venues.webp",

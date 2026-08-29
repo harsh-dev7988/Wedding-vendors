@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+
 import { VendorDirectory } from "@/components/marketplace/vendor-directory";
 import { DIRECTORY_PAGE_SIZE } from "@/config/site";
 import {
@@ -8,6 +10,7 @@ import {
 import { getCityBySlug } from "@/data/cities";
 import { getCategoryMap } from "@/data/categories";
 import { searchVendors } from "@/data/marketplace";
+import { CITY_COOKIE } from "@/lib/city-cookie";
 import { parsePage } from "@/lib/pagination";
 
 /**
@@ -66,7 +69,18 @@ export async function SearchPage({
   raw,
   subjectFallback,
 }: SearchPageProps) {
-  const requestedCity = first(raw.city);
+  // A remembered city fills the gap, it never overrides. An explicit `?city=`
+  // — from a link, a search result or a shared URL — always wins, and a
+  // crawler carries no cookie so it always sees the unscoped page.
+  //
+  // Safe to read here and nowhere else: this route is already dynamic because
+  // it reads `searchParams`, so `cookies()` costs nothing that is not already
+  // being paid. A prerendered route reading the same cookie would opt all 375
+  // of them into dynamic rendering.
+  const remembered = raw.city
+    ? undefined
+    : ((await cookies()).get(CITY_COOKIE)?.value ?? undefined);
+  const requestedCity = first(raw.city) ?? remembered;
   const requestedCategory = lockedCategory ?? first(raw.category);
   const query = first(raw.q)?.slice(0, 80);
   const page = parsePage(raw.page);
