@@ -38,6 +38,20 @@ describe("service radius by category", () => {
     }
   });
 
+  it("treats a shop as a place you travel to, not a business that travels", () => {
+    // Retail sells stock over a counter. Given the mobile default, a jeweller
+    // would carry a 30 km service radius and read as coming to the wedding.
+    for (const slug of [
+      "bridal-wear",
+      "groom-wear",
+      "jewellery",
+      "accessories",
+    ]) {
+      expect(isFixedLocationCategory(slug)).toBe(true);
+      expect(defaultServiceRadiusM(slug)).toBeNull();
+    }
+  });
+
   it("gives every mobile category 30 km", () => {
     for (const slug of [
       "photographers",

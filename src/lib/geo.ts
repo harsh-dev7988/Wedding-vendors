@@ -19,6 +19,22 @@ export const MAX_SERVICE_RADIUS_M = 200_000;
  * to be kept in step with the venue rows.
  */
 const FIXED_LOCATION_CATEGORIES = new Set([
+  // Retail. A shop is a place you travel to, exactly like a venue — asking a
+  // jeweller how far it travels is the same category error. Without these,
+  // `defaultServiceRadiusM` hands each one the 30 km mobile default and the
+  // listing starts claiming a boutique comes to your wedding. These four are
+  // not promoted yet, so this is a latent bug rather than a live one; it is
+  // fixed now because the day they are promoted is the day it stops being
+  // latent, and nothing about that day would make anyone look here.
+  //
+  // A `retail` value on `categories.kind` is the real answer and would let this
+  // be derived rather than listed. Until that exists, the list has to be kept
+  // in step with the retail rows.
+  "accessories",
+  "bridal-wear",
+  "groom-wear",
+  "jewellery",
+
   "venues",
   "banquet-halls",
   "marriage-lawns",
