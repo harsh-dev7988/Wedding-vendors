@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { getCategoryBySlug } from "@/data/marketplace";
+import { getCategoryMap } from "@/data/categories";
 import { siteConfig } from "@/config/site";
 import {
   getDirectorySupply,
@@ -38,9 +38,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.url}/contact`, lastModified: now, priority: 0.3 },
   ];
 
-  const [supply, listings] = await Promise.all([
+  const [supply, listings, categories] = await Promise.all([
     getDirectorySupply(),
     getLiveSitemapEntries(),
+    // Resolved once: a lookup per entry would be a query per entry.
+    getCategoryMap(),
   ]);
 
   // Venues live at /venues/[city]; every other category at
@@ -50,13 +52,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((entry) => isIndexableDirectory(entry.total))
     .map((entry) => ({
       url:
-        getCategoryBySlug(entry.categorySlug)?.kind === "venue"
+        categories.get(entry.categorySlug)?.kind === "venue"
           ? `${siteConfig.url}/venues/${entry.citySlug}`
           : `${siteConfig.url}/vendors/${entry.citySlug}/${entry.categorySlug}`,
       lastModified: now,
       // A venue page carries the decision everything else hangs off.
       priority:
-        getCategoryBySlug(entry.categorySlug)?.kind === "venue" ? 0.8 : 0.7,
+        categories.get(entry.categorySlug)?.kind === "venue" ? 0.8 : 0.7,
     }));
 
   // City hubs are judged on the city's whole supply, not one category's, so a

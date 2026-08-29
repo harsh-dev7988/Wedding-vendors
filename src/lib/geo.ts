@@ -11,8 +11,25 @@ export const MAX_SERVICE_RADIUS_M = 200_000;
  * A venue does not have a service radius — asking one how far it travels is a
  * category error. These listings are matched by the customer's own radius
  * instead. Everything else defaults to {@link DEFAULT_SERVICE_RADIUS_M}.
+ *
+ * Every venue subtype belongs here, not just the parent: a banquet hall and a
+ * farmhouse are no more mobile than "venues" is. The authority is
+ * `categories.kind`, and callers that hold the category row should use that
+ * directly — this list exists for the places that have only a slug, and it has
+ * to be kept in step with the venue rows.
  */
-const FIXED_LOCATION_CATEGORIES = new Set(["venues"]);
+const FIXED_LOCATION_CATEGORIES = new Set([
+  "venues",
+  "banquet-halls",
+  "marriage-lawns",
+  "wedding-resorts",
+  "small-function-halls",
+  "destination-venues",
+  "kalyana-mandapams",
+  "wedding-hotels",
+  "luxury-hotels",
+  "farmhouses",
+]);
 
 export function isFixedLocationCategory(categorySlug: string) {
   return FIXED_LOCATION_CATEGORIES.has(categorySlug);

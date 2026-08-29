@@ -10,7 +10,7 @@ import {
   getDirectoryParams,
 } from "@/data/live-marketplace";
 import { getCityBySlug } from "@/data/cities";
-import { getCategoryBySlug } from "@/data/marketplace";
+import { getCategoryBySlug, getCategoryMap } from "@/data/categories";
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -25,11 +25,17 @@ export const dynamicParams = true;
  * a `?page=` parameter could not, because reading it makes the route dynamic.
  */
 export async function generateStaticParams() {
-  const pairs = await getDirectoryParams();
+  // `getDirectoryParams` already excludes venues, but this route is also the
+  // one that redirects them, so resolving the map keeps the two in agreement
+  // without a query per pair.
+  const [pairs, categories] = await Promise.all([
+    getDirectoryParams(),
+    getCategoryMap(),
+  ]);
   const params: Array<{ category: string; city: string; n: string }> = [];
 
   for (const pair of pairs) {
-    if (getCategoryBySlug(pair.category)?.kind === "venue") continue;
+    if (categories.get(pair.category)?.kind === "venue") continue;
     const pages = await directoryPageParams(() =>
       countPublishedListings(pair.city, pair.category),
     );
@@ -54,7 +60,7 @@ export async function generateMetadata({
   const { city, category, n } = await params;
   const page = parsePageSegment(n);
   const metro = await getCityBySlug(city);
-  const categoryDetails = getCategoryBySlug(category);
+  const categoryDetails = await getCategoryBySlug(category);
   if (!page || !metro || !categoryDetails) return {};
 
   const canonical = `/vendors/${metro.slug}/${categoryDetails.slug}/page/${page}`;
@@ -77,7 +83,8 @@ export default async function CityCategoryPagedPage({
   if (page === 1) permanentRedirect(`/vendors/${city}/${category}`);
   // Same as page one: an unknown city answers 404 rather than redirecting to
   // one, so a URL that never existed is never reported as having moved.
-  if (getCategoryBySlug(category)?.kind === "venue") {
+  const details = await getCategoryBySlug(category);
+  if (details?.kind === "venue") {
     if (!(await getCityBySlug(city))) notFound();
     permanentRedirect(`/venues/${city}/page/${page}`);
   }
@@ -87,7 +94,7 @@ export default async function CityCategoryPagedPage({
       categorySlug={category}
       citySlug={city}
       description={(cityName) =>
-        `Compare ${(getCategoryBySlug(category)?.name ?? "vendors").toLocaleLowerCase("en-IN")} serving ${cityName}. Public profiles contain service information only; direct contact is released after a validated enquiry.`
+        `Compare ${(details?.name ?? "vendors").toLocaleLowerCase("en-IN")} serving ${cityName}. Public profiles contain service information only; direct contact is released after a validated enquiry.`
       }
       page={page}
       section="vendors"

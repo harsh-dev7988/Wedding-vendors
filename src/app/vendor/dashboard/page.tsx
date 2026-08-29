@@ -14,7 +14,8 @@ import {
 import { FormAlert, StatusBanner } from "@/components/ui/feedback";
 import { OnboardingProgress } from "@/components/vendor/onboarding-progress";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { launchCategories } from "@/config/categories";
+
+import { getCategories } from "@/data/categories";
 import { getCities } from "@/data/cities";
 import { requireViewer } from "@/lib/auth";
 import { formatEventDate, formatIndiaDateTime } from "@/lib/datetime";
@@ -206,7 +207,11 @@ export default async function VendorDashboardPage({
 
   const publicUrl = mediaUrlResolver(supabase, "thumb");
 
-  const categoryOptions = launchCategories.map((category) => ({
+  // Every active category, venues included — a venue owner has to be able
+  // to pick Venues. The public split between the two sections is about how
+  // people browse, not about what a vendor may list.
+  const categoryOptions = (await getCategories()).map((category) => ({
+    allowedPriceUnits: category.allowedPriceUnits,
     name: category.name,
     slug: category.slug,
   }));

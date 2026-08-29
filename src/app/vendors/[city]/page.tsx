@@ -11,7 +11,7 @@ import {
   isIndexableDirectory,
 } from "@/data/live-marketplace";
 import { getCities, getCityBySlug } from "@/data/cities";
-import { getServiceCategories } from "@/data/marketplace";
+import { getServiceCategories } from "@/data/categories";
 import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 
 // Same cadence as the category pages below it, so a newly published listing
@@ -70,7 +70,7 @@ export default async function CityHubPage({
 
   // Venues are linked separately below; a city hub that lists them beside
   // services would send people to a page that no longer exists.
-  const categories = getServiceCategories().map((category) => ({
+  const categories = (await getServiceCategories()).map((category) => ({
     ...category,
     total: countFor(category.slug),
   }));

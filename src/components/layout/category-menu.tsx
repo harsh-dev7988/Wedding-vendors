@@ -9,7 +9,6 @@ type Category = {
   readonly description: string;
   readonly name: string;
   readonly slug: string;
-  readonly symbol: string;
 };
 
 type City = { readonly name: string; readonly slug: string };
@@ -100,9 +99,6 @@ export function CategoryMenu({
                       className="hover:bg-muted flex items-start gap-3 rounded-xl px-2 py-2 transition"
                       href={`/vendors?category=${category.slug}`}
                     >
-                      <span aria-hidden="true" className="mt-0.5 text-lg">
-                        {category.symbol}
-                      </span>
                       <span>
                         <span className="block text-sm font-bold">
                           {category.name}

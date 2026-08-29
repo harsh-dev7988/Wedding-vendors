@@ -11,8 +11,12 @@ import {
 } from "lucide-react";
 
 import { SelectMenu } from "@/components/ui/select-menu";
-import { launchCategories } from "@/config/categories";
-import { getServiceCategories, getVenueCategory } from "@/data/marketplace";
+
+import {
+  getCategories,
+  getServiceCategories,
+  getVenueCategory,
+} from "@/data/categories";
 import { nextImageSrcSet, nextImageUrl } from "@/lib/image-url";
 import { getCities } from "@/data/cities";
 
@@ -63,6 +67,15 @@ const STEPS = [
 
 export default async function HomePage() {
   const cities = await getCities();
+  // Resolved once for the whole page: the hero search offers every category
+  // (picking a venue posts to /vendors, which the proxy sends on to /venues),
+  // while the tile grid below covers services only because venues lead the
+  // section on their own.
+  const [allCategories, serviceCategories, venueCategory] = await Promise.all([
+    getCategories(),
+    getServiceCategories(),
+    getVenueCategory(),
+  ]);
 
   return (
     <main id="main-content">
@@ -183,7 +196,7 @@ export default async function HomePage() {
                   // which the proxy redirects to /venues. Dropping it here
                   // would make the one thing the subheading names first
                   // unreachable from the site's most prominent control.
-                  ...launchCategories.map((category) => ({
+                  ...allCategories.map((category) => ({
                     label: category.name,
                     value: category.slug,
                   })),
@@ -287,11 +300,13 @@ export default async function HomePage() {
         >
           <div className="relative aspect-[16/9] overflow-hidden md:aspect-[21/9]">
             <Image
-              alt={getVenueCategory().imageAlt}
+              alt={venueCategory.imageAlt ?? `Wedding venues across India`}
               className="motion-zoom object-cover"
               fill
               sizes="(min-width: 1280px) 76rem, 100vw"
-              src={getVenueCategory().image}
+              src={
+                venueCategory.image ?? "/images/generated/category-venues.webp"
+              }
             />
             <div className="from-foreground/90 via-foreground/30 absolute inset-0 bg-gradient-to-t to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-7 text-white md:p-10">
@@ -330,7 +345,7 @@ export default async function HomePage() {
         </div>
 
         <div className="reveal-stagger mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {getServiceCategories().map((category, index) => (
+          {serviceCategories.map((category, index) => (
             <Link
               className={`group border-border shadow-soft hover:border-brand-text/30 motion-lift relative overflow-hidden rounded-[1.75rem] border bg-white ${
                 // The first tile runs full width on large screens, which turns
@@ -345,17 +360,30 @@ export default async function HomePage() {
                   index === 0 ? "aspect-[16/9]" : "aspect-[4/3]"
                 }`}
               >
-                <Image
-                  alt={category.imageAlt}
-                  className="motion-zoom object-cover"
-                  fill
-                  sizes={
-                    index === 0
-                      ? "(min-width: 1024px) 62vw, (min-width: 640px) 50vw, 100vw"
-                      : "(min-width: 1024px) 31vw, (min-width: 640px) 50vw, 100vw"
-                  }
-                  src={category.image}
-                />
+                {/* Most categories have no illustration and are not meant
+                    to: there are far more categories than commissioned
+                    images. A typographic panel is a deliberate second state,
+                    not a missing image. */}
+                {category.image ? (
+                  <Image
+                    alt={category.imageAlt ?? category.name}
+                    className="motion-zoom object-cover"
+                    fill
+                    sizes={
+                      index === 0
+                        ? "(min-width: 1024px) 62vw, (min-width: 640px) 50vw, 100vw"
+                        : "(min-width: 1024px) 31vw, (min-width: 640px) 50vw, 100vw"
+                    }
+                    src={category.image}
+                  />
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="bg-brand-soft text-brand-text/35 font-display absolute inset-0 flex items-center justify-center px-6 text-center text-3xl leading-tight font-bold"
+                  >
+                    {category.name}
+                  </span>
+                )}
               </div>
               <div className="p-6">
                 <h3 className="type-heading">{category.name}</h3>
@@ -422,7 +450,7 @@ export default async function HomePage() {
               <h2 className="type-heading mt-2">
                 <Link
                   className="link-underline after:absolute after:inset-0 after:content-['']"
-                  href="/vendors?category=planners-decorators"
+                  href="/vendors?category=wedding-planners"
                 >
                   A celebration that feels like yours.
                 </Link>

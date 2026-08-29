@@ -24,8 +24,8 @@ import {
   getRelatedLiveVendors,
   resolveRenamedSlug,
 } from "@/data/live-marketplace";
+import { getCategoryBySlug } from "@/data/categories";
 import {
-  getCategoryBySlug,
   getPreviewVendorSlugs,
   getRelatedPreviewVendors,
   getVendorBySlug,
@@ -97,7 +97,7 @@ export default async function VendorProfilePage({
 
   const preview = isPreviewVendor(vendor);
   const metro = await getCityBySlug(vendor.citySlug);
-  const category = getCategoryBySlug(vendor.categorySlug);
+  const category = await getCategoryBySlug(vendor.categorySlug);
   const price = formatStartingPrice(vendor.startingPrice, vendor.priceUnit);
 
   const [related, reviews] = await Promise.all([

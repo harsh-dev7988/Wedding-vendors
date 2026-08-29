@@ -7,7 +7,7 @@ import {
   isIndexableDirectory,
 } from "@/data/live-marketplace";
 import { getCities, getCityBySlug } from "@/data/cities";
-import { getVenueCategory } from "@/data/marketplace";
+import { getVenueCategory } from "@/data/categories";
 import {
   directoryDescription,
   directoryTitle,
@@ -30,7 +30,7 @@ export async function generateMetadata({
   const metro = await getCityBySlug(city);
   if (!metro) return {};
 
-  const venues = getVenueCategory();
+  const venues = await getVenueCategory();
   const canonical = `/venues/${metro.slug}`;
   const [supply, facets] = await Promise.all([
     countPublishedListings(metro.slug, venues.slug),
@@ -67,7 +67,7 @@ export default async function CityVenuesPage({
 
   return (
     <DirectoryPage
-      categorySlug={getVenueCategory().slug}
+      categorySlug={(await getVenueCategory()).slug}
       citySlug={city}
       description={(cityName) =>
         `Banquet halls, lawns, resorts and hotels serving ${cityName}. Public profiles contain service information only; direct contact is released after a validated enquiry.`

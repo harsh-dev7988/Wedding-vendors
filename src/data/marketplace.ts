@@ -1,6 +1,6 @@
 import "server-only";
 
-import { launchCategories } from "@/config/categories";
+import { FALLBACK_CATEGORIES } from "@/config/categories";
 import type { PublicVendor, VendorSearch } from "@/domain/marketplace";
 
 import { metros, vendors } from "./seed/marketplace";
@@ -9,43 +9,26 @@ export function getMetros() {
   return metros;
 }
 
-export function getCategories() {
-  return launchCategories;
-}
-
-/**
- * The categories the vendor directory covers — everything except venues.
- *
- * Venues are browsed as their own section, so a list that mixes them in is
- * offering a choice the two things do not share.
- */
-export function getServiceCategories() {
-  return launchCategories.filter((category) => category.kind === "service");
-}
-
-export function getVenueCategory() {
-  return launchCategories.find((category) => category.kind === "venue")!;
-}
-
 export function getMetroBySlug(slug: string) {
   return metros.find((metro) => metro.slug === slug);
-}
-
-export function getCategoryBySlug(slug: string) {
-  return launchCategories.find((category) => category.slug === slug);
 }
 
 export function getVendorBySlug(slug: string): PublicVendor | undefined {
   return vendors.find((vendor) => vendor.slug === slug);
 }
 
+/**
+ * The seed directory pairs, used only when the database is unreachable during a
+ * build. Venues have their own routes, so no venue pair appears here.
+ */
 export function getAllDirectoryParams() {
-  // Venues have their own routes, so /vendors/[city]/venues is not a page.
   return metros.flatMap((metro) =>
-    getServiceCategories().map((category) => ({
-      city: metro.slug,
-      category: category.slug,
-    })),
+    FALLBACK_CATEGORIES.filter((category) => category.kind === "service").map(
+      (category) => ({
+        city: metro.slug,
+        category: category.slug,
+      }),
+    ),
   );
 }
 

@@ -27,7 +27,16 @@ const LocationPicker = dynamic(
 
 import { createListing, updateListing } from "./actions";
 
-type Option = { readonly slug: string; readonly name: string };
+type Option = {
+  /**
+   * Which price units this category may use. A caterer should not be offered
+   * "rental" and a jeweller should not be offered "per plate"; a single global
+   * list is how a form ends up describing a shop as a service.
+   */
+  readonly allowedPriceUnits?: readonly string[];
+  readonly slug: string;
+  readonly name: string;
+};
 type VendorOption = { readonly id: string; readonly business_name: string };
 
 export type ListingDefaults = {
@@ -51,9 +60,13 @@ export type ListingDefaults = {
 const PRICE_UNITS = [
   { label: "On request", value: "on_request" },
   { label: "Per plate", value: "per_plate" },
+  { label: "Per person", value: "per_person" },
   { label: "Per event", value: "per_event" },
   { label: "Per function", value: "per_function" },
   { label: "Per day", value: "per_day" },
+  { label: "Per piece", value: "per_piece" },
+  { label: "Per kilogram", value: "per_kg" },
+  { label: "Rental", value: "rental" },
   { label: "Package", value: "package" },
 ] as const;
 
@@ -104,6 +117,16 @@ export function ListingForm({
   // the vendor is told rather than silently overridden.
   const [cityChangedTo, setCityChangedTo] = useState<string | null>(null);
   const fixedLocation = isFixedLocationCategory(categorySlug);
+
+  // Narrowed to what the chosen category actually prices in. A category with
+  // no list configured keeps every unit rather than losing them all — an empty
+  // dropdown is a worse failure than an over-generous one.
+  const allowed = categories.find(
+    (option) => option.slug === categorySlug,
+  )?.allowedPriceUnits;
+  const priceUnits = allowed?.length
+    ? PRICE_UNITS.filter((unit) => allowed.includes(unit.value))
+    : PRICE_UNITS;
   const value = (key: keyof ListingDefaults) =>
     state.values?.[key] ?? defaults?.[key] ?? "";
 
@@ -384,7 +407,7 @@ export function ListingForm({
             id={`${prefix}-priceUnit`}
             name="priceUnit"
           >
-            {PRICE_UNITS.map((unit) => (
+            {priceUnits.map((unit) => (
               <option key={unit.value} value={unit.value}>
                 {unit.label}
               </option>

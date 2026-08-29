@@ -18,12 +18,32 @@ describe("service radius by category", () => {
     expect(defaultServiceRadiusM("venues")).toBeNull();
   });
 
+  it("treats every venue subtype as a fixed place, not just the parent", () => {
+    // A banquet hall is no more mobile than "venues" is. If a subtype falls
+    // through to the mobile default it gets a 30 km service radius, and a
+    // building starts claiming it travels.
+    for (const slug of [
+      "banquet-halls",
+      "marriage-lawns",
+      "wedding-resorts",
+      "small-function-halls",
+      "destination-venues",
+      "kalyana-mandapams",
+      "wedding-hotels",
+      "luxury-hotels",
+      "farmhouses",
+    ]) {
+      expect(isFixedLocationCategory(slug)).toBe(true);
+      expect(defaultServiceRadiusM(slug)).toBeNull();
+    }
+  });
+
   it("gives every mobile category 30 km", () => {
     for (const slug of [
       "photographers",
       "makeup-artists",
       "caterers",
-      "planners-decorators",
+      "wedding-planners",
     ]) {
       expect(defaultServiceRadiusM(slug)).toBe(DEFAULT_SERVICE_RADIUS_M);
     }

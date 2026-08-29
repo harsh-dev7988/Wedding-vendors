@@ -9,7 +9,8 @@ import {
   isIndexableDirectory,
 } from "@/data/live-marketplace";
 import { getCityBySlug } from "@/data/cities";
-import { getAllDirectoryParams, getCategoryBySlug } from "@/data/marketplace";
+import { getCategoryBySlug, SUPERSEDED_CATEGORIES } from "@/data/categories";
+import { getAllDirectoryParams } from "@/data/marketplace";
 import {
   directoryDescription,
   directoryTitle,
@@ -42,7 +43,7 @@ export async function generateMetadata({
 }: PageProps<"/vendors/[city]/[category]">): Promise<Metadata> {
   const { city, category } = await params;
   const metro = await getCityBySlug(city);
-  const categoryDetails = getCategoryBySlug(category);
+  const categoryDetails = await getCategoryBySlug(category);
 
   if (!metro || !categoryDetails || categoryDetails.kind === "venue") return {};
 
@@ -89,9 +90,17 @@ export default async function CityCategoryPage({
   // The city is resolved first so a URL that never existed still answers with a
   // real 404 instead of a redirect to one. A 307 pointing at a 404 tells a
   // crawler the page moved, which is worse than saying it was never there.
-  if (getCategoryBySlug(category)?.kind === "venue") {
+  const details = await getCategoryBySlug(category);
+  if (details?.kind === "venue") {
     if (!(await getCityBySlug(city))) notFound();
     permanentRedirect(`/venues/${city}`);
+  }
+
+  // A category that was split into others keeps its indexed URLs alive.
+  const successor = SUPERSEDED_CATEGORIES[category];
+  if (successor) {
+    if (!(await getCityBySlug(city))) notFound();
+    permanentRedirect(`/vendors/${city}/${successor}`);
   }
 
   return (
@@ -99,7 +108,7 @@ export default async function CityCategoryPage({
       categorySlug={category}
       citySlug={city}
       description={(cityName) =>
-        `Compare ${(getCategoryBySlug(category)?.name ?? "vendors").toLocaleLowerCase("en-IN")} serving ${cityName}. Public profiles contain service information only; direct contact is released after a validated enquiry.`
+        `Compare ${(details?.name ?? "vendors").toLocaleLowerCase("en-IN")} serving ${cityName}. Public profiles contain service information only; direct contact is released after a validated enquiry.`
       }
       page={1}
       section="vendors"

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { getCities } from "@/data/cities";
-import { getCategories } from "@/data/marketplace";
+import { getCategories } from "@/data/categories";
 
 const POLICY_LINKS = [
   { href: "/for-vendors", label: "List your business" },
@@ -13,7 +13,7 @@ const POLICY_LINKS = [
 
 export async function SiteFooter() {
   const metros = (await getCities()).slice(0, 6);
-  const categories = getCategories();
+  const categories = await getCategories();
 
   return (
     <footer className="border-border bg-foreground border-t text-white">

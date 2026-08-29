@@ -7,14 +7,14 @@ import {
 } from "@/components/marketplace/directory-page";
 import { countPublishedListings } from "@/data/live-marketplace";
 import { getCities, getCityBySlug } from "@/data/cities";
-import { getVenueCategory } from "@/data/marketplace";
+import { getVenueCategory } from "@/data/categories";
 
 export const revalidate = 300;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const cities = await getCities();
-  const venues = getVenueCategory();
+  const venues = await getVenueCategory();
   const params: Array<{ city: string; n: string }> = [];
 
   for (const city of cities) {
@@ -62,7 +62,7 @@ export default async function CityVenuesPagedPage({
 
   return (
     <DirectoryPage
-      categorySlug={getVenueCategory().slug}
+      categorySlug={(await getVenueCategory()).slug}
       citySlug={city}
       description={(cityName) =>
         `Banquet halls, lawns, resorts and hotels serving ${cityName}. Public profiles contain service information only; direct contact is released after a validated enquiry.`

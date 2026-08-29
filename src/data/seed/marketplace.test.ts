@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { launchCategories } from "../../config/categories";
+import { FALLBACK_CATEGORIES } from "../../config/categories";
 import { isPreviewVendor } from "../../domain/marketplace";
 
 import { metros, vendors } from "./marketplace";
@@ -12,12 +12,12 @@ function duplicates(values: readonly string[]) {
 describe("marketplace seed contract", () => {
   it("uses unique, URL-safe slugs", () => {
     expect(duplicates(metros.map(({ slug }) => slug))).toEqual([]);
-    expect(duplicates(launchCategories.map(({ slug }) => slug))).toEqual([]);
+    expect(duplicates(FALLBACK_CATEGORIES.map(({ slug }) => slug))).toEqual([]);
     expect(duplicates(vendors.map(({ slug }) => slug))).toEqual([]);
 
     for (const slug of [
       ...metros.map(({ slug }) => slug),
-      ...launchCategories.map(({ slug }) => slug),
+      ...FALLBACK_CATEGORIES.map(({ slug }) => slug),
       ...vendors.map(({ slug }) => slug),
     ]) {
       expect(slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
@@ -26,7 +26,7 @@ describe("marketplace seed contract", () => {
 
   it("references only known metros and categories", () => {
     const citySlugs = new Set(metros.map(({ slug }) => slug));
-    const categorySlugs = new Set(launchCategories.map(({ slug }) => slug));
+    const categorySlugs = new Set(FALLBACK_CATEGORIES.map(({ slug }) => slug));
 
     for (const vendor of vendors) {
       expect(citySlugs.has(vendor.citySlug)).toBe(true);
@@ -57,7 +57,7 @@ describe("marketplace seed contract", () => {
   });
 
   it("gives adjacent listings in a category distinct imagery", () => {
-    for (const category of launchCategories) {
+    for (const category of FALLBACK_CATEGORIES) {
       const images = vendors
         .filter((vendor) => vendor.categorySlug === category.slug)
         .map((vendor) => vendor.image);

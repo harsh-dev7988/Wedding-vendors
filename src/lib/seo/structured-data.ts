@@ -33,13 +33,48 @@ const PRICE_UNIT_LABEL: Record<string, string> = {
  */
 function businessType(categorySlug: string): string | null {
   switch (categorySlug) {
+    // Every venue subtype is a venue. Omitting them would silently drop the
+    // structured data from the pages most likely to be searched for by name.
     case "venues":
+    case "banquet-halls":
+    case "marriage-lawns":
+    case "wedding-resorts":
+    case "small-function-halls":
+    case "destination-venues":
+    case "kalyana-mandapams":
+    case "wedding-hotels":
+    case "luxury-hotels":
+    case "farmhouses":
       return "EventVenue";
     case "caterers":
+    case "bartenders":
       return "FoodEstablishment";
+    case "wedding-cakes":
+      return "Bakery";
+    // Retail: a shop, not a service booked for the day.
+    case "bridal-wear":
+    case "groom-wear":
+    case "accessories":
+      return "ClothingStore";
+    case "jewellery":
+      return "JewelryStore";
+    case "invitations":
+    case "wedding-favours":
+    case "trousseau-packers":
+      return "Store";
+    case "beauty-and-wellness":
+      return "BeautySalon";
     case "photographers":
+    case "pre-wedding-photographers":
     case "makeup-artists":
-    case "planners-decorators":
+    case "family-makeup":
+    case "wedding-planners":
+    case "decorators":
+    case "mehendi-artists":
+    case "djs":
+    case "sangeet-choreographers":
+    case "wedding-entertainment":
+    case "pandits":
       return "ProfessionalService";
     default:
       return null;

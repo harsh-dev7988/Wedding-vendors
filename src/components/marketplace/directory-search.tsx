@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import { NearMeButton } from "@/components/marketplace/near-me-button";
 import { SelectMenu } from "@/components/ui/select-menu";
 import { getCities } from "@/data/cities";
-import { getCategories } from "@/data/marketplace";
+import { getCategories } from "@/data/categories";
 
 type DirectorySearchProps = {
   /** Omit the category field where the section already fixes it. */
@@ -60,7 +60,7 @@ export async function DirectorySearch({
           name="category"
           options={[
             { label: "All categories", value: "" },
-            ...getCategories().map((item) => ({
+            ...(await getCategories()).map((item) => ({
               label: item.name,
               value: item.slug,
             })),

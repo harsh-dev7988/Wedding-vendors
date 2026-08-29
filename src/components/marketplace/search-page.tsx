@@ -6,7 +6,8 @@ import {
   searchLiveVendors,
 } from "@/data/live-marketplace";
 import { getCityBySlug } from "@/data/cities";
-import { getCategoryBySlug, searchVendors } from "@/data/marketplace";
+import { getCategoryMap } from "@/data/categories";
+import { searchVendors } from "@/data/marketplace";
 import { parsePage } from "@/lib/pagination";
 
 /**
@@ -90,8 +91,11 @@ export async function SearchPage({
   // to make getMetroBySlug return undefined, which silently dropped the city
   // filter and returned every city instead of none.
   const metro = await getCityBySlug(requestedCity);
+  // Resolved once and looked up synchronously below: the preview filter runs
+  // per item and cannot await.
+  const categories = await getCategoryMap();
   const requested = requestedCategory
-    ? getCategoryBySlug(requestedCategory)
+    ? categories.get(requestedCategory)
     : undefined;
   // A category of the wrong kind is not this section's to show. Ignoring it
   // rather than honouring it keeps /venues from rendering photographers.
@@ -132,7 +136,7 @@ export async function SearchPage({
           (preview) =>
             !live.vendors.some((item) => item.slug === preview.slug) &&
             // The seed fixtures predate the split, so filter them by kind too.
-            getCategoryBySlug(preview.categorySlug)?.kind === kind,
+            categories.get(preview.categorySlug)?.kind === kind,
         )
       : [];
 

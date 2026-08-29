@@ -5,7 +5,8 @@ import { VendorDirectory } from "@/components/marketplace/vendor-directory";
 import { DIRECTORY_PAGE_SIZE } from "@/config/site";
 import { getListingFacets, searchLiveVendors } from "@/data/live-marketplace";
 import { getCityBySlug } from "@/data/cities";
-import { getCategoryBySlug, searchVendors } from "@/data/marketplace";
+import { getCategoryBySlug } from "@/data/categories";
+import { searchVendors } from "@/data/marketplace";
 import { breadcrumbJsonLd, directoryJsonLd } from "@/lib/seo/structured-data";
 
 /**
@@ -36,7 +37,7 @@ export async function DirectoryPage({
   readonly title: (cityName: string, categoryName: string) => string;
 }) {
   const metro = await getCityBySlug(citySlug);
-  const category = getCategoryBySlug(categorySlug);
+  const category = await getCategoryBySlug(categorySlug);
   if (!metro || !category) notFound();
 
   const venueSection = section === "venues";

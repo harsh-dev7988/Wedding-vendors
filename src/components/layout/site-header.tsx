@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
 
-import { getServiceCategories } from "@/data/marketplace";
+import { getServiceCategories } from "@/data/categories";
 import { getCities } from "@/data/cities";
 
 import { AccountControl } from "./account-control";
@@ -28,12 +28,7 @@ export async function SiteHeader() {
   // Driven by config rather than hardcoded, so adding a category or a city
   // reaches the navbar without a code change.
   // Services only — venues have their own top-level link above.
-  const categories = getServiceCategories().map((category) => ({
-    description: category.description,
-    name: category.name,
-    slug: category.slug,
-    symbol: category.symbol,
-  }));
+  const categories = await getServiceCategories();
   // Eight fit the dropdown; the rest are reachable from /vendors.
   const cities = (await getCities()).slice(0, 8).map((city) => ({
     name: city.name,

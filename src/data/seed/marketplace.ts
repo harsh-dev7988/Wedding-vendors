@@ -279,7 +279,7 @@ export const vendors = [
   {
     slug: "mango-leaf-events",
     name: "Mango Leaf Events",
-    categorySlug: "planners-decorators",
+    categorySlug: "wedding-planners",
     citySlug: "hyderabad",
     locality: "Jubilee Hills",
     summary:
@@ -307,7 +307,7 @@ export const vendors = [
   {
     slug: "aster-and-marigold",
     name: "Aster & Marigold",
-    categorySlug: "planners-decorators",
+    categorySlug: "wedding-planners",
     citySlug: "kolkata",
     locality: "Ballygunge",
     summary:
