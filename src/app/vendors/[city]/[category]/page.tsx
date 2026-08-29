@@ -107,6 +107,7 @@ export default async function CityCategoryPage({
     <DirectoryPage
       categorySlug={category}
       citySlug={city}
+      kind="service"
       description={(cityName) =>
         `Compare ${(details?.name ?? "vendors").toLocaleLowerCase("en-IN")} serving ${cityName}. Public profiles contain service information only; direct contact is released after a validated enquiry.`
       }

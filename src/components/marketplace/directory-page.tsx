@@ -5,7 +5,7 @@ import { VendorDirectory } from "@/components/marketplace/vendor-directory";
 import { DIRECTORY_PAGE_SIZE } from "@/config/site";
 import { getListingFacets, searchLiveVendors } from "@/data/live-marketplace";
 import { getCityBySlug } from "@/data/cities";
-import { getCategoryBySlug } from "@/data/categories";
+import { getCategoryBySlug, getCategoryMap } from "@/data/categories";
 import { searchVendors } from "@/data/marketplace";
 import { breadcrumbJsonLd, directoryJsonLd } from "@/lib/seo/structured-data";
 
@@ -25,37 +25,55 @@ export async function DirectoryPage({
   categorySlug,
   citySlug,
   description,
+  kind,
   page,
   section,
+  subtypes,
   title,
 }: {
-  readonly categorySlug: string;
+  /**
+   * The subtype being shown, or undefined for the whole section.
+   *
+   * `/venues/mumbai` has to match every venue in Mumbai, not only listings
+   * filed under the parent `venues` category — the moment a banquet hall was
+   * filed under `banquet-halls` it would have disappeared from the city's own
+   * venue page. So the section filters on `kind` and only a subtype page
+   * filters on a category.
+   */
+  readonly categorySlug?: string;
   readonly citySlug: string;
   readonly description: (cityName: string) => string;
+  readonly kind: "venue" | "service";
   readonly page: number;
   readonly section: "vendors" | "venues";
+  /** Sibling subtypes to offer, shown on a section page. */
+  readonly subtypes?: readonly { name: string; slug: string }[];
   readonly title: (cityName: string, categoryName: string) => string;
 }) {
   const metro = await getCityBySlug(citySlug);
-  const category = await getCategoryBySlug(categorySlug);
-  if (!metro || !category) notFound();
+  const category = categorySlug
+    ? await getCategoryBySlug(categorySlug)
+    : undefined;
+  if (!metro || (categorySlug && !category)) notFound();
 
   const venueSection = section === "venues";
   const root = venueSection ? "/venues" : "/vendors";
   const canonical = venueSection
-    ? `/venues/${metro.slug}`
-    : `/vendors/${metro.slug}/${category.slug}`;
+    ? category
+      ? `/venues/${metro.slug}/${category.slug}`
+      : `/venues/${metro.slug}`
+    : `/vendors/${metro.slug}/${category?.slug}`;
 
   const [live, facets] = await Promise.all([
     searchLiveVendors({
-      category: category.slug,
+      category: category?.slug,
       city: metro.slug,
-      kind: category.kind,
+      kind,
       page,
       pageSize: DIRECTORY_PAGE_SIZE,
     }),
     // Request-cached, so this is the same round trip generateMetadata made.
-    getListingFacets(metro.slug, category.slug),
+    getListingFacets(metro.slug, category?.slug),
   ]);
 
   // Beyond the last real page there is nothing to show, and rendering an empty
@@ -65,10 +83,15 @@ export async function DirectoryPage({
   if (page > 1 && page > lastPage) notFound();
 
   // Fixtures pad the first page only, and are never counted as real supply.
+  const categories = await getCategoryMap();
   const previewVendors =
     page === 1
-      ? searchVendors({ category: category.slug, city: metro.slug }).filter(
-          (preview) => !live.vendors.some((item) => item.slug === preview.slug),
+      ? searchVendors({ category: category?.slug, city: metro.slug }).filter(
+          (preview) =>
+            !live.vendors.some((item) => item.slug === preview.slug) &&
+            // Without a category to filter on, the section's kind is what keeps
+            // a photographer fixture off the venue page.
+            categories.get(preview.categorySlug)?.kind === kind,
         )
       : [];
 
@@ -78,7 +101,7 @@ export async function DirectoryPage({
     <>
       <JsonLd
         data={directoryJsonLd({
-          categoryName: category.name,
+          categoryName: category?.name ?? "Venues",
           cityName: metro.name,
           path: canonical,
           vendors: allVendors,
@@ -87,14 +110,20 @@ export async function DirectoryPage({
       <JsonLd
         data={breadcrumbJsonLd(
           venueSection
-            ? [
-                { name: "Venues", path: "/venues" },
-                { name: metro.name, path: canonical },
-              ]
+            ? category
+              ? [
+                  { name: "Venues", path: "/venues" },
+                  { name: metro.name, path: `/venues/${metro.slug}` },
+                  { name: category.name, path: canonical },
+                ]
+              : [
+                  { name: "Venues", path: "/venues" },
+                  { name: metro.name, path: canonical },
+                ]
             : [
                 { name: "Vendors", path: "/vendors" },
                 { name: metro.name, path: `/vendors/${metro.slug}` },
-                { name: category.name, path: canonical },
+                { name: category?.name ?? "", path: canonical },
               ],
         )}
       />
@@ -103,11 +132,11 @@ export async function DirectoryPage({
         // panel has no controls for them and carries them as hidden fields, so
         // refining never navigates away from the pair the visitor chose.
         activeFilters={{
-          category: venueSection ? undefined : category.slug,
+          category: venueSection ? undefined : category?.slug,
           city: metro.slug,
         }}
         basePath={canonical}
-        category={category.slug}
+        category={category?.slug}
         city={metro.slug}
         description={description(metro.name)}
         facets={facets}
@@ -118,7 +147,9 @@ export async function DirectoryPage({
           target === 1 ? canonical : `${canonical}/page/${target}`
         }
         pageSize={DIRECTORY_PAGE_SIZE}
-        title={title(metro.name, category.name)}
+        subtypes={subtypes}
+        subtypeBasePath={`/venues/${metro.slug}`}
+        title={title(metro.name, category?.name ?? "Venues")}
         total={live.total}
         vendors={allVendors}
       />

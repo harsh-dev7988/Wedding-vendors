@@ -62,8 +62,8 @@ export default async function CityVenuesPagedPage({
 
   return (
     <DirectoryPage
-      categorySlug={(await getVenueCategory()).slug}
       citySlug={city}
+      kind="venue"
       description={(cityName) =>
         `Banquet halls, lawns, resorts and hotels serving ${cityName}. Public profiles contain service information only; direct contact is released after a validated enquiry.`
       }

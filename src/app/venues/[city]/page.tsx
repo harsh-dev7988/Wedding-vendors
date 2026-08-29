@@ -7,7 +7,7 @@ import {
   isIndexableDirectory,
 } from "@/data/live-marketplace";
 import { getCities, getCityBySlug } from "@/data/cities";
-import { getVenueCategory } from "@/data/categories";
+import { getVenueCategories, getVenueCategory } from "@/data/categories";
 import {
   directoryDescription,
   directoryTitle,
@@ -64,11 +64,17 @@ export default async function CityVenuesPage({
   params,
 }: PageProps<"/venues/[city]">) {
   const { city } = await params;
+  // The subtypes to offer above the results. Only the promoted ones: a chip
+  // leading to a page nobody has listed on is a dead end wearing a link.
+  const subtypes = (await getVenueCategories())
+    .filter((category) => category.parentSlug !== null)
+    .map((category) => ({ name: category.name, slug: category.slug }));
 
   return (
     <DirectoryPage
-      categorySlug={(await getVenueCategory()).slug}
       citySlug={city}
+      kind="venue"
+      subtypes={subtypes}
       description={(cityName) =>
         `Banquet halls, lawns, resorts and hotels serving ${cityName}. Public profiles contain service information only; direct contact is released after a validated enquiry.`
       }

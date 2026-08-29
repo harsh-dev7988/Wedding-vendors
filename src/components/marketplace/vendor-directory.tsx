@@ -39,6 +39,15 @@ type VendorDirectoryProps = {
   readonly hideCategoryControl?: boolean;
   /** Path-based paging, for prerendered directories. */
   readonly pageHref?: (page: number) => string;
+  /**
+   * Sibling subtypes offered above the results.
+   *
+   * A venue section is one page covering nine kinds of place, and "banquet
+   * halls in Mumbai" is what somebody actually searches for. These are how they
+   * get from the section to the one they mean.
+   */
+  readonly subtypes?: readonly { name: string; slug: string }[];
+  readonly subtypeBasePath?: string;
   /** Set when a static landing page defers deeper pages to the search route. */
   readonly moreHref?: string;
   readonly city?: string;
@@ -61,6 +70,8 @@ export function VendorDirectory({
   filterBasePath,
   hideCategoryControl,
   pageHref,
+  subtypes,
+  subtypeBasePath,
   moreHref,
   city,
   category,
@@ -106,6 +117,21 @@ export function VendorDirectory({
               )}
             </p>
           )}
+          {subtypes && subtypes.length > 0 && subtypeBasePath && (
+            <ul className="mt-7 flex flex-wrap gap-2">
+              {subtypes.map((subtype) => (
+                <li key={subtype.slug}>
+                  <Link
+                    className="border-border hover:border-brand-text/50 hover:text-brand-text inline-flex min-h-11 items-center rounded-full border bg-white px-4 text-sm font-semibold transition"
+                    href={`${subtypeBasePath}/${subtype.slug}`}
+                  >
+                    {subtype.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+
           <div className="mt-8">
             <DirectorySearch
               // The section's own root, so a venue search never lands in the

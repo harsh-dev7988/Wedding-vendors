@@ -96,8 +96,15 @@ export default async function HomePage() {
   const serviceCategories = [...allServices]
     .sort(
       (a, b) =>
+        // Supply first: the tiles should be what somebody can book today.
         (listingsByCategory.get(b.slug) ?? 0) -
           (listingsByCategory.get(a.slug) ?? 0) ||
+        // Then illustration. There are far more categories than commissioned
+        // images, and a photo tile beside a typographic one reads as an image
+        // that failed to load rather than a deliberate second state. Grouping
+        // the illustrated ones keeps the grid looking intentional, and as
+        // images arrive the categories carrying them rise on their own.
+        Number(Boolean(b.image)) - Number(Boolean(a.image)) ||
         a.groupSort - b.groupSort ||
         a.sortOrder - b.sortOrder,
     )
