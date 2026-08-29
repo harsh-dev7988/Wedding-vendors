@@ -6,7 +6,7 @@ import { ClipboardList, Plus, Trash2 } from "lucide-react";
 import { FormAlert, StatusBanner } from "@/components/ui/feedback";
 import { SubmitButton } from "@/components/ui/submit-button";
 
-import { getCategories } from "@/data/categories";
+import { getListableCategories } from "@/data/categories";
 import { getCities } from "@/data/cities";
 import { requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -186,11 +186,14 @@ export default async function VendorListingsPage({
   const notice = typeof params.notice === "string" ? params.notice : null;
   const errorFlag = typeof params.error === "string" ? params.error : null;
 
-  // Every active category, venues included — a venue owner has to be able
-  // to pick Venues. The public split between the two sections is about how
-  // people browse, not about what a vendor may list.
-  const categoryOptions = (await getCategories()).map((c) => ({
+  // Every category a vendor may list in, promoted or not — venues included,
+  // since a venue owner has to be able to pick Venues. The public navigation
+  // shows only promoted categories; what a vendor may list is a different
+  // question, and reading one flag for both is what stopped a mehendi artist
+  // from ever creating the listing that would have promoted mehendi.
+  const categoryOptions = (await getListableCategories()).map((c) => ({
     allowedPriceUnits: c.allowedPriceUnits,
+    group: c.groupName,
     name: c.name,
     slug: c.slug,
   }));

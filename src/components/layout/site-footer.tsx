@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { getCities } from "@/data/cities";
-import { getCategories } from "@/data/categories";
+import { getCategoryGroups } from "@/data/categories";
 
 const POLICY_LINKS = [
   { href: "/for-vendors", label: "List your business" },
@@ -13,7 +13,10 @@ const POLICY_LINKS = [
 
 export async function SiteFooter() {
   const metros = (await getCities()).slice(0, 6);
-  const categories = await getCategories();
+  // Groups, not categories. Eighteen links in a footer column is a sitemap
+  // pretending to be navigation; the group names are what someone scanning a
+  // footer is actually looking for.
+  const groups = await getCategoryGroups();
 
   return (
     <footer className="border-border bg-foreground border-t text-white">
@@ -40,20 +43,23 @@ export async function SiteFooter() {
         <div>
           <h2 className="text-accent-gold eyebrow">Categories</h2>
           <ul className="mt-4 space-y-1 text-sm text-white/80">
-            {categories.map((category) => (
-              <li key={category.slug}>
-                <Link
-                  className="inline-flex min-h-11 items-center hover:text-white"
-                  href={
-                    category.kind === "venue"
-                      ? "/venues"
-                      : `/vendors?category=${category.slug}`
-                  }
-                >
-                  {category.name}
-                </Link>
-              </li>
-            ))}
+            {groups.map((group) => {
+              const first = group.categories[0];
+              return (
+                <li key={group.slug}>
+                  <Link
+                    className="inline-flex min-h-11 items-center hover:text-white"
+                    href={
+                      first?.kind === "venue"
+                        ? "/venues"
+                        : `/vendors?category=${first?.slug ?? ""}`
+                    }
+                  >
+                    {group.name}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
         <div>

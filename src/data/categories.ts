@@ -5,6 +5,7 @@ import { cache } from "react";
 import { CATEGORY_MEDIA, FALLBACK_CATEGORIES } from "@/config/categories";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createPublicClient } from "@/lib/supabase/public";
+import { createClient as createSessionClient } from "@/lib/supabase/server";
 
 /**
  * Categories, read from the database.
@@ -176,15 +177,51 @@ export async function getCategoryBySlug(
   return (await getCategoryMap()).get(slug);
 }
 
-/** Active categories arranged for a two-level menu. */
-export async function getCategoryGroups(kind?: "venue" | "service") {
-  const categories = (await getCategories()).filter(
-    (category) => !kind || category.kind === kind,
-  );
+/**
+ * Every category a vendor may list in, promoted or not.
+ *
+ * Uses the session client rather than the anon one: the public policy on
+ * `categories` is `is_active`, and a signed-in user has a second policy that
+ * lifts it. That difference is the whole point — the public sees what is
+ * promoted, a vendor sees the whole taxonomy.
+ *
+ * Without this the product had a loop with no exit: a mehendi artist could not
+ * create a mehendi listing because the category was unpromoted, and it stayed
+ * unpromoted because it had no listings. Publishing now promotes the category
+ * on its own, in a trigger.
+ */
+export const getListableCategories = cache(
+  async (): Promise<readonly Category[]> => {
+    if (!isSupabaseConfigured()) return FALLBACK_CATEGORIES.map(decorate);
 
+    const supabase = await createSessionClient();
+    const { data, error } = await supabase
+      .from("categories")
+      .select(
+        "name, slug, kind, is_active, sort_order, group_name, group_slug, group_sort, description, parent_slug, allowed_price_units",
+      )
+      .order("group_sort")
+      .order("sort_order");
+
+    // A signed-out caller falls back to the promoted set, which is what the
+    // anon policy would have returned anyway.
+    if (error || !data || data.length === 0) return getCategories();
+
+    return (data as unknown as Row[]).map(decorate);
+  },
+);
+
+/**
+ * Arranges categories for a two-level menu, preserving group order.
+ *
+ * Generic over the category shape so a caller that has decorated its list —
+ * the city hub attaches a listing count to each — keeps those fields instead
+ * of having them narrowed away.
+ */
+export function groupCategories<T extends Category>(categories: readonly T[]) {
   const groups = new Map<
     string,
-    { categories: Category[]; name: string; slug: string; sort: number }
+    { categories: T[]; name: string; slug: string; sort: number }
   >();
 
   for (const category of categories) {
@@ -201,6 +238,14 @@ export async function getCategoryGroups(kind?: "venue" | "service") {
   }
 
   return [...groups.values()].sort((a, b) => a.sort - b.sort);
+}
+
+/** The promoted categories, grouped — what public navigation should show. */
+export async function getCategoryGroups(kind?: "venue" | "service") {
+  const categories = (await getCategories()).filter(
+    (category) => !kind || category.kind === kind,
+  );
+  return groupCategories(categories);
 }
 
 /**

@@ -34,6 +34,8 @@ type Option = {
    * list is how a form ends up describing a shop as a service.
    */
   readonly allowedPriceUnits?: readonly string[];
+  /** Heading this option sits under. Absent for an ungrouped list. */
+  readonly group?: string;
   readonly slug: string;
   readonly name: string;
 };
@@ -118,6 +120,18 @@ export function ListingForm({
   const [cityChangedTo, setCityChangedTo] = useState<string | null>(null);
   const fixedLocation = isFixedLocationCategory(categorySlug);
 
+  // Preserves the order the options arrive in, so the groups follow the
+  // taxonomy's own ordering rather than being re-sorted alphabetically here.
+  const categoryGroups = Array.from(
+    categories.reduce((groups, option) => {
+      const key = option.group ?? "";
+      const existing = groups.get(key);
+      if (existing) existing.push(option);
+      else groups.set(key, [option]);
+      return groups;
+    }, new Map<string, Option[]>()),
+  );
+
   // Narrowed to what the chosen category actually prices in. A category with
   // no list configured keeps every unit rather than losing them all — an empty
   // dropdown is a worse failure than an over-generous one.
@@ -179,11 +193,27 @@ export function ListingForm({
             onChange={(event) => setCategorySlug(event.currentTarget.value)}
             required
           >
-            {categories.map((category) => (
-              <option key={category.slug} value={category.slug}>
-                {category.name}
-              </option>
-            ))}
+            {/* Grouped, because the list is thirty-two long. A vendor
+                scanning a flat list of that size picks the wrong category, and
+                a wrong category is a listing filed in a directory nobody
+                looking for it will open. */}
+            {categoryGroups.map(([group, options]) =>
+              group ? (
+                <optgroup key={group} label={group}>
+                  {options.map((category) => (
+                    <option key={category.slug} value={category.slug}>
+                      {category.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : (
+                options.map((category) => (
+                  <option key={category.slug} value={category.slug}>
+                    {category.name}
+                  </option>
+                ))
+              ),
+            )}
           </select>
         </label>
         <label

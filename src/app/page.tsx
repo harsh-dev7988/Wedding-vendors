@@ -19,6 +19,7 @@ import {
 } from "@/data/categories";
 import { nextImageSrcSet, nextImageUrl } from "@/lib/image-url";
 import { getCities } from "@/data/cities";
+import { getDirectorySupply } from "@/data/live-marketplace";
 
 const HERO_LANDSCAPE = "/images/generated/hero-full.webp";
 const HERO_PORTRAIT = "/images/generated/hero-full-portrait.webp";
@@ -71,11 +72,36 @@ export default async function HomePage() {
   // (picking a venue posts to /vendors, which the proxy sends on to /venues),
   // while the tile grid below covers services only because venues lead the
   // section on their own.
-  const [allCategories, serviceCategories, venueCategory] = await Promise.all([
-    getCategories(),
-    getServiceCategories(),
-    getVenueCategory(),
-  ]);
+  const [allCategories, allServices, venueCategory, supply] = await Promise.all(
+    [
+      getCategories(),
+      getServiceCategories(),
+      getVenueCategory(),
+      getDirectorySupply(),
+    ],
+  );
+
+  // The home page is editorial, not a directory. Eighteen tiles would bury the
+  // rest of the page and most would be typographic placeholders, so it shows
+  // the eight with the most real supply and links to the rest. Ordering by
+  // supply rather than by hand means the tiles are the categories somebody can
+  // actually book today, and the order maintains itself as vendors arrive.
+  const listingsByCategory = new Map<string, number>();
+  for (const row of supply) {
+    listingsByCategory.set(
+      row.categorySlug,
+      (listingsByCategory.get(row.categorySlug) ?? 0) + row.total,
+    );
+  }
+  const serviceCategories = [...allServices]
+    .sort(
+      (a, b) =>
+        (listingsByCategory.get(b.slug) ?? 0) -
+          (listingsByCategory.get(a.slug) ?? 0) ||
+        a.groupSort - b.groupSort ||
+        a.sortOrder - b.sortOrder,
+    )
+    .slice(0, 8);
 
   return (
     <main id="main-content">
@@ -197,6 +223,7 @@ export default async function HomePage() {
                   // would make the one thing the subheading names first
                   // unreachable from the site's most prominent control.
                   ...allCategories.map((category) => ({
+                    group: category.groupName,
                     label: category.name,
                     value: category.slug,
                   })),
@@ -402,6 +429,17 @@ export default async function HomePage() {
             </Link>
           ))}
         </div>
+
+        {allServices.length > serviceCategories.length && (
+          <p className="text-muted-foreground mt-8 text-sm">
+            {allServices.length} categories in all, from mehendi artists to
+            pandits.{" "}
+            <Link className="link-underline font-bold" href="/vendors">
+              Browse every category
+            </Link>
+            .
+          </p>
+        )}
       </section>
 
       {/* ------------------------------------------------------------------

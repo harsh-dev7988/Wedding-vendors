@@ -11,7 +11,7 @@ import {
   isIndexableDirectory,
 } from "@/data/live-marketplace";
 import { getCities, getCityBySlug } from "@/data/cities";
-import { getServiceCategories } from "@/data/categories";
+import { getServiceCategories, groupCategories } from "@/data/categories";
 import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 
 // Same cadence as the category pages below it, so a newly published listing
@@ -75,6 +75,25 @@ export default async function CityHubPage({
     total: countFor(category.slug),
   }));
   const total = categories.reduce((sum, category) => sum + category.total, 0);
+  // Grouped, because eighteen equal cards give the eye nothing to hold on to.
+  // Categories with supply lead their group, so the ones worth opening in this
+  // city sit at the top of each section rather than in taxonomy order.
+  const withCounts = groupCategories(categories).map((group) => ({
+    ...group,
+    categories: [...group.categories].sort((a, b) => b.total - a.total),
+  }));
+  const stocked = withCounts
+    .map((group) => ({
+      ...group,
+      categories: group.categories.filter((category) => category.total > 0),
+    }))
+    .filter((group) => group.categories.length > 0);
+  const empty = withCounts
+    .map((group) => ({
+      ...group,
+      categories: group.categories.filter((category) => category.total === 0),
+    }))
+    .filter((group) => group.categories.length > 0);
 
   const breadcrumbs = breadcrumbJsonLd([
     { name: "Vendors", path: "/vendors" },
@@ -147,34 +166,95 @@ export default async function CityHubPage({
         </span>
       </Link>
 
-      <h2 className="type-heading mt-14">Browse by category</h2>
-      <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {categories.map((category) => (
-          <li key={category.slug}>
-            <Link
-              className="border-border hover:border-brand-text/50 group flex h-full flex-col justify-between gap-4 rounded-3xl border bg-white p-6 transition"
-              href={`/vendors/${metro.slug}/${category.slug}`}
-            >
-              <span>
-                <span className="block text-lg font-bold">{category.name}</span>
-                <span className="text-muted-foreground mt-1 block text-sm">
-                  {category.total > 0
-                    ? `${category.total} in ${metro.name}`
-                    : `No listings in ${metro.name} yet`}
-                </span>
-              </span>
-              <span className="text-brand-text inline-flex items-center gap-1.5 text-sm font-bold">
-                Browse
-                <ArrowRight
-                  aria-hidden="true"
-                  className="transition group-hover:translate-x-0.5"
-                  size={15}
-                />
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {/* Two states, deliberately different in weight.
+
+          A category with listings is worth a card: it is somewhere to go now.
+          A category without any is worth a line: it says the directory covers
+          this and invites a vendor to be the first, without eighteen identical
+          empty cards making a working city look abandoned. Before the taxonomy
+          grew, every category had a card and there were five of them; keeping
+          that at eighteen would have been the same page with three times the
+          emptiness. */}
+      {stocked.length > 0 && (
+        <>
+          <h2 className="type-heading mt-14">Browse by category</h2>
+          {stocked.map((group) => (
+            <section aria-labelledby={`group-${group.slug}`} key={group.slug}>
+              <h3
+                className="text-brand-text eyebrow mt-8"
+                id={`group-${group.slug}`}
+              >
+                {group.name}
+              </h3>
+              <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {group.categories.map((category) => (
+                  <li key={category.slug}>
+                    <Link
+                      className="border-border hover:border-brand-text/50 group flex h-full flex-col justify-between gap-4 rounded-3xl border bg-white p-6 transition"
+                      href={`/vendors/${metro.slug}/${category.slug}`}
+                    >
+                      <span>
+                        <span className="block text-lg font-bold">
+                          {category.name}
+                        </span>
+                        <span className="text-muted-foreground mt-1 block text-sm">
+                          {category.total} in {metro.name}
+                        </span>
+                      </span>
+                      <span className="text-brand-text inline-flex items-center gap-1.5 text-sm font-bold">
+                        Browse
+                        <ArrowRight
+                          aria-hidden="true"
+                          className="transition group-hover:translate-x-0.5"
+                          size={15}
+                        />
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </>
+      )}
+
+      {empty.length > 0 && (
+        <section aria-labelledby="awaiting-heading" className="mt-14">
+          <h2 className="type-heading" id="awaiting-heading">
+            {stocked.length > 0
+              ? `Also covered in ${metro.name}`
+              : `Categories we cover in ${metro.name}`}
+          </h2>
+          <p className="text-muted-foreground mt-2 max-w-2xl leading-7">
+            No listings in these yet.{" "}
+            <Link className="link-underline font-bold" href="/for-vendors">
+              List your business
+            </Link>{" "}
+            to be the first.
+          </p>
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {empty.map((group) => (
+              <div key={group.slug}>
+                <p className="text-muted-foreground text-[0.68rem] font-bold tracking-widest uppercase">
+                  {group.name}
+                </p>
+                <ul className="mt-2 flex flex-wrap gap-2">
+                  {group.categories.map((category) => (
+                    <li key={category.slug}>
+                      <Link
+                        className="border-border hover:border-brand-text/50 hover:text-brand-text inline-flex min-h-11 items-center rounded-full border bg-white px-4 text-sm font-semibold transition"
+                        href={`/vendors/${metro.slug}/${category.slug}`}
+                      >
+                        {category.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <h2 className="type-heading mt-14">Other cities</h2>
       <ul className="mt-5 flex flex-wrap gap-2">

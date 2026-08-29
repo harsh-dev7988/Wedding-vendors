@@ -15,7 +15,7 @@ import { FormAlert, StatusBanner } from "@/components/ui/feedback";
 import { OnboardingProgress } from "@/components/vendor/onboarding-progress";
 import { SubmitButton } from "@/components/ui/submit-button";
 
-import { getCategories } from "@/data/categories";
+import { getListableCategories } from "@/data/categories";
 import { getCities } from "@/data/cities";
 import { requireViewer } from "@/lib/auth";
 import { formatEventDate, formatIndiaDateTime } from "@/lib/datetime";
@@ -207,11 +207,14 @@ export default async function VendorDashboardPage({
 
   const publicUrl = mediaUrlResolver(supabase, "thumb");
 
-  // Every active category, venues included — a venue owner has to be able
-  // to pick Venues. The public split between the two sections is about how
-  // people browse, not about what a vendor may list.
-  const categoryOptions = (await getCategories()).map((category) => ({
+  // Every category a vendor may list in, promoted or not — venues included,
+  // since a venue owner has to be able to pick Venues. The public navigation
+  // shows only promoted categories; what a vendor may list is a different
+  // question, and reading one flag for both is what stopped a mehendi artist
+  // from ever creating the listing that would have promoted mehendi.
+  const categoryOptions = (await getListableCategories()).map((category) => ({
     allowedPriceUnits: category.allowedPriceUnits,
+    group: category.groupName,
     name: category.name,
     slug: category.slug,
   }));

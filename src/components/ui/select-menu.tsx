@@ -13,6 +13,15 @@ import { cn } from "@/lib/utils";
 
 export type SelectOption = {
   readonly disabled?: boolean;
+  /**
+   * Heading this option sits under.
+   *
+   * Options are kept in one flat array even when grouped, because every piece
+   * of keyboard behaviour — the active index, arrow keys, Home/End and
+   * type-ahead — addresses options by position. Headings are drawn while
+   * walking that array, so they can never shift an index out from under it.
+   */
+  readonly group?: string;
   readonly label: string;
   readonly value: string;
 };
@@ -65,6 +74,33 @@ export function SelectMenu({
   const [value, setValue] = useState(initialValue);
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  /**
+   * The same options, walked once into contiguous runs by group.
+   *
+   * Each item keeps the index it has in the flat array, which is what every
+   * keyboard path addresses. Runs rather than a bucket-by-name map, so an
+   * option can never be silently reordered into a group it did not follow.
+   */
+  const groupedOptions = options.reduce<
+    Array<{
+      items: Array<{ index: number; option: SelectOption }>;
+      key: string;
+      name?: string;
+    }>
+  >((groups, option, index) => {
+    const last = groups[groups.length - 1];
+    if (last && last.name === option.group) {
+      last.items.push({ index, option });
+      return groups;
+    }
+    groups.push({
+      items: [{ index, option }],
+      key: `${option.group ?? "ungrouped"}-${index}`,
+      name: option.group,
+    });
+    return groups;
+  }, []);
   const [dropUp, setDropUp] = useState(false);
 
   // These fields are driven by the URL. A soft navigation within the same
@@ -278,29 +314,56 @@ export function SelectMenu({
           role="listbox"
           tabIndex={-1}
         >
-          {options.map((option, index) => {
-            const isSelected = option.value === value;
+          {groupedOptions.map((group) => {
+            const headingId = group.name ? `${listId}-${group.key}` : undefined;
+
             return (
-              <li key={option.value || `placeholder-${index}`}>
-                <button
-                  aria-selected={isSelected}
-                  className={cn(
-                    "flex min-h-10 w-full items-center justify-between gap-3 rounded-xl px-3 text-left text-sm font-semibold transition",
-                    index === activeIndex && "bg-muted",
-                    isSelected && "text-brand-text",
-                    option.disabled && "cursor-not-allowed opacity-50",
-                  )}
-                  disabled={option.disabled}
-                  onClick={() => choose(index)}
-                  onPointerEnter={() => setActiveIndex(index)}
-                  role="option"
-                  type="button"
-                >
-                  <span className="truncate">{option.label}</span>
-                  {isSelected && (
-                    <Check aria-hidden="true" className="shrink-0" size={15} />
-                  )}
-                </button>
+              <li
+                aria-labelledby={headingId}
+                key={group.key}
+                // A heading is not selectable, so it must not be an option. A
+                // `group` inside a `listbox` is the shape ARIA defines for
+                // exactly this, and it keeps the options as direct descendants
+                // so their document order still matches the flat array.
+                role={group.name ? "group" : "presentation"}
+              >
+                {group.name && (
+                  <span
+                    className="text-muted-foreground block px-3 pt-2 pb-1 text-[0.68rem] font-bold tracking-widest uppercase"
+                    id={headingId}
+                  >
+                    {group.name}
+                  </span>
+                )}
+                {group.items.map(({ index, option }) => {
+                  const isSelected = option.value === value;
+                  return (
+                    <button
+                      aria-selected={isSelected}
+                      className={cn(
+                        "flex min-h-10 w-full items-center justify-between gap-3 rounded-xl px-3 text-left text-sm font-semibold transition",
+                        index === activeIndex && "bg-muted",
+                        isSelected && "text-brand-text",
+                        option.disabled && "cursor-not-allowed opacity-50",
+                      )}
+                      disabled={option.disabled}
+                      key={option.value || `placeholder-${index}`}
+                      onClick={() => choose(index)}
+                      onPointerEnter={() => setActiveIndex(index)}
+                      role="option"
+                      type="button"
+                    >
+                      <span className="truncate">{option.label}</span>
+                      {isSelected && (
+                        <Check
+                          aria-hidden="true"
+                          className="shrink-0"
+                          size={15}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
               </li>
             );
           })}

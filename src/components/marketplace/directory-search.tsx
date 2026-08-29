@@ -61,6 +61,7 @@ export async function DirectorySearch({
           options={[
             { label: "All categories", value: "" },
             ...(await getCategories()).map((item) => ({
+              group: item.groupName,
               label: item.name,
               value: item.slug,
             })),

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
 
-import { getServiceCategories } from "@/data/categories";
+import { getCategoryGroups } from "@/data/categories";
 import { getCities } from "@/data/cities";
 
 import { AccountControl } from "./account-control";
@@ -27,8 +27,11 @@ const PRIMARY_LINKS = [
 export async function SiteHeader() {
   // Driven by config rather than hardcoded, so adding a category or a city
   // reaches the navbar without a code change.
-  // Services only — venues have their own top-level link above.
-  const categories = await getServiceCategories();
+  // Services only — venues have their own top-level link above. Grouped,
+  // because eighteen categories in one column is a list, not a menu.
+  const groups = await getCategoryGroups("service");
+  // The mobile menu is a single scrolling column, so it takes the flat list.
+  const categories = groups.flatMap((group) => group.categories);
   // Eight fit the dropdown; the rest are reachable from /vendors.
   const cities = (await getCities()).slice(0, 8).map((city) => ({
     name: city.name,
@@ -51,7 +54,7 @@ export async function SiteHeader() {
           aria-label="Primary navigation"
           className="hidden items-center gap-5 text-sm font-semibold lg:flex"
         >
-          <CategoryMenu categories={categories} cities={cities} />
+          <CategoryMenu cities={cities} groups={groups} />
           {PRIMARY_LINKS.map((link) => (
             <Link
               className="header-link inline-flex min-h-11 items-center transition"

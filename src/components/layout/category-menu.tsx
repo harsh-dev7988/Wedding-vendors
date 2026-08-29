@@ -6,7 +6,12 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 type Category = {
-  readonly description: string;
+  readonly name: string;
+  readonly slug: string;
+};
+
+type CategoryGroup = {
+  readonly categories: readonly Category[];
   readonly name: string;
   readonly slug: string;
 };
@@ -24,10 +29,10 @@ type City = { readonly name: string; readonly slug: string };
  * navigation closes it without an effect.
  */
 export function CategoryMenu({
-  categories,
+  groups,
   cities,
 }: {
-  readonly categories: readonly Category[];
+  readonly groups: readonly CategoryGroup[];
   readonly cities: readonly City[];
 }) {
   const pathname = usePathname();
@@ -92,25 +97,31 @@ export function CategoryMenu({
               <p className="text-muted-foreground px-2 text-xs font-bold tracking-widest uppercase">
                 By category
               </p>
-              <ul className="mt-2 grid gap-0.5">
-                {categories.map((category) => (
-                  <li key={category.slug}>
-                    <Link
-                      className="hover:bg-muted flex items-start gap-3 rounded-xl px-2 py-2 transition"
-                      href={`/vendors?category=${category.slug}`}
-                    >
-                      <span>
-                        <span className="block text-sm font-bold">
-                          {category.name}
-                        </span>
-                        <span className="text-muted-foreground block text-xs leading-5">
-                          {category.description}
-                        </span>
-                      </span>
-                    </Link>
-                  </li>
+              {/* Grouped and stripped to names. Each entry used to carry a
+                  description, which reads well at four categories and becomes
+                  a wall of text at eighteen — the descriptions are on the
+                  category pages, where there is room for them. */}
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                {groups.map((group) => (
+                  <div key={group.slug}>
+                    <p className="text-brand-text px-2 text-[0.68rem] font-bold tracking-widest uppercase">
+                      {group.name}
+                    </p>
+                    <ul className="mt-1 grid gap-0.5">
+                      {group.categories.map((category) => (
+                        <li key={category.slug}>
+                          <Link
+                            className="hover:bg-muted block rounded-xl px-2 py-1.5 text-sm font-semibold transition"
+                            href={`/vendors?category=${category.slug}`}
+                          >
+                            {category.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
 
             <div className="border-border sm:border-l sm:pl-4">
