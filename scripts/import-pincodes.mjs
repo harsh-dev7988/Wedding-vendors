@@ -76,11 +76,28 @@ function splitCsvLine(line) {
   return cells.map((value) => value.trim());
 }
 
+/**
+ * Matches a column per field, in the order the spellings are listed.
+ *
+ * The spellings are ranked by preference, so the search has to walk them in
+ * that order and ask where each sits in the header — not walk the header and
+ * ask whether each column is a spelling. The India Post export has both
+ * `circlename` (first column, "Telangana Circle") and `statename` (ninth,
+ * "TELANGANA"); searching by header position picked the postal circle for
+ * every one of 165,000 rows.
+ */
 function resolveColumns(header) {
   const seen = header.map(normalise);
   const index = {};
   for (const [field, spellings] of Object.entries(FIELDS)) {
-    index[field] = seen.findIndex((name) => spellings.includes(name));
+    index[field] = -1;
+    for (const spelling of spellings) {
+      const at = seen.indexOf(spelling);
+      if (at >= 0) {
+        index[field] = at;
+        break;
+      }
+    }
   }
   return index;
 }
@@ -97,8 +114,13 @@ const client = new pg.Client({
 
 await client.connect();
 
-const stats = { duplicate: 0, imported: 0, malformed: 0, outsideIndia: 0 };
-const seenPincodes = new Set();
+const stats = {
+  duplicate: 0,
+  imported: 0,
+  malformed: 0,
+  outlier: 0,
+  outsideIndia: 0,
+};
 let columns = null;
 let batch = [];
 
@@ -141,6 +163,23 @@ const lines = createInterface({
   input: createReadStream(FILE, "utf8"),
 });
 
+/**
+ * Read every row before writing any, because a pincode's coordinate is only
+ * trustworthy once its siblings are known.
+ *
+ * The published dataset has one row per post office, so a pincode repeats
+ * dozens of times. Taking the first row's coordinate — which this did — hands
+ * the whole pincode over to whichever post office happens to be listed first,
+ * including one with a typo. Pincode 229127 is in Rae Bareli, about 450 km from
+ * Delhi; its first row put it near enough to Kolkata that the nearest-city
+ * trigger chose Kolkata, 1,734 km away.
+ *
+ * The median across a pincode's own post offices fixes that: they are genuinely
+ * within a kilometre or two of each other, so a single wrong row cannot move
+ * the median, while an average would be dragged by it.
+ */
+const byPincode = new Map();
+
 for await (const line of lines) {
   if (!line.trim()) continue;
   const cells = splitCsvLine(line);
@@ -152,7 +191,8 @@ for await (const line of lines) {
     );
     if (missing.length > 0) {
       console.error(
-        `Could not find ${missing.join(", ")} in the header:\n  ${cells.join(" | ")}`,
+        `Could not find ${missing.join(", ")} in the header:
+  ${cells.join(" | ")}`,
       );
       process.exit(1);
     }
@@ -175,25 +215,91 @@ for await (const line of lines) {
     stats.outsideIndia += 1;
     continue;
   }
-  // The published datasets have one row per post office, so a pincode repeats.
-  // The first coordinate is as good as any and they are within a kilometre.
-  if (seenPincodes.has(pincode)) {
+
+  const existing = byPincode.get(pincode);
+  if (existing) {
+    existing.lats.push(lat);
+    existing.lngs.push(lng);
     stats.duplicate += 1;
+  } else {
+    byPincode.set(pincode, {
+      district: cells[columns.district] || null,
+      lats: [lat],
+      lngs: [lng],
+      state: cells[columns.state] || null,
+    });
+  }
+}
+
+const median = (values) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = sorted.length >> 1;
+  return sorted.length % 2
+    ? sorted[middle]
+    : (sorted[middle - 1] + sorted[middle]) / 2;
+};
+
+const resolved = new Map();
+for (const [pincode, row] of byPincode) {
+  resolved.set(pincode, {
+    district: row.district,
+    lat: median(row.lats),
+    lng: median(row.lngs),
+    state: row.state,
+  });
+}
+
+/**
+ * Reject a pincode that sits nowhere near the others in its sorting district.
+ *
+ * The first three digits are a postal sorting district, which is genuinely
+ * compact — so the district's own median is a reference the dataset provides
+ * about itself, with no external source needed. About 2% of pincodes are more
+ * than 200 km from theirs, which no real sorting district spans, and those are
+ * the rows that would otherwise attach a whole pincode to the wrong end of the
+ * country.
+ */
+const OUTLIER_KM = 200;
+const districts = new Map();
+for (const [pincode, row] of resolved) {
+  const key = pincode.slice(0, 3);
+  const bucket = districts.get(key) ?? { lats: [], lngs: [] };
+  bucket.lats.push(row.lat);
+  bucket.lngs.push(row.lng);
+  districts.set(key, bucket);
+}
+const districtCentre = new Map(
+  [...districts].map(([key, bucket]) => [
+    key,
+    { lat: median(bucket.lats), lng: median(bucket.lngs) },
+  ]),
+);
+
+const distanceKm = (a, b) => {
+  const rad = Math.PI / 180;
+  const h =
+    0.5 -
+    Math.cos((b.lat - a.lat) * rad) / 2 +
+    (Math.cos(a.lat * rad) *
+      Math.cos(b.lat * rad) *
+      (1 - Math.cos((b.lng - a.lng) * rad))) /
+      2;
+  return 12742 * Math.asin(Math.sqrt(h));
+};
+
+for (const [pincode, row] of resolved) {
+  const centre = districtCentre.get(pincode.slice(0, 3));
+  if (!centre) continue;
+  if (distanceKm(row, centre) > OUTLIER_KM) {
+    resolved.delete(pincode);
+    stats.outlier += 1;
     continue;
   }
-  seenPincodes.add(pincode);
-
-  batch.push([
-    pincode,
-    cells[columns.district] || null,
-    cells[columns.state] || null,
-    lat,
-    lng,
-  ]);
+  batch.push([pincode, row.district, row.state, row.lat, row.lng]);
   stats.imported += 1;
-
   if (batch.length >= 500) await flush();
 }
+
 await flush();
 
 const { rows } = await client.query(
@@ -204,15 +310,19 @@ console.log(
   `\n${DRY_RUN ? "[dry run] " : ""}imported ${stats.imported}` +
     ` · duplicate pincodes skipped ${stats.duplicate}` +
     ` · malformed ${stats.malformed}` +
-    ` · outside India ${stats.outsideIndia}`,
+    ` · outside India ${stats.outsideIndia}` +
+    ` · coordinate outliers dropped ${stats.outlier}`,
 );
 console.log(
   `pincodes table: ${rows[0].total} rows, ${rows[0].with_city} mapped to a city`,
 );
 if (rows[0].total !== rows[0].with_city) {
+  const unmapped = rows[0].total - rows[0].with_city;
   console.log(
-    "Rows without a city were inserted before the resolver trigger existed;" +
-      " re-run this import to backfill them.",
+    `${unmapped} pincode(s) sit more than 200 km from every launch city, so they` +
+      " carry no city. That is the resolver working, not a gap: search still" +
+      " runs from the pincode's own coordinates, and claiming a pincode belongs" +
+      " to a metro 800 km away would be worse than saying nothing.",
   );
 }
 

@@ -47,3 +47,7 @@ next-env.d.ts
 /docs/
 /IMPLEMENTATION_LOG.md
 CLAUDE.md
+
+# Source datasets. The pincode export is 23 MB and is loaded into Postgres by
+# scripts/import-pincodes.mjs; the repository does not need a second copy.
+*.csv
