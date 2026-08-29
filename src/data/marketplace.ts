@@ -5,10 +5,6 @@ import type { PublicVendor, VendorSearch } from "@/domain/marketplace";
 
 import { metros, vendors } from "./seed/marketplace";
 
-export function getMetros() {
-  return metros;
-}
-
 export function getMetroBySlug(slug: string) {
   return metros.find((metro) => metro.slug === slug);
 }

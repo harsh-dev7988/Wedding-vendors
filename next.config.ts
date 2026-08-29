@@ -43,7 +43,12 @@ const securityHeaders = [
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "object-src 'none'",
-      "upgrade-insecure-requests",
+      // Production only. On http://localhost it rewrites Next's own prefetch
+      // requests to https, which nothing is listening on, so every prefetch
+      // fails with SSL_PROTOCOL_ERROR and the console fills with errors that
+      // do not exist in production. It protects nothing locally: a loopback
+      // origin is already treated as secure.
+      ...(isDev ? [] : ["upgrade-insecure-requests"]),
     ].join("; "),
   },
 ];

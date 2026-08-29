@@ -121,20 +121,41 @@ export default async function VendorProfilePage({
     categoryName: category?.name,
     cityName: metro?.name,
   });
+  /**
+   * The trail a venue belongs to is not the one a service belongs to.
+   *
+   * These were built as `/vendors/[city]/[category]` regardless, so a venue's
+   * breadcrumb pointed at a URL that now 308s to `/venues/[city]` — an extra
+   * hop for a person, and structured data advertising a redirect to a crawler,
+   * which is the kind of thing Search Console reports and nobody reads.
+   */
+  const venueTrail = category?.kind === "venue";
+  const sectionCrumb = venueTrail
+    ? { name: "Venues", path: "/venues" }
+    : { name: "Vendors", path: "/vendors" };
+  const cityPath = metro
+    ? venueTrail
+      ? `/venues/${metro.slug}`
+      : `/vendors/${metro.slug}`
+    : null;
+  // A venue subtype has its own page; the parent category *is* the city page,
+  // so repeating it would put the same URL in the trail twice.
+  const categoryPath =
+    metro && category
+      ? venueTrail
+        ? category.parentSlug
+          ? `/venues/${metro.slug}/${category.slug}`
+          : null
+        : `/vendors/${metro.slug}/${category.slug}`
+      : null;
+
   const breadcrumbs = preview
     ? null
     : breadcrumbJsonLd([
-        { name: "Vendors", path: "/vendors" },
-        ...(metro
-          ? [{ name: metro.name, path: `/vendors/${metro.slug}` }]
-          : []),
-        ...(metro && category
-          ? [
-              {
-                name: category.name,
-                path: `/vendors/${metro.slug}/${category.slug}`,
-              },
-            ]
+        sectionCrumb,
+        ...(metro && cityPath ? [{ name: metro.name, path: cityPath }] : []),
+        ...(category && categoryPath
+          ? [{ name: category.name, path: categoryPath }]
           : []),
         { name: vendor.name, path: `/vendor/${vendor.slug}` },
       ]);
@@ -148,27 +169,21 @@ export default async function VendorProfilePage({
           aria-label="Breadcrumb"
           className="flex flex-wrap items-center gap-1.5"
         >
-          <Link className="hover:text-foreground" href="/vendors">
-            Vendors
+          <Link className="hover:text-foreground" href={sectionCrumb.path}>
+            {sectionCrumb.name}
           </Link>
           <ChevronRight aria-hidden="true" size={14} />
-          {metro && (
+          {metro && cityPath && (
             <>
-              <Link
-                className="hover:text-foreground"
-                href={`/vendors/${metro.slug}`}
-              >
+              <Link className="hover:text-foreground" href={cityPath}>
                 {metro.name}
               </Link>
               <ChevronRight aria-hidden="true" size={14} />
             </>
           )}
-          {metro && category && (
+          {category && categoryPath && (
             <>
-              <Link
-                className="hover:text-foreground"
-                href={`/vendors/${metro.slug}/${category.slug}`}
-              >
+              <Link className="hover:text-foreground" href={categoryPath}>
                 {category.name}
               </Link>
               <ChevronRight aria-hidden="true" size={14} />

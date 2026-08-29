@@ -68,7 +68,8 @@ function writeCookie(slug: string | null) {
     : `${base}; path=/; max-age=0; samesite=lax`;
 }
 
-export function readCity(): string | null {
+/** Module-private: callers ask `shouldOfferCityPrompt`, not the raw value. */
+function readCity(): string | null {
   if (cache !== undefined) return cache;
   if (typeof window === "undefined") return null;
   try {
@@ -122,7 +123,8 @@ export function neverOnServer() {
 
 const DISMISSED = "wv.city.dismissed";
 
-export function hasDismissedCityPrompt() {
+/** Module-private, for the same reason. */
+function hasDismissedCityPrompt() {
   if (typeof window === "undefined") return true;
   try {
     return window.localStorage.getItem(DISMISSED) === "1";

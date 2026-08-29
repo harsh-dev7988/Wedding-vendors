@@ -21,7 +21,6 @@ const PAGES = [
   "/vendors/mumbai/photographers",
   "/trust-and-safety",
   "/for-vendors",
-  "/for-vendors/pricing",
   "/contact",
   "/sign-in",
   "/account",
@@ -176,16 +175,26 @@ for (const width of WIDTHS) {
   });
   for (const path of PAGES) {
     checks++;
-    const nav = await cdp(ws, "Page.navigate", { url: BASE + path });
-    await new Promise((r) => setTimeout(r, 900));
-    const { result: pageTitle } = await cdp(ws, "Runtime.evaluate", {
-      expression: "document.title",
-      returnByValue: true,
-    });
-    if (/404|not found/i.test(pageTitle.value ?? "") || nav.errorText) {
+    // Ask for the status directly rather than inferring it from the rendered
+    // page. This matched "404" in the title, which let a genuinely missing
+    // route through: Next's not-found page does not put the number there, so
+    // "/for-vendors/pricing" sat in this list passing every run while it 404'd
+    // — the same blind spot "/how-it-works" had.
+    const probe = await fetch(BASE + path, { redirect: "manual" });
+    if (probe.status >= 400) {
       findings++;
       console.log(
-        `  ${String(width).padEnd(5)} ${path.padEnd(30)} PAGE-MISSING  ${pageTitle.value ?? nav.errorText}`,
+        `  ${String(width).padEnd(5)} ${path.padEnd(30)} PAGE-MISSING  HTTP ${probe.status}`,
+      );
+      continue;
+    }
+
+    const nav = await cdp(ws, "Page.navigate", { url: BASE + path });
+    await new Promise((r) => setTimeout(r, 900));
+    if (nav.errorText) {
+      findings++;
+      console.log(
+        `  ${String(width).padEnd(5)} ${path.padEnd(30)} NAVIGATION-FAILED  ${nav.errorText}`,
       );
       continue;
     }

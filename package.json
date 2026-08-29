@@ -24,6 +24,7 @@
     "audit:layout": "node scripts/layout-audit.mjs",
     "db:notifications-test": "node scripts/db-notifications-test.mjs",
     "audit:links": "node scripts/link-audit.mjs",
+    "audit:console": "node scripts/console-audit.mjs",
     "audit:keyboard": "node scripts/select-menu-keyboard-audit.mjs",
     "db:taxonomy": "node scripts/db-taxonomy-audit.mjs",
     "db:grants": "node scripts/db-grant-audit.mjs",

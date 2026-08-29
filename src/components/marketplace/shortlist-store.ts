@@ -33,12 +33,23 @@ export function loadShortlist(): Promise<Set<string>> {
   const request = (async () => {
     let ids = new Set<string>();
     try {
-      const { data } = await createClient()
-        .from("shortlists")
-        .select("listing_id");
-      ids = new Set((data ?? []).map((row) => row.listing_id as string));
+      const supabase = createClient();
+      // Ask storage, not the network. `shortlists` is behind RLS, so a
+      // signed-out visitor got a 401 on every public page carrying a card:
+      // an error in their console, a wasted round trip to Supabase, and — once
+      // error tracking exists — a steady stream of reports about a state that
+      // is completely normal. `getSession` reads the locally stored session,
+      // so for somebody signed out it answers immediately and costs nothing.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session) {
+        const { data } = await supabase.from("shortlists").select("listing_id");
+        ids = new Set((data ?? []).map((row) => row.listing_id as string));
+      }
     } catch {
-      // A signed-out or offline viewer simply has no saved listings.
+      // Offline, or storage unavailable. No saved listings is the right answer.
     }
     cache = ids;
     inFlight = null;
