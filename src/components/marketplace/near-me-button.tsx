@@ -71,7 +71,9 @@ export function NearMeButton({ category }: { readonly category?: string }) {
   return (
     <div>
       <button
-        className="border-border hover:border-brand-text/50 inline-flex min-h-11 items-center gap-2 rounded-full border bg-white px-4 text-sm font-bold transition disabled:opacity-60"
+        // Same reason as the search form: a white pill on a dark band inherited
+        // `text-white` and rendered its label invisible.
+        className="border-border hover:border-brand-text/50 text-foreground inline-flex min-h-11 items-center gap-2 rounded-full border bg-white px-4 text-sm font-bold transition disabled:opacity-60"
         disabled={status === "locating"}
         onClick={locate}
         type="button"
@@ -88,7 +90,7 @@ export function NearMeButton({ category }: { readonly category?: string }) {
         {status === "locating" ? "Finding you…" : "Use my location"}
       </button>
       {MESSAGES[status] && (
-        <p aria-live="polite" className="text-muted-foreground mt-2 text-xs">
+        <p aria-live="polite" className="mt-2 text-xs opacity-80">
           {MESSAGES[status]}
         </p>
       )}

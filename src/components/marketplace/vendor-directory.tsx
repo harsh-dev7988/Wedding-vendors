@@ -93,11 +93,23 @@ export function VendorDirectory({
   // must count what is actually on the page, or it reads "0 listings" above a
   // grid of eleven cards.
   const displayTotal = total + previewCount;
+  // City and category are the page's identity, not filters — narrowing to
+  // "venues in Mumbai" is not filtering, choosing a price band is.
+  const filtered = Boolean(
+    activeFilters &&
+    (activeFilters.minPrice ||
+      activeFilters.maxPrice ||
+      activeFilters.minRating ||
+      activeFilters.verifiedOnly ||
+      activeFilters.pincode ||
+      activeFilters.q ||
+      activeFilters.radiusKm),
+  );
 
   return (
     <main id="main-content">
       <section className="border-border bg-muted/60 border-b">
-        <div className="mx-auto max-w-7xl px-5 py-12 md:px-8 md:py-16">
+        <div className="section-content mx-auto max-w-7xl px-5 md:px-8">
           <p className="text-brand-text eyebrow">
             {hideCategoryControl
               ? "Wedding venues across India"
@@ -156,7 +168,7 @@ export function VendorDirectory({
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-12 md:px-8">
+      <section className="section-content mx-auto max-w-7xl px-5 md:px-8">
         {/* Prominent, above-the-fold disclosure rather than a small badge on
             each card and a low-contrast line in the footer. */}
         {previewCount > 0 && (
@@ -183,6 +195,11 @@ export function VendorDirectory({
           <div>
             <p className="text-brand-text text-sm font-bold">
               {displayTotal} {displayTotal === 1 ? "listing" : "listings"}
+              {/* Say when a number is the result of filtering. Without it a
+                  filtered view and an empty city look identical, and somebody
+                  who has narrowed to two results cannot tell whether the
+                  filters worked or the city is nearly empty. */}
+              {filtered ? " matching your filters" : ""}
               {previewCount > 0 && total > 0
                 ? ` · ${total} live, ${previewCount} preview`
                 : ""}

@@ -498,9 +498,16 @@ export default async function VendorProfilePage({
           )}
 
           {/* Preview fixtures are fictional, so there is nothing to report and
-              nothing a moderator could act on. */}
+              nothing a moderator could act on.
+
+              Set apart above a rule rather than left as a bare link under the
+              reviews. It is a housekeeping action, not part of the reading
+              order, and it read as an orphan sitting at the same weight as the
+              content above it. */}
           {!preview && vendor.listingId && (
-            <ReportListingForm listingId={vendor.listingId} />
+            <div className="border-border mt-4 border-t pt-6">
+              <ReportListingForm listingId={vendor.listingId} />
+            </div>
           )}
         </div>
 

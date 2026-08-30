@@ -581,3 +581,40 @@ header[data-transparent] .header-pill:hover {
   background: color-mix(in oklab, var(--brand-text) 45%, transparent);
   background-clip: content-box;
 }
+
+/* Section rhythm.
+ *
+ * Nearly every section was `py-20 md:py-24` regardless of what it held, so a
+ * long page read as a list of equal blocks and nothing felt more important
+ * than anything else. Three weights, chosen by what a section is rather than
+ * by habit:
+ *
+ *   feature  a statement — a dark or image ground, room to breathe
+ *   content  the default — prose, grids, cards
+ *   utility  controls, chips and dense lists, where air is just scrolling
+ */
+.section-feature {
+  padding-block: 5rem;
+}
+
+.section-content {
+  padding-block: 3.5rem;
+}
+
+.section-utility {
+  padding-block: 2rem;
+}
+
+@media (min-width: 768px) {
+  .section-feature {
+    padding-block: 7rem;
+  }
+
+  .section-content {
+    padding-block: 5rem;
+  }
+
+  .section-utility {
+    padding-block: 2.5rem;
+  }
+}

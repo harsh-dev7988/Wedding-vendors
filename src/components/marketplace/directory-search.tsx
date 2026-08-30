@@ -42,7 +42,12 @@ export async function DirectorySearch({
     <form
       action={action}
       aria-labelledby="directory-search-heading"
-      className={`border-border shadow-soft grid gap-2 rounded-3xl border bg-white p-2 ${columns}`}
+      // `text-foreground` explicitly, not by inheritance. This form now sits on
+      // a dark band as well as on ivory, and a section that sets `text-white`
+      // cascaded straight into fields that are white — the category and city
+      // values rendered white on white and simply were not there. A control
+      // with its own background has to own its foreground too.
+      className={`border-border shadow-soft text-foreground grid gap-2 rounded-3xl border bg-white p-2 ${columns}`}
       role="search"
     >
       <h2 className="sr-only" id="directory-search-heading">

@@ -295,7 +295,7 @@ export default async function HomePage() {
         aria-labelledby="how-it-works-heading"
         className="border-border bg-muted/45 border-b"
       >
-        <div className="reveal mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-24">
+        <div className="reveal section-content mx-auto max-w-7xl px-5 md:px-8">
           <p className="eyebrow text-brand-text">How it works</p>
           <h2 className="type-title mt-4 max-w-2xl" id="how-it-works-heading">
             Three steps, and nobody gets your number until you say so.
@@ -329,7 +329,7 @@ export default async function HomePage() {
           Categories
          ------------------------------------------------------------------ */}
       <section
-        className="mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-24"
+        className="section-content mx-auto max-w-7xl px-5 md:px-8"
         id="categories"
       >
         {/* Venues lead, and they lead alone. The venue fixes the date, the
@@ -459,7 +459,7 @@ export default async function HomePage() {
       {/* ------------------------------------------------------------------
           Editorial pair
          ------------------------------------------------------------------ */}
-      <section className="border-border bg-muted/55 border-y py-20 md:py-24">
+      <section className="border-border bg-muted/55 section-feature border-y">
         <div className="reveal mx-auto grid max-w-7xl gap-5 px-5 md:px-8 lg:grid-cols-[1.4fr_0.6fr]">
           <article className="group bg-foreground shadow-soft relative min-h-[26rem] overflow-hidden rounded-[2rem] text-white md:min-h-[32rem]">
             <Image
@@ -517,7 +517,7 @@ export default async function HomePage() {
          ------------------------------------------------------------------ */}
       <section
         aria-labelledby="cities-heading"
-        className="mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-24"
+        className="section-content mx-auto max-w-7xl px-5 md:px-8"
       >
         <div className="reveal">
           <p className="eyebrow text-brand-text">Where we have launched</p>
